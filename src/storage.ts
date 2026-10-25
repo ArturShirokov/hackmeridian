@@ -3,7 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 
 export interface DocumentMeta {
   id: string;
-  /** sha256 of the bytes, hex. */
+  /** sha256 of the bytes, hex (ICP's listSince gives only the first 16 digits; get gives all). */
   hash: string;
   template: string;
   uploader: string;
@@ -11,6 +11,8 @@ export interface DocumentMeta {
   name: string;
   supplier: string;
   uploadedAt: Date;
+  /** Public URL of the stored file, where Storage gives one (ICP does). */
+  link?: string;
 }
 
 export type NewDocument = Pick<DocumentMeta, "template" | "uploader" | "name" | "supplier">;

@@ -163,6 +163,7 @@ export interface ApiPipelineView {
 export interface ApiDocument extends ApiDocumentSummary {
   /** GET this for the PDF. */
   fileUrl: string;
+  /** Public URL of the file on ICP, when Storage is ICP. */
   storageLink?: string;
   /** In Pipeline order. */
   views: ApiPipelineView[];
