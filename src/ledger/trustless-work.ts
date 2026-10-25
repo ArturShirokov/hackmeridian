@@ -1,9 +1,10 @@
 // Ledger on Trustless Work v1 REST: one multi-release escrow per (Document, Operator) with one milestone of
 // Bond + Fee. Each action asks the API for an unsigned transaction, signs it with the role's key and posts it back.
 // Roles: Operator = service provider, Brand = approver, Arbiter = release signer and dispute resolver.
-import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
-import { addUsdc, type EscrowRequest, type Ledger } from "../ledger.js";
-import { Escrows, explorer, keyFor, split, USDC_ISSUER } from "./stellar.js";
+import { Keypair, Networks, StrKey, TransactionBuilder } from "@stellar/stellar-sdk";
+import { addUsdc, type BondRequest, type EscrowRequest, type Ledger, type OutsideLedger } from "../ledger.js";
+import { checkSigned } from "./signed.js";
+import { Escrows, explorer, HORIZON_TESTNET, keyFor, split, USDC_ISSUER } from "./stellar.js";
 
 export interface TrustlessWorkOptions {
   apiKey: string;
@@ -18,12 +19,18 @@ export interface TrustlessWorkOptions {
   minIntervalMs?: number;
   /** Called with the hash of every transaction sent, for explorer links. */
   onTx?: (action: string, hash: string) => void;
+  /** Horizon REST, for outside Operators' USDC balances. */
+  horizonUrl?: string;
 }
 
 const M = "/escrow/multi-release";
 
-export class TrustlessWorkLedger implements Ledger {
+export class TrustlessWorkLedger implements Ledger, OutsideLedger {
   private escrows = new Escrows();
+  /** Outside Operators: the XDR waiting for their signature, per escrow, and what follows once it is in. */
+  private pending = new Map<string, { xdr: string; signer: string; then: () => Promise<void>; link?: string }>();
+  /** Escrows whose milestone the Operator already marked Completed at delivery. */
+  private marked = new Set<string>();
   private queue: Promise<unknown> = Promise.resolve();
   private last = 0;
   private readonly baseUrl: string;
@@ -67,16 +74,95 @@ export class TrustlessWorkLedger implements Ledger {
     return { escrowId: contractId, link: explorer("contract", contractId) };
   }
 
+  // Outside Operators: we hold no key for them. The Arbiter deploys (and is platformAddress, so the Operator can't
+  // change the escrow), the Operator signs its Bond and, at delivery, the milestone's "Completed" with the output hash.
+  // Settlement then needs only the Brand and the Arbiter.
+
+  async usdcBalance(address: string) {
+    const res = await this.fetch(`${this.o.horizonUrl ?? HORIZON_TESTNET}/accounts/${address}`);
+    if (res.status === 404) return "0";
+    if (!res.ok) throw new Error(`Horizon accounts ${res.status}: ${await res.text()}`);
+    const { balances } = (await res.json()) as { balances: { asset_code?: string; asset_issuer?: string; balance: string }[] };
+    const usdc = balances.find((b) => b.asset_code === "USDC" && b.asset_issuer === USDC_ISSUER);
+    return usdc ? addUsdc(usdc.balance) : "0";
+  }
+
+  async prepareBond(req: BondRequest) {
+    addUsdc(req.bond, req.fee);
+    const brand = this.brand(req.brand);
+    const arbiter = this.o.arbiter;
+    const { contractId } = await this.act(
+      "/deployer/multi-release",
+      {
+        signer: arbiter.publicKey(),
+        engagementId: `${req.documentId}-${req.operator}`,
+        title: `Bond for ${req.documentId}`,
+        description: `Bond + Fee for Document ${req.documentId}, outside Operator`,
+        roles: {
+          approver: brand.publicKey(),
+          serviceProvider: req.operator,
+          platformAddress: arbiter.publicKey(),
+          releaseSigner: arbiter.publicKey(),
+          disputeResolver: arbiter.publicKey(),
+        },
+        platformFee: 0,
+        milestones: [{ description: "output sha256 in the evidence at delivery", amount: Number(addUsdc(req.bond, req.fee)), receiver: req.operator }],
+        trustline: { address: USDC_ISSUER, symbol: "USDC" },
+      },
+      arbiter,
+    );
+    if (typeof contractId !== "string") throw new Error("deploy returned no contractId");
+    const { unsignedTransaction: xdr } = await this.post(`${M}/fund-escrow`, { contractId, signer: req.operator, amount: Number(req.bond) });
+    this.pending.set(contractId, {
+      xdr,
+      signer: req.operator,
+      then: async () => {
+        if (Number(req.fee) > 0) await this.act(`${M}/fund-escrow`, { contractId, signer: brand.publicKey(), amount: Number(req.fee) }, brand);
+        this.escrows.add(contractId, { ...req, outputHash: "" });
+        this.marked.add(contractId);
+      },
+      link: explorer("contract", contractId),
+    });
+    return { escrowId: contractId, xdr };
+  }
+
+  async prepareDelivery(contractId: string, outputHash: string) {
+    const req = this.escrows.get(contractId);
+    const { unsignedTransaction: xdr } = await this.post(`${M}/change-milestone-status`, {
+      contractId,
+      milestoneIndex: "0",
+      newStatus: "Completed",
+      newEvidence: `sha256:${outputHash}`,
+      serviceProvider: req.operator,
+    });
+    this.pending.set(contractId, { xdr, signer: req.operator, then: async () => void (req.outputHash = outputHash) });
+    return { xdr };
+  }
+
+  async submitSigned(contractId: string, signedXdr: string) {
+    const p = this.pending.get(contractId);
+    if (!p) throw new Error(`nothing to sign for escrow ${contractId}`);
+    checkSigned(p.xdr, signedXdr, p.signer);
+    const txHash = Buffer.from(TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET).hash()).toString("hex");
+    this.o.onTx?.("outside-signed", txHash);
+    await this.post("/helper/send-transaction", { signedXdr });
+    this.pending.delete(contractId);
+    await p.then();
+    return { link: p.link ?? explorer("tx", txHash) };
+  }
+
   async settleClean(contractId: string) {
     const req = this.escrows.get(contractId);
-    const op = this.operator(req.operator);
     const brand = this.brand(req.brand);
     const m = { contractId, milestoneIndex: "0" };
-    await this.act(
-      `${M}/change-milestone-status`,
-      { ...m, newStatus: "Completed", newEvidence: `sha256:${req.outputHash}`, serviceProvider: op.publicKey() },
-      op,
-    );
+    if (!this.marked.has(contractId)) {
+      const op = this.operator(req.operator);
+      await this.act(
+        `${M}/change-milestone-status`,
+        { ...m, newStatus: "Completed", newEvidence: `sha256:${req.outputHash}`, serviceProvider: op.publicKey() },
+        op,
+      );
+    }
     await this.act(`${M}/approve-milestone`, { ...m, approver: brand.publicKey() }, brand);
     const { txHash } = await this.act(`${M}/release-milestone-funds`, { ...m, releaseSigner: this.o.arbiter.publicKey() }, this.o.arbiter);
     return { link: explorer("tx", txHash) };
@@ -90,7 +176,7 @@ export class TrustlessWorkLedger implements Ledger {
     // Amounts are gross: the contract takes its 0.3% fee out of each share.
     const distributions = [
       { address: brand.publicKey(), amount: Number(toBrand) },
-      { address: this.operator(req.operator).publicKey(), amount: Number(toOperator) },
+      { address: this.address(req.operator), amount: Number(toOperator) },
     ].filter((d) => d.amount > 0);
     await this.act(`${M}/dispute-milestone`, { ...m, signer: brand.publicKey() }, brand);
     const { txHash } = await this.act(
@@ -110,6 +196,8 @@ export class TrustlessWorkLedger implements Ledger {
   }
 
   private operator = (id: string) => keyFor(this.o.operators, "Operator", id);
+  /** Ours by id, an outside Operator by its address. */
+  private address = (id: string) => (StrKey.isValidEd25519PublicKey(id) ? id : this.operator(id).publicKey());
   private brand = (id: string) => keyFor(this.o.brands, "Brand", id);
 
   /** One action = build (API returns unsigned XDR), sign, send. Two requests. Returns the send response and the tx hash. */
