@@ -53,7 +53,7 @@ describe("ICP Storage", () => {
     const meta = await storage.put(bytes, { template: "battery", uploader: "brand", name: "big.pdf", supplier: "S" });
     expect(canister.chunks()).toBe(3);
     const got = await storage.get(meta.id);
-    expect(got?.bytes).toEqual(bytes);
+    expect(Buffer.compare(got!.bytes, bytes)).toBe(0); // toEqual on 2.5 MB is slow
     expect(got?.meta).toEqual(meta);
   });
 
