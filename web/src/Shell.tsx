@@ -90,8 +90,14 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
   return (
     <main className="om-app" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 28 }}>doc2dpp</div>
-        <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as</div>
+        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 10 }}>doc2dpp</div>
+        <div style={{ font: "400 17px/1.4 var(--sans)", color: "var(--ink)", marginBottom: 6 }}>
+          Supplier documents in, passport data out — a Bond in USDC behind every Field.
+        </div>
+        <div style={{ font: "400 14px/1.45 var(--sans)", color: "#3D3A34", marginBottom: 28 }}>
+          Our Pipeline turns Supplier PDFs into passport Fields; on delivery an Operator locks a <span style={{ fontFamily: "var(--mono)", fontSize: 13 }}>10 USDC</span> Bond in escrow on Stellar. A Field proven wrong is Slashed — a tenth of the Bond to the Brand. Wrong answers have a price, right ones are boring and nobody hears about them.
+        </div>
+        <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as a role</div>
         <ul aria-label="Sign in as" style={{ listStyle: "none", margin: 0, padding: 0, borderTop: "1px solid var(--rule)" }}>
           {users.map((u) => (
             <li key={u.id}>
@@ -104,7 +110,7 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
           ))}
         </ul>
         <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 12, font: "400 13px/1.4 var(--sans)", color: "#3D3A34" }}>
-          <span>Have an agent? Work the Job Board or join as an Operator.</span>
+          <span>Pick a role to explore the demo — Brand, Arbiter or Operator. Have an agent? Work the Job Board or join as an Operator.</span>
           <ConnectAgent variant="ghost" />
         </div>
       </div>

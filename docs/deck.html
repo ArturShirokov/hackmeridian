@@ -1,0 +1,246 @@
+<!doctype html>
+<!-- doc2dpp pitch deck — HackMeridian 2026. HTML accepted by the form. Print to PDF: Chrome, "Save as PDF", margins none, background on. Slides are 1280x720. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>doc2dpp — passport data with money behind every Field</title>
+<style>
+  :root {
+    --ink:#141414; --paper:#F7F5F0; --surface:#FFFDF9; --rule:#D6CFBF; --rule-row:#E2DCCE;
+    --band:#F1EDE4; --text2:#3D3A34; --money:#0B4A57; --money-soft:#8FB0B6; --red:#A3221B;
+    --green:#1D5A36; --green-bg:#EEF3EC; --amber-ink:#6B4400; --amber-bg:#FBF3E0; --amber-bd:#B9862A;
+    --sans:'Inter Tight','Helvetica Neue',Arial,sans-serif; --mono:'JetBrains Mono','SF Mono',Menlo,monospace; --serif:'Newsreader',Georgia,serif;
+  }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#C9C1B0; font-family:var(--sans); color:var(--ink); }
+  .slide { width:1280px; height:720px; margin:24px auto; background:var(--paper); padding:60px 72px 56px; position:relative;
+           display:flex; flex-direction:column; box-shadow:0 1px 3px rgba(0,0,0,.18); }
+  .slide::after { content:""; position:absolute; left:0; right:0; bottom:0; height:8px; display:flex;
+    background:linear-gradient(90deg, var(--money) 0 25%, var(--amber-bd) 25% 50%, var(--ink) 50% 75%, var(--red) 75% 100%); }
+  .slide.dark { background:var(--ink); color:var(--paper); }
+  .eyebrow { font:600 12px/1 var(--sans); letter-spacing:.1em; text-transform:uppercase; color:var(--text2); }
+  .num { position:absolute; bottom:24px; right:36px; font:500 11px/1 var(--mono); color:#8E877A; z-index:2; }
+  h1 { font:600 66px/1.06 var(--sans); letter-spacing:-.015em; }
+  h2 { font:600 42px/1.1 var(--sans); letter-spacing:-.01em; margin-top:10px; }
+  .lead { font:400 21px/1.45 var(--sans); color:var(--text2); }
+  .mono { font-family:var(--mono); }
+  .money { color:var(--money); font-weight:600; }
+  .card { background:var(--surface); border:1px solid var(--rule); padding:22px 24px; }
+  .bar { font:600 12px/1 var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--paper);
+         background:var(--money); display:inline-block; padding:7px 12px 6px; }
+  .badge { width:34px; height:34px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+           font:600 16px/1 var(--mono); color:var(--paper); flex:none; }
+  .chip { font:500 13px/1 var(--mono); border:1px solid var(--rule); background:var(--surface); padding:8px 12px 7px; display:inline-flex; gap:8px; align-items:center; }
+  .dot { width:8px; height:8px; border-radius:50%; flex:none; }
+  a { color:var(--money); text-decoration:none; }
+  @media print { body { background:#fff; } .slide { margin:0; box-shadow:none; page-break-after:always; } @page { size:1280px 720px; margin:0; } }
+</style>
+</head>
+<body>
+
+<!-- 1 · Title -->
+<section class="slide dark" style="justify-content:space-between;">
+  <div style="font:500 30px/1 var(--serif);">doc2dpp</div>
+  <div>
+    <div style="font:600 13px/1 var(--sans); letter-spacing:.12em; text-transform:uppercase; color:#BDB6A7;">HackMeridian 2026 · Genesis</div>
+    <h1 style="color:var(--paper); margin-top:22px; max-width:1080px;">Supplier documents in,<br>passport data out —<br><span style="color:var(--money-soft);">money behind every Field.</span></h1>
+    <div style="margin-top:28px; font:400 23px/1.45 var(--sans); color:#E2DCCE; max-width:880px;">A wrong passport Field costs the Brand. So every delivered Field carries a
+      <span style="background:var(--money); color:var(--paper); padding:2px 10px; font-weight:600;">Bond in USDC</span> on Stellar that pays the Brand when it's wrong.</div>
+  </div>
+  <div style="display:flex; gap:12px; font:500 13px/1 var(--mono);">
+    <span style="border:1px solid #4A463F; padding:10px 14px 9px; color:#E2DCCE;">doc2dpp.wisecraft.dev</span>
+    <span style="border:1px solid #4A463F; padding:10px 14px 9px; color:#E2DCCE;">github.com/ArturShirokov/hackmeridian</span>
+    <span style="background:var(--money); padding:10px 14px 9px; color:var(--paper);">Stellar testnet + ICP</span>
+  </div>
+</section>
+
+<!-- 2 · Problem -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--red);">The problem</div>
+  <h2>Every product sold in the EU needs a passport.<br>Nobody trusts the person retyping it.</h2>
+  <div style="display:grid; grid-template-columns:1fr 480px; gap:26px; margin-top:34px; flex:1;">
+    <div style="display:flex; flex-direction:column; gap:18px;">
+      <div class="lead" style="flex:1;">Suppliers send spec sheets, test reports, certificates — each in its own layout. The data ships as <b>PDFs a person retypes into the passport</b>, and downstream nobody knows how far to trust the result.</div>
+      <div class="card" style="padding:26px 28px; border-left:6px solid var(--money);">
+        <div style="font:400 24px/1.4 var(--sans);"><b>Batteries:</b> EU passport from <b>Feb 2027</b> · <b>Textiles:</b> ~2029</div>
+        <div style="margin-top:10px; font:400 19px/1.4 var(--sans); color:var(--text2);">Anti-greenwashing rules apply <b>since 27 Sep 2026</b> (Directive 2024/825) — claims need sourced evidence <b>now</b>, not at the deadline.</div>
+      </div>
+      <div class="card" style="padding:20px 28px; border-left:6px solid var(--red);">
+        <div style="font:400 19px/1.45 var(--sans);">Existing AI extraction is fast but scored on vibes — the error risk lands <b>silently on the buyer</b>, and usually surfaces via an auditor. <b style="color:var(--red);">No accountability layer.</b></div>
+      </div>
+    </div>
+    <div class="card" style="display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--ink); color:var(--paper); border:0;">
+      <div style="font:600 96px/1 var(--sans); letter-spacing:-.02em;">10 × 10</div>
+      <div style="font:600 20px/1.3 var(--sans); margin-top:12px; color:#E2DCCE;">Suppliers × Brands that need<br>the <em>same</em> document</div>
+      <div style="font:600 56px/1 var(--mono); margin-top:14px; color:var(--money-soft);">= 100</div>
+      <div style="font:400 17px/1.4 var(--sans); margin-top:12px; color:#BDB6A7; text-align:center;">hand-typed copies of identical data<br>(CIRPASS webinar)</div>
+    </div>
+  </div>
+  <div class="num">2</div>
+</section>
+
+<!-- 3 · Solution -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--money);">What we built</div>
+  <h2>Passport data where every answer is priced.</h2>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:32px; flex:1;">
+    <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span class="badge" style="background:var(--money);">1</span><span class="bar" style="background:var(--money);">Extract</span></div>
+      <div style="font:400 18.5px/1.5 var(--sans); flex:1;">A chain of independent <b>Sieves</b>, each a different AI Worker with a different view of the same Document — original PDF, Markdown, checked Markmarkdown, tie-break on disagreement.</div>
+      <div class="mono" style="font-size:13.5px; color:var(--money); border-top:1px solid var(--rule-row); padding-top:12px;">Unclear → Not stated, with quotes. Not a guess.</div>
+    </div>
+    <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span class="badge" style="background:var(--amber-bd);">2</span><span class="bar" style="background:var(--amber-bd); color:var(--amber-ink);">Bond</span></div>
+      <div style="font:400 18.5px/1.5 var(--sans); flex:1;">On delivery the Operator locks a <span class="money">10 USDC Bond</span> + the Brand pays a <span class="money">1 USDC Fee</span> in escrow on Stellar. The escrow also holds a <span class="mono">hash</span> of the delivered Fields.</div>
+      <div class="mono" style="font-size:13.5px; color:var(--amber-ink); border-top:1px solid var(--rule-row); padding-top:12px;">Hash in escrow → the answer can't quietly change later.</div>
+    </div>
+    <div class="card" style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span class="badge" style="background:var(--red);">3</span><span class="bar" style="background:var(--red);">Challenge</span></div>
+      <div style="font:400 18.5px/1.5 var(--sans); flex:1;">During the Challenge Window anyone cites the page and quote that says otherwise. A neutral <b>Arbiter</b> decides from the Document alone.</div>
+      <div class="mono" style="font-size:13.5px; color:var(--red); border-top:1px solid var(--rule-row); padding-top:12px;">Upheld → 1/10 of the Bond slashed to the Brand. Automatic.</div>
+    </div>
+  </div>
+  <div style="margin-top:20px; background:var(--surface); border:1px solid var(--rule); padding:16px 24px; font:500 19px/1.4 var(--sans);">
+    The Bond doesn't make the model careful. <b>It makes careless Pipelines expensive to run, and their error rate public.</b>
+  </div>
+  <div class="num">3</div>
+</section>
+
+<!-- 4 · How it works -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--money);">The pipeline</div>
+  <h2>Independent views of one document, then money.</h2>
+  <div style="display:flex; align-items:stretch; gap:8px; margin-top:34px;">
+    <div class="card" style="flex:1.05; padding:18px 16px;"><div class="bar" style="background:var(--ink);">Brand</div><div style="margin-top:14px; font:400 16.5px/1.45 var(--sans);">drops a Supplier PDF, picks a template</div><div class="mono" style="font-size:12.5px; color:var(--text2); margin-top:10px;">battery 60 · textile 37 official Fields</div></div>
+    <div style="font:600 24px/1 var(--sans); color:var(--grey,#8E877A); align-self:center;">→</div>
+    <div class="card" style="flex:1.35; padding:18px 16px; border-color:var(--money);"><div class="bar" style="background:var(--money);">Sieves</div><div style="margin-top:14px; font:400 16.5px/1.45 var(--sans);">PDF → Markdown → check → re-extract → tie-break</div><div class="mono" style="font-size:12.5px; color:var(--money); margin-top:10px;">each a different AI Worker, via MCP</div></div>
+    <div style="font:600 24px/1 var(--sans); color:#8E877A; align-self:center;">→</div>
+    <div class="card" style="flex:1.05; padding:18px 16px; border-color:var(--amber-bd);"><div class="bar" style="background:var(--amber-bd); color:var(--amber-ink);">Deliver</div><div style="margin-top:14px; font:400 16.5px/1.45 var(--sans);">every Field: value, source page, quote</div><div class="mono" style="font-size:12.5px; color:var(--amber-ink); margin-top:10px;">Not stated + Supplier Request, not a guess</div></div>
+    <div style="font:600 24px/1 var(--sans); color:#8E877A; align-self:center;">→</div>
+    <div class="card" style="flex:1.05; padding:18px 16px; border-color:var(--red); background:var(--ink); color:var(--paper); border-color:var(--ink);"><div class="bar" style="background:var(--red);">On Stellar</div><div style="margin-top:14px; font:400 16.5px/1.5 var(--sans); color:#E2DCCE;">escrow locks Bond + output hash → challenge → slash → settle</div><div class="mono" style="font-size:12.5px; margin-top:10px; color:var(--money-soft);">real testnet USDC, stellar.expert</div></div>
+  </div>
+  <div class="lead" style="margin-top:32px;">Workers are ordinary AI sessions — <b>Claude Code, OpenCode, Pi</b> — claiming jobs on our Job Board over <b>MCP</b>. Any agent can join under its own Operator name and its own Bond:</div>
+  <div style="display:flex; gap:14px; margin-top:16px;">
+    <span class="chip" style="border-color:var(--money);"><span class="dot" style="background:var(--money);"></span>Claude Code Worker</span>
+    <span class="chip" style="border-color:var(--amber-bd);"><span class="dot" style="background:var(--amber-bd);"></span>OpenCode Worker</span>
+    <span class="chip" style="border-color:var(--red);"><span class="dot" style="background:var(--red);"></span>Pi Worker</span>
+    <span class="chip" style="border-color:var(--ink); background:var(--band);"><span class="dot" style="background:var(--ink);"></span>your agent — outside Operator</span>
+    <span class="chip" style="background:var(--money); border:0; color:var(--paper);">→ leaderboard = public track record per Operator</span>
+  </div>
+  <div class="num">4</div>
+</section>
+
+<!-- 5 · Demo evidence -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--green);">Measured, not promised</div>
+  <h2>The planted error, caught — and paid for.</h2>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:30px; flex:1;">
+    <div class="card" style="display:flex; flex-direction:column; justify-content:center; gap:18px; background:var(--green-bg); border-color:#CDE0D2;">
+      <div style="font:400 62px/1 var(--sans); letter-spacing:-.02em;"><b style="color:var(--green);">100.0%</b><span style="font-size:22px; color:var(--text2);"> Correct</span></div>
+      <div style="font:400 19px/1.45 var(--sans); color:var(--text2);">314 of 314 gold Fields for our Pipeline across six test Documents. A one-pass <b>Baseline</b> Pipeline scores 99.7% — it takes the planted bullet:</div>
+      <div class="mono" style="font-size:14px; border-left:4px solid var(--red); background:var(--surface); padding:12px 16px; color:var(--red);">battery-04 · recycled_content_lithium:<br>expected 6 %, delivered 16 %<br><span style="color:var(--text2);">— the highlight-box number; actually the 2031 roadmap target (page 2 of the same PDF gives 6 %).</span></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:13px; justify-content:center;">
+      <div class="card" style="display:flex; gap:14px; align-items:center; padding:16px 20px;"><span class="badge" style="background:var(--money);">1</span><div style="font:400 17.5px/1.4 var(--sans);">Challenge filed with page + quote → Arbiter upholds, deciding from the Document alone</div></div>
+      <div class="card" style="display:flex; gap:14px; align-items:center; padding:16px 20px; border-color:var(--red);"><span class="badge" style="background:var(--red);">2</span><div style="font:400 17.5px/1.4 var(--sans);"><b style="color:var(--red);">1 USDC Slashed to the Brand</b> when the window closes — stellar.expert transaction, real testnet USDC</div></div>
+      <div class="card" style="display:flex; gap:14px; align-items:center; padding:16px 20px; border-color:var(--green);"><span class="badge" style="background:var(--green);">3</span><div style="font:400 17.5px/1.4 var(--sans);">Leaderboard goes public: our Operator, zero upheld Challenges; Baseline, one slash</div></div>
+      <div style="font:400 15px/1.4 var(--sans); color:var(--text2);">The error is planted on purpose and we say so on stage. Everything else — extraction, escrow, slash — runs live.</div>
+    </div>
+  </div>
+  <div class="num">5</div>
+</section>
+
+<!-- 6 · Research → design -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--amber-ink);">Grounded in research</div>
+  <h2>Four findings, four design decisions.</h2>
+  <div style="display:flex; flex-direction:column; gap:12px; margin-top:28px; flex:1;">
+    <div style="display:grid; grid-template-columns:1fr 30px 1fr; gap:12px; align-items:stretch;">
+      <div class="card" style="padding:16px 20px; border-left:5px solid var(--money); font:400 17px/1.42 var(--sans);"><span style="color:var(--money); font-weight:600;">I'll pay you or I'll kill you — tips and threats</span> generally have no significant effect on benchmark performance <span class="mono" style="font-size:12.5px; color:var(--text2);">(Meincke, Mollick et al. 2025 · 7,450 trials)</span></div>
+      <div style="align-self:center; text-align:center; font:600 20px/1 var(--sans); color:#8E877A;">→</div>
+      <div class="card" style="padding:16px 20px; background:var(--band); font:400 17px/1.42 var(--sans);"><b>We don't claim stakes make models smarter.</b> The Bond doesn't buy accuracy — it turns confidence into a price and makes the error rate public.</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 30px 1fr; gap:12px; align-items:stretch;">
+      <div class="card" style="padding:16px 20px; border-left:5px solid var(--red); font:400 17px/1.42 var(--sans);">Financial agents ordered to survive <span style="color:var(--red); font-weight:600;">faked reports in up to 80% of runs</span> under loss pressure <span class="mono" style="font-size:12.5px; color:var(--text2);">(Lu et al. 2026, arXiv 2603.05028 · small-n case study)</span></div>
+      <div style="align-self:center; text-align:center; font:600 20px/1 var(--sans); color:#8E877A;">→</div>
+      <div class="card" style="padding:16px 20px; background:var(--band); font:400 17px/1.42 var(--sans);"><b>The stake never enters the prompt.</b> Plain code — not the model — computes locks and slashes; Workers only see Fields and quotes.</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 30px 1fr; gap:12px; align-items:stretch;">
+      <div class="card" style="padding:16px 20px; border-left:5px solid var(--amber-bd); font:400 17px/1.42 var(--sans);">Raw AI confidence signals <span style="color:var(--amber-ink); font-weight:600;">collapse toward all-positive</span>; disagreement between two structurally different extraction passes reaches <span style="color:var(--amber-ink); font-weight:600;">ROC AUC 0.928</span> on document fields <span class="mono" style="font-size:12.5px; color:var(--text2);">(EXTRACTCONF, Kumar 2026)</span></div>
+      <div style="align-self:center; text-align:center; font:600 20px/1 var(--sans); color:#8E877A;">→</div>
+      <div class="card" style="padding:16px 20px; background:var(--band); font:400 17px/1.42 var(--sans);"><b>The Sieve chain, not stated confidence, drives routing:</b> independent views disagree usefully; disagreement gets the tie-break, then a human.</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 30px 1fr; gap:12px; align-items:stretch;">
+      <div class="card" style="padding:16px 20px; border-left:5px solid var(--green); font:400 17px/1.42 var(--sans);">Programmatic agent-insurance detection rises from <span style="color:var(--green); font-weight:600;">42.2% to 83.0%</span> when agents emit <b>structured, checkable evidence</b> <span class="mono" style="font-size:12.5px; color:var(--text2);">(Hua et al., CMU 2026, arXiv 2610.18230 · closest prior art)</span></div>
+      <div style="align-self:center; text-align:center; font:600 20px/1 var(--sans); color:#8E877A;">→</div>
+      <div class="card" style="padding:16px 20px; background:var(--band); font:400 17px/1.42 var(--sans);"><b>Every Field carries page + quote.</b> Evidence a Challenge can cite and an Arbiter can check — accuracy decided from the Document alone.</div>
+    </div>
+  </div>
+  <div style="margin-top:14px; font:400 13.5px/1.4 var(--sans); color:var(--text2); border-top:1px solid var(--rule-row); padding-top:12px;">No prior work we found stakes per Field on extraction accuracy — nearest are EXTRACTCONF (confidence only) and Verifiable Agent Insurance (policy violations, Ethereum L2). All four findings are in the repo's research notes, caveats included.</div>
+  <div class="num">6</div>
+</section>
+
+<!-- 7 · Why Stellar -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--money);">Why Stellar</div>
+  <h2>Verification you don't have to ask us for.</h2>
+  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:30px; flex:1;">
+    <div class="card" style="border-left:6px solid var(--money); display:flex; flex-direction:column; gap:10px;">
+      <div style="font:600 24px/1 var(--mono); color:var(--money);">ESCROW &amp; SLASH</div>
+      <div style="font:400 18px/1.45 var(--sans);">Soroban escrow (Trustless Work) with rule-based, automatic settlement. Fees per Field are <b>fractions of a cent</b> — per-field money works for the first time.</div>
+    </div>
+    <div class="card" style="border-left:6px solid var(--amber-bd); display:flex; flex-direction:column; gap:10px;">
+      <div style="font:600 24px/1 var(--mono); color:var(--amber-ink);">TAMPER-EVIDENT</div>
+      <div style="font:400 18px/1.45 var(--sans);">The escrow holds a <b>hash of the delivered Fields</b>. Changing the answer after approval means a new version — and the hash move is on the record.</div>
+    </div>
+    <div class="card" style="border-left:6px solid var(--green); display:flex; flex-direction:column; gap:10px;">
+      <div style="font:600 24px/1 var(--mono); color:var(--green);">TRACK RECORD</div>
+      <div style="font:400 18px/1.45 var(--sans);">Bonds, hashes and Slashes sit on a <b>public ledger</b> that doubles as each Operator's reputation — nobody has to take the platform's word for it.</div>
+    </div>
+    <div class="card" style="border-left:6px solid var(--ink); display:flex; flex-direction:column; gap:10px;">
+      <div style="font:600 24px/1 var(--mono); color:var(--ink);">FILES ELSEWHERE</div>
+      <div style="font:400 18px/1.45 var(--sans);">Documents live on <b>ICP</b> (Origyn's storage, already in production). All the money logic lives on Stellar. One chain per job.</div>
+    </div>
+  </div>
+  <div class="num">7</div>
+</section>
+
+<!-- 8 · Open market / where this goes -->
+<section class="slide">
+  <div class="eyebrow" style="color:var(--amber-ink);">Where this goes</div>
+  <h2>An open market of document Operators.</h2>
+  <div class="lead" style="margin-top:16px;">The workforce is open infrastructure: any AI agent on MCP can claim a Document and deliver a Passport, with its own Bond and its own track record. Today there are two operators; the design wants many.</div>
+  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-top:26px; flex:1;">
+    <div class="card" style="border-left:6px solid var(--money);"><div class="eyebrow" style="color:var(--money);">Live today</div><div style="margin-top:8px; font:400 17.5px/1.45 var(--sans);">Testnet escrow, real extraction, Challenges on the same Documents, Slashes on stellar.expert. <b>Judges' agents already connect</b> via MCP — as Workers or outside Operators.</div></div>
+    <div class="card" style="border-left:6px solid var(--amber-bd);"><div class="eyebrow" style="color:var(--amber-ink);">Per-Field stakes</div><div style="margin-top:8px; font:400 17.5px/1.45 var(--sans);">Field-level Bonds priced to the risk of a wrong answer: honest confidence earns, loud confidence costs. <span class="mono" style="font-size:14px; color:var(--text2);">Same mechanics, finer grain.</span></div></div>
+    <div class="card" style="border-left:6px solid var(--ink);"><div class="eyebrow">Brands never touch the chain</div><div style="margin-top:8px; font:400 17.5px/1.45 var(--sans);">In production Brands pay by invoice; the escrow settles behind a licensed partner. EU battery passports from <b>Feb 2027</b>, textiles around 2029 — the demand is dated.</div></div>
+    <div class="card" style="border-left:6px solid var(--green);"><div class="eyebrow" style="color:var(--green);">Why us</div><div style="margin-top:8px; font:400 17.5px/1.45 var(--sans);">Origyn is already a Digital Product Passport platform (ICP, role-based Files); HackMeridian added the accountability layer. An outside Operator was successfully delivered against in a test run.</div></div>
+  </div>
+  <div class="num">8</div>
+</section>
+
+<!-- 9 · Team / links -->
+<section class="slide dark" style="justify-content:space-between;">
+  <div style="font:500 26px/1 var(--serif);">doc2dpp</div>
+  <div>
+    <h2 style="color:var(--paper); font-size:52px;">Try the demo.</h2>
+    <div class="lead" style="color:#E2DCCE; margin-top:16px;">doc2dpp.wisecraft.dev · sign in as any role · connect your agent via MCP.<br>Live on Stellar testnet, deployed, <b style="color:var(--paper);">197 tests green</b>.</div>
+    <div style="display:flex; gap:12px; margin-top:24px; font:500 13px/1 var(--mono);">
+      <span style="background:var(--green); padding:10px 14px 9px;">100% on 314 gold Fields</span>
+      <span style="border:1px solid #4A463F; padding:10px 14px 9px; color:#E2DCCE;">planted error caught</span>
+      <span style="border:1px solid #4A463F; padding:10px 14px 9px; color:#E2DCCE;">real USDC slashed</span>
+      <span style="border:1px solid #4A463F; padding:10px 14px 9px; color:#E2DCCE;">open to your agent</span>
+    </div>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; font:400 15px/1.5 var(--sans); color:#BDB6A7; border-top:1px solid #4A463F; padding-top:20px;">
+    <div><span class="eyebrow" style="color:#8E877A;">Artur</span><br>Architecture, ledger, Sieve chain — the escrow rules that make a wrong answer cost money.</div>
+    <div><span class="eyebrow" style="color:#8E877A;">Viktoria</span><br>Product &amp; ICP storage — Brand reality, official templates, the demo story.</div>
+  </div>
+  <div style="display:flex; justify-content:space-between; font:500 12px/1.4 var(--mono); color:#8E877A;">
+    <span>github.com/ArturShirokov/hackmeridian</span>
+    <span>upload → extract → bond → challenge → slash → settle</span>
+  </div>
+</section>
+
+</body>
+</html>

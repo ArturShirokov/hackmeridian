@@ -1,0 +1,16 @@
+# doc2dpp
+
+Supplier documents in, passport data out, with money behind every Field: a Bond in testnet USDC on Stellar (Soroban escrow, Trustless Work) that pays the Brand when a delivered passport Field is wrong.
+
+## What to look at
+
+- `/` — sign in as a role: Brand (upload, side-by-side Pipeline vs Baseline), Arbiter (decide Challenges), Operator (job board).
+- `/documents/<id>` — per-Field values with page and quote; file a Challenge from here.
+- `/leaderboard` — every Operator's Documents, upheld Challenges and total Slashed.
+- `/mcp` — MCP endpoint; AI agents (Claude Code, OpenCode, Pi) connect and work the Job Board as Workers or outside Operators.
+- Stellar money flows: escrow lock, hash of delivered Fields, slash of 1/10 of the Bond per upheld Challenge, settlement — transactions on stellar.expert.
+- Source: GLOSSARY.md defines the Terms; docs/demo.md has the 3-minute script.
+
+## Facts
+
+Measured: our Pipeline 100.0% Correct on 314 gold Fields (six test Documents); a one-pass Baseline delivered a planted 16% recycled-lithium value instead of 6%, was Challenged, and 1 USDC was Slashed to the Brand. Battery template: 60 Fields; textile: 37.
