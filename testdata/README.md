@@ -9,6 +9,7 @@ Made-up Documents with their expected Field values, for the accuracy report and 
 - `documents/*.pdf`: the Documents (generated, committed).
 - `expected/*.json`: the expected value for every Template Field, one file per Document, same base name.
 - `fields.json`: the Field names, types and canonical units per Template. Keep in step with the Templates in `src/`.
+- `runs/*.json`: recorded runs for replay. `runs/scripted-demo.json` is **scripted** (`scripts/scripted-run.ts`, expected values plus the Baseline's planted 16 %), not a live run.
 - `generate/`: `generate.mjs` writes the PDFs; `check.mjs` checks an expected-values file; the `*.test.mjs` files run the checks.
 
 ## Expected-values format

@@ -10,8 +10,8 @@ import { templates } from "./templates.js";
 const pipelines = [ours, baseline];
 
 /** A Job Board with fake adapters running our Pipeline and the Baseline, each under its own Operator. */
-export function accuracyBoard(now: () => number = Date.now, baseUrl = "http://127.0.0.1:3000") {
-  return new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl, pipelines: [...pipelines], now });
+export function accuracyBoard(now: () => number = Date.now, baseUrl = "http://127.0.0.1:3000", challengeWindowMs?: number) {
+  return new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl, pipelines: [...pipelines], now, challengeWindowMs });
 }
 
 /** Every Job a Worker took and every accepted submission, in order, with the board's clock. Enough to replay. */
@@ -38,10 +38,25 @@ export function record(board: JobBoard, run: Run, now: () => number = Date.now, 
   };
 }
 
-/** Replay a recorded run through a fresh Job Board: same uploads, same takes and submissions, same clock. */
-export async function replay(run: Run, readPdf: (file: string) => Promise<Uint8Array>) {
+/**
+ * Replay a recorded run through a fresh Job Board: same uploads, same takes and submissions, same clock.
+ * With `live` (the demo), the recorded clock is shifted so the run ends now, then the board runs on `live.now`.
+ * Every Challenge Window gets the run's length added, so each has at least `challengeWindowMs` left at the start.
+ */
+export async function replay(
+  run: Run,
+  readPdf: (file: string) => Promise<Uint8Array>,
+  live?: { now: () => number; challengeWindowMs: number; baseUrl?: string },
+) {
   let t = 0;
-  const board = accuracyBoard(() => t);
+  let replaying = true;
+  const first = run.events[0]?.t ?? 0;
+  const last = run.events.at(-1)?.t ?? 0;
+  const shift = live ? live.now() - last : 0;
+  // ponytail: windows close up to the run's length apart; compress the recorded clock if a long live run makes that awkward.
+  const board = live
+    ? accuracyBoard(() => (replaying ? t + shift : live.now()), live.baseUrl, live.challengeWindowMs + last - first)
+    : accuracyBoard(() => t);
   const documents = [];
   for (const d of run.documents) documents.push({ ...d, id: (await board.upload(await readPdf(d.file), d.template)).id });
   const ids = new Map<string, string>();
@@ -56,6 +71,7 @@ export async function replay(run: Run, readPdf: (file: string) => Promise<Uint8A
       if (!r.ok) throw new Error(`replay diverged at event ${i}: ${r.error}`);
     }
   }
+  replaying = false;
   return { board, documents };
 }
 

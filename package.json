@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
+    "demo": "DEMO_REPLAY=${DEMO_REPLAY:-testdata/runs/scripted-demo.json} CHALLENGE_WINDOW_MIN=${CHALLENGE_WINDOW_MIN:-3} tsx src/main.ts",
     "test": "vitest run",
     "typecheck": "tsc -p ."
   },
