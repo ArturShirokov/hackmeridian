@@ -135,8 +135,10 @@ test("OpenCode's --format json event stream gives its last text message as the r
 });
 
 test("OpenCode runs read-only: JSON events and a permission config that denies everything but reading files", () => {
-  const { argv, env } = harnessCommand("opencode", "opencode-go/kimi-k3", "do the Job");
-  expect(argv).toEqual(["opencode", "run", "--format", "json", "--model", "opencode-go/kimi-k3", "do the Job"]);
+  // --dir: OpenCode takes its project folder from the inherited PWD, not the process cwd, so it must be told the Job's folder.
+  const { argv, env } = harnessCommand("opencode", "opencode-go/kimi-k3", "do the Job", "/tmp/shift-x");
+  expect(argv).toEqual(["opencode", "run", "--format", "json", "--dir", "/tmp/shift-x", "--model", "opencode-go/kimi-k3", "do the Job"]);
+  expect(env!.PWD).toBe("/tmp/shift-x");
   const permission = JSON.parse(env!.OPENCODE_PERMISSION!);
   expect(permission["*"]).toBe("deny");
   expect(permission.bash ?? permission["*"]).toBe("deny");

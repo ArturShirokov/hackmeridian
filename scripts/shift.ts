@@ -33,7 +33,7 @@ export const defaultWorkers: WorkerConfig[] = [
 // every tool except reading files (checked 25 Oct 2026: with this, Kimi reports it has no bash tool).
 const OPENCODE_READ_ONLY = JSON.stringify({ "*": "deny", read: "allow", glob: "allow", grep: "allow", list: "allow" });
 
-const harnesses: Record<string, { name: string; command: (model: string, prompt: string) => string[]; env?: Record<string, string> }> = {
+const harnesses: Record<string, { name: string; command: (model: string, prompt: string, dir: string) => string[]; env?: Record<string, string> }> = {
   // Only the Read tool (it reads the PDF); never bypasses permissions. --output-format json wraps the text in .result.
   claude: {
     name: "Claude Code",
@@ -42,17 +42,19 @@ const harnesses: Record<string, { name: string; command: (model: string, prompt:
   // --format json: the answer is the last text event, so a run that ends on a tool call shows up as no result.
   opencode: {
     name: "OpenCode",
-    command: (m, p) => ["opencode", "run", "--format", "json", "--model", m, p],
+    // --dir: OpenCode takes its project folder from the inherited PWD, not the process cwd; without it, it looks in
+    // the folder the shift was started from and finds no job.json (the cause of Kimi's empty and wrong answers).
+    command: (m, p, dir) => ["opencode", "run", "--format", "json", "--dir", dir, "--model", m, p],
     env: { OPENCODE_PERMISSION: OPENCODE_READ_ONLY },
   },
   pi: { name: "Pi", command: (m, p) => ["pi", "-p", "--model", m, "--no-session", "--tools", "read", p] },
 };
 
 /** The command line and extra environment a harness runs with. */
-export function harnessCommand(harness: string, model: string, prompt: string) {
+export function harnessCommand(harness: string, model: string, prompt: string, dir: string) {
   const h = harnesses[harness];
   if (!h) throw new Error(`unknown harness "${harness}": use claude, opencode or pi, or give a command`);
-  return { argv: h.command(model, prompt), env: h.env };
+  return { argv: h.command(model, prompt, dir), env: { ...h.env, PWD: dir } as Record<string, string> };
 }
 
 const PROMPT = `You are doing one Job for a Job Board. The Job is in job.json in the current directory: its instructions, the Template Fields, the Document's text layer and, when the Sieve reads it, the Markdown. The Document itself is document.pdf in the same directory.
@@ -147,7 +149,7 @@ export async function runShift(opts: {
 
   async function worker(cfg: WorkerConfig) {
     const h = harnesses[cfg.harness];
-    const command = cfg.command ? (p: string) => [...cfg.command!, p] : h?.command.bind(null, cfg.model);
+    const command = cfg.command ? (p: string) => [...cfg.command!, p] : h && ((p: string, dir: string) => h.command(cfg.model, p, dir));
     if (!command) throw new Error(`unknown harness "${cfg.harness}": use claude, opencode or pi, or give a command`);
     const env = cfg.command ? undefined : h?.env;
     const name = `${cfg.harness}/${cfg.model.split("/").pop()}`;
@@ -185,7 +187,7 @@ export async function runShift(opts: {
   }
 
   /** Download, run the harness, submit; on a rejection run once more with it appended, then leave the Job to time out. */
-  async function doJob(client: Conn, id: string, name: string, command: (prompt: string) => string[], job: Job, env?: Record<string, string>) {
+  async function doJob(client: Conn, id: string, name: string, command: (prompt: string, dir: string) => string[], job: Job, env?: Record<string, string>) {
     const started = Date.now();
     const dir = await mkdtemp(join(tmpdir(), "shift-"));
     let outcome: string;
@@ -201,7 +203,7 @@ export async function runShift(opts: {
       for (let attempt = 1; ; attempt++) {
         let result: Record<string, unknown> | undefined;
         try {
-          ({ out, err } = await run(command(prompt), dir, signal, env));
+          ({ out, err } = await run(command(prompt, dir), dir, signal, { ...env, PWD: dir }));
           result = parseResult(out);
           rejection = result ? "" : `your output was not one JSON object (it began: ${JSON.stringify(out.trim().slice(0, 200))})`;
         } catch (e) {

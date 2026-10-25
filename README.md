@@ -199,7 +199,7 @@ each with a one-line prompt printing `{"ok":true}`:
 | Worker | Command |
 |---|---|
 | claude/sonnet | `claude -p "<prompt>" --model sonnet --output-format json --allowedTools Read --no-session-persistence` (the text is in `.result`) |
-| opencode/kimi-k3 | `OPENCODE_PERMISSION='{"*":"deny","read":"allow","glob":"allow","grep":"allow","list":"allow"}' opencode run --format json --model opencode-go/kimi-k3 "<prompt>"` (the answer is the last `text` event) |
+| opencode/kimi-k3 | `OPENCODE_PERMISSION='{"*":"deny","read":"allow","glob":"allow","grep":"allow","list":"allow"}' opencode run --format json --dir <job folder> --model opencode-go/kimi-k3 "<prompt>"` (the answer is the last `text` event; `--dir` is needed because OpenCode takes its folder from the inherited `PWD`) |
 | opencode/deepseek-v4-pro | the same, with `--model opencode-go/deepseek-v4-pro` |
 | pi/qwen3.8-max | `pi -p --model opencode-go/qwen3.8-max --no-session --tools read "<prompt>"` |
 
