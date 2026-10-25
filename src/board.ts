@@ -10,7 +10,7 @@ import type {
 } from "./api.js";
 import type { Challenge } from "./challenges.js";
 import { compositionSum, converge, fold, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
-import { addUsdc, minUsdc, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
+import { addUsdc, minUsdc, settlement, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
 import { quoteRects, readPdf, type TextItem } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
@@ -566,10 +566,10 @@ export class JobBoard {
     return { ok: true, done: `delivered: the Challenge Window is open for ${Math.round(this.challengeWindowMs / 60_000)} min, then the escrow settles` };
   }
 
-  /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
-  async tick(): Promise<void> {
+  /** Settle every escrow whose Challenge Window has closed (only those of Documents `only` picks). main.ts calls this every 5 s. */
+  async tick(only: (documentId: string) => boolean = () => true): Promise<void> {
     for (const e of this.escrows.values()) {
-      if (e.status !== "open" || this.now() < e.closesAt) continue;
+      if (e.status !== "open" || this.now() < e.closesAt || !only(e.documentId)) continue;
       const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
@@ -716,9 +716,13 @@ export class JobBoard {
         const e = this.escrows.get(escrowKey(d.meta.id, p.name));
         const es = this.entries(d, p.name);
         const n = (s: string) => es.filter(({ v }) => v.status === s).length;
-        const counts = { final: n("final"), notStated: n("not stated"), converging: es.length - n("final") - n("not stated") };
+        const challenged = new Set(this.challenges.of(d.meta.id, p.name).filter((c) => c.decision !== "rejected").map((c) => c.field)).size;
+        const counts = { final: n("final"), notStated: n("not stated"), converging: es.length - n("final") - n("not stated"), challenged };
         const status = d.delivered.has(p.name) && e ? this.escrowView(e).status : "processing";
-        return [p.name, { status, ...(e && { closesAt: e.closesAt }), counts }];
+        const settled = e?.status === "settled";
+        const brandShare = settled && e.slashes ? settlement(e, e.slashes, [], this.arbiterFee).escrow.filter((x) => x.to === "brand") : [];
+        const bond = e && (settled ? (e.slashes ? "slashed" : "released") : "locked") as "slashed" | "released" | "locked";
+        return [p.name, { status, ...(e && { closesAt: e.closesAt }), counts, ...(bond && { bond }), ...(brandShare.length && { received: addUsdc(...brandShare.map((x) => x.amount)) }) }];
       }),
     );
     const { id, name, supplier, template, uploadedAt } = d.meta;

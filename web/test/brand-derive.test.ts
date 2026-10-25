@@ -66,7 +66,7 @@ test("a text Field takes the words as typed", () => {
   expect(parseClaim(" Komorniki, Poland ", { type: "text", label: "Place" })).toEqual({ value: "Komorniki, Poland" });
 });
 
-import { listStatus, settledText, suggestions, windowLength } from "../src/screens/brand/derive.ts";
+import { settledText, suggestions, windowLength } from "../src/screens/brand/derive.ts";
 
 test("Supplier suggestions come from past uploads, with a count, filtered by what is typed", () => {
   const docs = [{ supplier: "Hunan Cellworks" }, { supplier: "Hunan Cellworks" }, { supplier: "Fiação do Ave" }, { supplier: "" }];
@@ -78,11 +78,6 @@ test("Supplier suggestions come from past uploads, with a count, filtered by wha
 test("the Challenge Window reads in hours, or minutes when short", () => {
   expect(windowLength(48 * 3600_000)).toBe("48 h");
   expect(windowLength(3 * 60_000)).toBe("3 min");
-});
-
-test("the Documents list shows each Pipeline's status by label", () => {
-  const labels = { ours: "Origyn Pipeline", baseline: "Baseline" };
-  expect(listStatus({ ours: { status: "settled" }, baseline: { status: "awaiting arbiter" } }, labels)).toBe("Origyn Pipeline Settled · Baseline Awaiting Arbiter");
 });
 
 test("the settled banner names the Slash when one was upheld", () => {

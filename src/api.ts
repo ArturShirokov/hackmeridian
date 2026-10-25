@@ -45,7 +45,16 @@ export interface ApiDocumentSummary {
   template: string;
   pages: number;
   uploadedAt: Ms;
-  pipelines: Record<string, { status: DocStatus; closesAt?: Ms; counts: { final: number; converging: number; notStated: number } }>;
+  pipelines: Record<string, {
+    status: DocStatus;
+    closesAt?: Ms;
+    /** challenged: Fields with a Challenge filed or upheld. */
+    counts: { final: number; converging: number; notStated: number; challenged: number };
+    /** Once delivered: locked until settlement, then released, or slashed after an upheld Challenge. */
+    bond?: "locked" | "released" | "slashed";
+    /** What the Brand received from this Pipeline's Slashes at settlement (less the Arbiter Fee). */
+    received?: Usdc;
+  }>;
 }
 
 /** Fractions of page width/height, top-left origin. */
