@@ -34,14 +34,17 @@ test("a tie-break from a third Worker covers only the disagreeing and failed-quo
   const tie = (await b.w3.nextJob())!;
   expect(tie).toMatchObject({ sieve: "tiebreak", view: "original", documentId: b.docId });
   expect(tie.template.fields.map((f) => f.name).sort()).toEqual(["name", "rated_capacity_ah"]);
-  expect(await b.field("battery_chemistry")).toMatchObject({ status: "final", value: "LFP" });
+  // Our own finals are held back too while the tie-break is out.
+  expect(await b.field("battery_chemistry")).toEqual(expect.objectContaining({ status: "final", withheld: true }));
+  expect(await b.field("battery_chemistry")).not.toHaveProperty("value");
   expect(b.ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(0);
 
   expect(
     await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: { ...capacity, value: 3.2, unit: "Ah" }, name: { value: "cell c-32", page: 1, quote: "Cell C-32" } })),
   ).toMatchObject({ ok: true });
   expect(await b.field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, unit: "Ah" });
-  expect(await b.field("name")).toMatchObject({ status: "final" });
+  expect(await b.field("name")).toMatchObject({ status: "final", tieBreak: true });
+  expect(await b.field("battery_chemistry")).toMatchObject({ status: "final", value: "LFP", tieBreak: false });
   expect(b.ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(1);
 });
 
@@ -57,7 +60,7 @@ test("a Field still split after the tie-break is Not stated with every competing
   await b.w3.submitJob(tie.id, extraction(tie));
   const f = await b.field("rated_capacity_ah");
   expect(f).toMatchObject({ status: "not stated" });
-  expect(f.quotes).toEqual([
+  expect(f.quotes).toMatchObject([
     { page: 1, quote: "Capacity: 3200 mAh (nominal)" },
     { page: 1, quote: "Capacity 3.3 Ah nominal" },
   ]);
@@ -71,6 +74,10 @@ test("a Field still split after the tie-break is Not stated with every competing
 
 test("a high-stake Field whose two extraction values differ is Not stated at once, with no tie-break", async () => {
   const b = await afterTwo({ recycled_content_cobalt: cobalt12, rated_capacity_ah: capacity }, { recycled_content_cobalt: cobalt16, rated_capacity_ah: capacity33 });
+  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "not stated", tieBreak: false });
+  const tie = (await b.w3.nextJob())!;
+  expect(tie.template.fields.map((f) => f.name)).toEqual(["rated_capacity_ah"]);
+  await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: capacity }));
   expect(await b.field("recycled_content_cobalt")).toMatchObject({
     status: "not stated",
     quotes: [
@@ -78,10 +85,6 @@ test("a high-stake Field whose two extraction values differ is Not stated at onc
       { page: 2, quote: "Recycled cobalt 16 % minimum" },
     ],
   });
-  const tie = (await b.w3.nextJob())!;
-  expect(tie.template.fields.map((f) => f.name)).toEqual(["rated_capacity_ah"]);
-  await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: capacity }));
-  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "not stated" });
   expect(await b.field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2 });
 });
 

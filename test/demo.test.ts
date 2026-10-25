@@ -33,7 +33,7 @@ test("demo replay runs on the wall clock: every Challenge Window opens at start,
 
   wall += 60 * 60_000;
   await board.tick();
-  expect(await board.leaderboard()).toEqual([
+  expect(await board.leaderboard()).toMatchObject([
     { operator: "ours", documents: 6, challengesUpheld: 0, totalSlashed: "0" },
     { operator: "baseline", documents: 6, challengesUpheld: 1, totalSlashed: "1" },
   ]);

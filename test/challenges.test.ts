@@ -27,24 +27,47 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
   expect(open).toHaveLength(2);
   expect(open[0]).toMatchObject({
     documentId: docId,
+    documentName: "sheet.pdf",
+    supplier: "Voltaris",
+    brand: "Voltaris",
     field: "rated_capacity_ah",
-    challenged: { value: 22, unit: "Ah", page: 1 },
+    fieldLabel: "Rated capacity",
+    operatorLabel: "Baseline",
+    status: "filed",
+    rule: expect.stringMatching(/^Quantity/),
+    filedAt: 0,
+    closesAt: 60_000,
+    delivered: { display: "22 Ah (rated)", evidence: { page: 1, quote: "Rated capacity: 220 Ah" } },
+    claim: { display: "220 Ah (rated)", evidence: { page: 1, quote: "Rated capacity: 220 Ah", mark: "220 Ah" } },
     page: 1,
     quote: "Rated capacity: 220 Ah",
-    value: 220,
+    value: "220 Ah (rated)",
+    slash: "1",
   });
-  expect(open[1]).toMatchObject({ field: "battery_chemistry", challenged: { status: "not stated" } });
+  expect(open[0]!.claim.evidence.rects).toHaveLength(1);
+  expect(open[1]).toMatchObject({ field: "battery_chemistry", delivered: { display: "Not stated" } });
+  expect((await brand.document(docId)).fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({
+    challenge: { id: open[0]!.id, status: "filed", value: "220 Ah (rated)" },
+  });
   const page = (await arbiter.page()).text;
   expect(page).toContain("Chemistry: NMC811");
   expect(page).toContain(`/documents/${docId}/file`);
 
-  expect((await arbiter.decide(open[0]!.id, "upheld")).status).toBe(200);
+  expect((await arbiter.decide(open[0]!.id, "upheld", "p. 1 says 220 Ah")).status).toBe(200);
+  board.clock.advance(1000);
   expect((await arbiter.decide(open[1]!.id, "rejected")).status).toBe(200);
   expect(await arbiter.challenges()).toHaveLength(0);
   expect((await arbiter.decide(open[0]!.id, "rejected")).status).toBe(409);
+  const desk = await arbiter.desk();
+  expect(desk.record).toEqual({ decided: 2, upheld: 1, rejected: 1 });
+  expect(desk.decided).toMatchObject([
+    { id: open[1]!.id, status: "rejected", decidedAt: 1000 },
+    { id: open[0]!.id, status: "upheld", decidedAt: 0, note: "p. 1 says 220 Ah" },
+  ]);
 
   const doc = await brand.document(docId);
-  expect(doc.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ value: 220, unit: "Ah", corrected: true });
+  expect(doc.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ value: 220, unit: "Ah", corrected: { was: "22 Ah (rated)" } });
+  expect(doc.escrow).toMatchObject({ upheld: 1, bondLeft: "9" });
   expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ status: "not stated" });
   expect((await brand.page(`/documents/${docId}`)).text).toContain("corrected by Challenge");
 
@@ -107,5 +130,13 @@ test("the Brand files a Challenge from the Document page's form", async () => {
     form.set(k, v);
   const res = await web.request(`/documents/${docId}/challenges`, { method: "POST", body: form });
   expect(res.status).toBe(303);
-  expect(await arbiter.challenges()).toMatchObject([{ field: "rated_capacity_ah", value: 220, unit: "Ah" }]);
+  expect(await arbiter.challenges()).toMatchObject([{ field: "rated_capacity_ah", value: "220 Ah" }]);
+});
+
+test("a Challenge's quote must be on the page it cites, whitespace folded", async () => {
+  const { brand, docId } = await deliver();
+  const wrongPage = await brand.challenge(docId, { ...capacityChallenge, page: 2 });
+  expect(wrongPage).toEqual({ status: 400, body: { error: "Quote not found on p. 2" } });
+  expect((await brand.challenge(docId, { ...capacityChallenge, quote: "Rated capacity: 230 Ah" })).body.error).toBe("Quote not found on p. 1");
+  expect((await brand.challenge(docId, { ...capacityChallenge, quote: "  Rated   capacity:\n220 Ah " })).status).toBe(201);
 });

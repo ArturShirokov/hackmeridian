@@ -6,12 +6,15 @@ export type View = "original" | "markdown" | "mix";
 
 export interface Sieve {
   kind: SieveKind;
+  label: string;
   view: View;
   instructions: string;
 }
 
 export interface Pipeline {
   name: string;
+  /** Shown to the Brand: "Origyn Pipeline", "Baseline". */
+  label?: string;
   sieves: Sieve[];
 }
 
@@ -37,18 +40,20 @@ Hand in { pass: true } when it is faithful, or { pass: false, problems: ["..."] 
 
 export const baseline: Pipeline = {
   name: "baseline",
-  sieves: [{ kind: "extract", view: "original", instructions: extractFromOriginal }],
+  label: "Baseline",
+  sieves: [{ kind: "extract", label: "One-pass extraction", view: "original", instructions: extractFromOriginal }],
 };
 
 /** Our Pipeline. Sieves run in order, each Job posted when the previous Sieve is handed in. */
 export const ours: Pipeline = {
   name: "ours",
+  label: "Origyn Pipeline",
   sieves: [
-    { kind: "extract", view: "original", instructions: extractFromOriginal },
-    { kind: "markdown", view: "original", instructions: toMarkdown },
+    { kind: "extract", label: "Original", view: "original", instructions: extractFromOriginal },
+    { kind: "markdown", label: "Markdown", view: "original", instructions: toMarkdown },
     // A fail reruns the Markdown Sieve before it, once.
-    { kind: "faithfulness", view: "mix", instructions: faithfulness },
-    { kind: "extract", view: "markdown", instructions: extractFromMarkdown },
-    { kind: "tiebreak", view: "original", instructions: extractFromOriginal },
+    { kind: "faithfulness", label: "Faithfulness check", view: "mix", instructions: faithfulness },
+    { kind: "extract", label: "Markdown extraction", view: "markdown", instructions: extractFromMarkdown },
+    { kind: "tiebreak", label: "Tie-break", view: "original", instructions: extractFromOriginal },
   ],
 };

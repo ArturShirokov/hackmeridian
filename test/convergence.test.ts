@@ -39,14 +39,14 @@ test("a different value, a different qualifier, or Not stated against a value is
     { rated_capacity_ah: capacityMah, nominal_voltage_v: voltage, battery_chemistry: chemistry },
     { rated_capacity_ah: { ...capacityAh, value: 3.3 }, battery_chemistry: { ...chemistry, value: "NMC811" } },
   );
-  expect(field("rated_capacity_ah")).toMatchObject({ status: "disagreeing" });
+  expect(field("rated_capacity_ah")).toMatchObject({ status: "converging", tieBreak: true });
   expect(field("rated_capacity_ah")).not.toHaveProperty("value");
-  expect(field("nominal_voltage_v")).toMatchObject({ status: "disagreeing" });
-  expect(field("battery_chemistry")).toMatchObject({ status: "disagreeing" });
+  expect(field("nominal_voltage_v")).toMatchObject({ status: "converging", tieBreak: true });
+  expect(field("battery_chemistry")).toMatchObject({ status: "converging", tieBreak: true });
   expect((await brand.page(`/documents/${docId}`)).text).toMatch(/disagreeing/);
 
   const qualifier = await twoExtractions({ rated_capacity_ah: capacityMah }, { rated_capacity_ah: { ...capacityAh, qualifier: "rated" } });
-  expect(qualifier.field("rated_capacity_ah")).toMatchObject({ status: "disagreeing" });
+  expect(qualifier.field("rated_capacity_ah")).toMatchObject({ status: "converging", tieBreak: true });
 });
 
 test("text is compared trimmed and case-folded", async () => {
@@ -62,7 +62,7 @@ test("a quote not found in the Document's text layer counts as disagreement, eve
     { rated_capacity_ah: capacityMah },
     { rated_capacity_ah: { ...capacityAh, quote: "Capacity: 3.2 Ah" } },
   );
-  expect(field("rated_capacity_ah")).toMatchObject({ status: "disagreeing" });
+  expect(field("rated_capacity_ah")).toMatchObject({ status: "converging", tieBreak: true });
 });
 
 test("next_job never includes another Sieve's Field values", async () => {

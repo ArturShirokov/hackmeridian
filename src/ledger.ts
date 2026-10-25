@@ -30,6 +30,8 @@ export interface Ledger {
   /** Each Slash goes to the Brand; the Operator gets the rest of the Bond plus the Fee. */
   settleWithSlashes(escrowId: string, slashes: string[]): Promise<{ link?: string }>;
   operatorRecord(operator: string): Promise<OperatorRecord>;
+  /** Where to see the Operator's account or contract on an explorer, when the Ledger has one. */
+  operatorLink?(operator: string): string | undefined;
 }
 
 const STROOPS = 10_000_000n;
@@ -45,6 +47,12 @@ const fromStroops = (s: bigint) => {
 /** Exact sum of USDC decimal strings. */
 export function addUsdc(...amounts: string[]): string {
   return fromStroops(amounts.reduce((a, b) => a + toStroops(b), 0n));
+}
+
+/** Exact a − b of USDC decimal strings, never below 0. */
+export function subUsdc(a: string, b: string): string {
+  const d = toStroops(a) - toStroops(b);
+  return fromStroops(d < 0n ? 0n : d);
 }
 
 /** One Slash per upheld Challenge: a tenth of the Bond each (rounded down to a stroop), never more than the Bond in all. */
@@ -66,6 +74,10 @@ export class FakeLedger implements Ledger {
   constructor(private readonly explorer?: string) {}
 
   private link = (path: string) => (this.explorer ? { link: `${this.explorer}/${path}` } : {});
+
+  operatorLink(operator: string) {
+    return this.explorer && `${this.explorer}/account/${operator}`;
+  }
 
   async openEscrow(req: EscrowRequest) {
     addUsdc(req.bond, req.fee); // reject bad amounts like the real one would

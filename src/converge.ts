@@ -19,10 +19,10 @@ export const formatValue = (v: { value: unknown; unit?: string; qualifier?: stri
   `${typeof v.value === "object" ? JSON.stringify(v.value) : v.value}${v.unit ? ` ${v.unit}` : ""}${v.qualifier ? ` (${v.qualifier})` : ""}`;
 
 /** The Supplier Request for a Not stated Field: what to confirm and what the Document says instead. */
-export function supplierRequest(f: Field, documentId: string, template: string, quotes: Quote[]): string {
+export function supplierRequest(f: Field, doc: { name: string; supplier: string; template: string }, quotes: Quote[]): string {
   const quoted = quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
   return (
-    `Please confirm "${f.label}" for Document ${documentId} (${template}).` +
+    `${doc.supplier ? `To ${doc.supplier}: please` : "Please"} confirm "${f.label}" for the Document ${doc.name} (${doc.template}).` +
     ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`
   );
 }
@@ -121,7 +121,7 @@ export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>):
 const fold = (s: string) => s.replace(/\s+/g, " ").trim();
 
 /** Comparison key of a value's normalised content, or undefined when it can't be normalised. */
-function valueKey(f: Field, v: FieldValue): string | undefined {
+export function valueKey(f: Field, v: FieldValue): string | undefined {
   if (!("value" in v)) return "not stated";
   const c = canonical(f, v);
   return c === undefined ? undefined : JSON.stringify([c, v.qualifier ?? null]);

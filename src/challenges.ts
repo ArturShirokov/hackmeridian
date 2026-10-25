@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import * as z from "zod";
 import type { FieldResult } from "./converge.js";
+import { fold } from "./pdf.js";
 import { mustBe, statedValue, type Template } from "./templates.js";
 
 const input = z.strictObject({ field: z.string(), ...statedValue, page: z.coerce.number().int().positive() });
@@ -14,6 +15,10 @@ export type Challenge = z.infer<typeof input> & {
   /** The delivered value being challenged, as the Brand saw it. */
   challenged: FieldResult;
   decision?: "upheld" | "rejected";
+  filedAt: number;
+  decidedAt?: number;
+  /** The Arbiter's note on the decision. */
+  note?: string;
 };
 
 /** The delivered Document and Pipeline a Challenge is filed against. */
@@ -21,12 +26,15 @@ export interface Target {
   documentId: string;
   pipeline: string;
   template: Template;
-  pages: number;
+  /** The Document's text layer, one string per page. */
+  text: string[];
   delivered: FieldResult[];
 }
 
 export class Challenges {
-  private all: Challenge[] = [];
+  private list: Challenge[] = [];
+
+  constructor(private readonly now: () => number = Date.now) {}
 
   fileChallenge(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
     const r = input.safeParse(raw);
@@ -34,7 +42,10 @@ export class Challenges {
     const c = r.data;
     const f = t.template.fields.find((f) => f.name === c.field);
     if (!f) return { ok: false, error: `unknown Field "${c.field}"` };
-    if (c.page > t.pages) return { ok: false, error: `page ${c.page} but the Document has ${t.pages} pages` };
+    if (c.page > t.text.length) return { ok: false, error: `page ${c.page} but the Document has ${t.text.length} pages` };
+    const page = t.text[c.page - 1]!;
+    // A scan has no text layer to check against; the Arbiter reads the page.
+    if (page.trim() && !fold(page).includes(fold(c.quote))) return { ok: false, error: `Quote not found on p. ${c.page}` };
     // Form posts send every value as a string; read it as the Field's type.
     if (typeof c.value === "string" && f.type === "quantity") c.value = Number(c.value);
     if (typeof c.value === "string" && f.type === "composition") {
@@ -46,26 +57,33 @@ export class Challenges {
     }
     if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": ${mustBe.quantity}` };
     const challenged = t.delivered.find((d) => d.field === f.name)!;
-    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged };
-    this.all.push(challenge);
+    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged, filedAt: this.now() };
+    this.list.push(challenge);
     return { ok: true, challenge };
+  }
+
+  /** Every Challenge, oldest first. */
+  all(): Challenge[] {
+    return [...this.list];
   }
 
   /** Challenges waiting for the Arbiter, oldest first. */
   open(): Challenge[] {
-    return this.all.filter((c) => !c.decision);
+    return this.list.filter((c) => !c.decision);
   }
 
-  decide(id: string, decision: "upheld" | "rejected"): "ok" | "unknown" | "already decided" {
-    const c = this.all.find((c) => c.id === id);
+  decide(id: string, decision: "upheld" | "rejected", note?: string): "ok" | "unknown" | "already decided" {
+    const c = this.list.find((c) => c.id === id);
     if (!c) return "unknown";
     if (c.decision) return "already decided";
     c.decision = decision;
+    c.decidedAt = this.now();
+    if (note) c.note = note;
     return "ok";
   }
 
-  private of(documentId: string, pipeline: string) {
-    return this.all.filter((c) => c.documentId === documentId && c.pipeline === pipeline);
+  of(documentId: string, pipeline: string) {
+    return this.list.filter((c) => c.documentId === documentId && c.pipeline === pipeline);
   }
 
   undecided(documentId: string, pipeline: string): boolean {

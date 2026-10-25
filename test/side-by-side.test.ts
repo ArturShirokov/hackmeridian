@@ -30,10 +30,10 @@ test("two Operators on one Document: two escrows, values side by side, and a lea
   ]);
 
   const doc = await brand.document(docId);
-  const cap = (p: string) => doc.pipelines[p]!.fields.find((f) => f.name === "rated_capacity_ah");
+  const cap = (p: string) => doc.view(p).fields.find((f) => f.name === "rated_capacity_ah");
   expect(cap("ours")).toMatchObject({ status: "final", value: 220 });
   expect(cap("baseline")).toMatchObject({ status: "final", value: 22 });
-  expect(doc.pipelines.baseline!.escrow).toMatchObject({ operator: "one-pass", status: "open" });
+  expect(doc.view("baseline").escrow).toMatchObject({ operator: "one-pass", status: "delivered" });
   const page = (await brand.page(`/documents/${docId}`)).text;
   expect(page).toContain("origyn");
   expect(page).toContain("one-pass");
@@ -42,14 +42,17 @@ test("two Operators on one Document: two escrows, values side by side, and a lea
   const r = await brand.challenge(docId, { pipeline: "baseline", field: "rated_capacity_ah", page: 1, quote: "Rated capacity: 220 Ah", value: 220, unit: "Ah", qualifier: "rated" });
   expect(r.status).toBe(201);
   await arbiter.decide((await arbiter.challenges())[0]!.id, "upheld");
-  expect((await brand.document(docId)).pipelines.ours!.fields.find((f) => f.name === "rated_capacity_ah")).not.toHaveProperty("corrected");
+  expect((await brand.document(docId)).view("ours").fields.find((f) => f.name === "rated_capacity_ah")).not.toHaveProperty("corrected");
 
   board.clock.advance(60_000);
   await board.tick();
-  expect(await brand.leaderboard()).toEqual([
-    { operator: "origyn", documents: 1, challengesUpheld: 0, totalSlashed: "0" },
-    { operator: "one-pass", documents: 1, challengesUpheld: 1, totalSlashed: "1" },
+  expect(await brand.leaderboard()).toMatchObject([
+    { operator: "origyn", label: "Origyn Pipeline", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "0" },
+    { operator: "one-pass", label: "Baseline", sieves: 1, documents: 1, fieldsDelivered: 25, challengesUpheld: 1, totalSlashed: "1", bondsLocked: "0" },
   ]);
+  const [origyn, onePass] = await brand.leaderboard();
+  expect(origyn!.series).toEqual([{ documentId: docId, short: "Voltaris", balance: "20" }]);
+  expect(onePass!.series).toEqual([{ documentId: docId, short: "Voltaris", balance: "9" }]);
   const lb = (await brand.page("/leaderboard")).text;
   expect(lb).toMatch(/one-pass[\s\S]*1[\s\S]*1/);
 });
