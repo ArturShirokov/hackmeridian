@@ -34,7 +34,7 @@ export function webApp(board: JobBoard): Hono {
             <select name="template">${Object.values(templates).map((t) => html`<option value="${t.name}">${t.label}</option>`)}</select>
             <button>Upload</button>
           </form>
-          <p><a href="/arbiter">Arbiter: open Challenges</a></p>
+          <p><a href="/arbiter">Arbiter: open Challenges</a> · <a href="/leaderboard">Leaderboard</a></p>
           <h2>Documents</h2>
           <ul>${board.documents().map((d) => html`<li><a href="/documents/${d.id}">${d.id}</a> (${d.template}, ${d.uploadedAt.toISOString()})</li>`)}</ul>`,
       ),
@@ -67,50 +67,68 @@ export function webApp(board: JobBoard): Hono {
   app.get("/documents/:id", (c) => {
     const d = board.document(c.req.param("id"));
     if (!d) return c.notFound();
-    const rows = d.fields.map((f) => {
-      const cells =
-        "supplierRequest" in f
-          ? html`<td colspan="5">Not stated. Competing quotes:
-              <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
-              Supplier Request:<br><textarea readonly rows="5" cols="70">${f.supplierRequest}</textarea>
-              <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
-          : "notStated" in f
-          ? html`<td colspan="5" class="muted">Not stated</td>`
-          : "value" in f
-            ? html`<td>${show(f.value)}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}</td><td>${f.unit ?? ""}</td><td>${f.qualifier ?? ""}</td><td>${f.page}</td><td><q>${f.quote}</q></td>`
-            : html`<td colspan="5" class="muted"></td>`;
-      return html`<tr><th>${f.label}</th><td>${f.status}</td>${cells}</tr>`;
-    });
+    const views = Object.entries(d.pipelines);
+    const cell = (f: (typeof d.fields)[number]) =>
+      "supplierRequest" in f
+        ? html`<td>${f.status}</td><td>Not stated. Competing quotes:
+            <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
+            Supplier Request:<br><textarea readonly rows="5" cols="50">${f.supplierRequest}</textarea>
+            <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
+        : "notStated" in f
+        ? html`<td>${f.status}</td><td class="muted">Not stated</td>`
+        : "value" in f
+          ? html`<td>${f.status}</td><td>${show(f.value)} ${f.unit ?? ""} ${f.qualifier ?? ""}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
+              <br><span class="muted">p. ${f.page}: <q>${f.quote}</q></span></td>`
+          : html`<td>${f.status}</td><td></td>`;
+    const rows = d.fields.map((f, i) => html`<tr><th>${f.label}</th>${views.map(([, v]) => cell(v.fields[i]!))}</tr>`);
+    const escrow = (name: string, v: (typeof views)[number][1]) =>
+      v.escrow
+        ? html`<p><b>${name}</b>: Bond locked: ${v.escrow.bond} USDC by ${v.escrow.operator} (Fee ${v.escrow.fee} USDC).
+            Output hash: <code>${v.escrow.outputHash}</code><br>${v.escrow.status === "settled"
+              ? v.escrow.slashes
+                ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
+                : "Settled: Bond and Fee paid to the Operator."
+              : v.escrow.msLeft > 0
+                ? html`${Math.ceil(v.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/documents/${d.id}/challenge?pipeline=${name}">Challenge a Field</a>`
+                : "Challenge Window closed; waiting for the Arbiter."}</p>`
+        : html`<p><b>${name}</b> (${v.operator}): working.</p>`;
     return c.html(
       layout(
         "Document",
-        html`<meta http-equiv="refresh" content="3"><p><a href="/">All Documents</a></p>
+        html`<meta http-equiv="refresh" content="3"><p><a href="/">All Documents</a> · <a href="/leaderboard">Leaderboard</a></p>
           <h1>${d.template} Document</h1>
           <p><a href="/documents/${d.id}/file">Original file</a></p>
-          ${d.escrow
-            ? html`<p>Bond locked: ${d.escrow.bond} USDC by ${d.escrow.operator} (Fee ${d.escrow.fee} USDC).
-                Output hash: <code>${d.escrow.outputHash}</code></p>
-                <p>${d.escrow.status === "settled"
-                  ? d.escrow.slashes
-                    ? `Settled: ${addUsdc(...d.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
-                    : "Settled: Bond and Fee paid to the Operator."
-                  : d.escrow.msLeft > 0
-                    ? html`${Math.ceil(d.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/documents/${d.id}/challenge">Challenge a Field</a>`
-                    : "Challenge Window closed; waiting for the Arbiter."}</p>`
-            : ""}
-          <table><tr><th>Field</th><th>Status</th><th>Value</th><th>Unit</th><th>Qualifier</th><th>Page</th><th>Quote</th></tr>${rows}</table>`,
+          ${views.map(([name, v]) => escrow(name, v))}
+          <table><tr><th>Field</th>${views.map(([name, v]) => html`<th colspan="2">${name} (${v.operator})</th>`)}</tr>${rows}</table>`,
       ),
     );
   });
 
   app.post("/api/documents/:id/challenges", async (c) => {
-    const r = board.challenge(c.req.param("id"), await c.req.json().catch(() => null));
+    const { pipeline, ...body } = ((await c.req.json().catch(() => null)) ?? {}) as { pipeline?: string };
+    const r = board.challenge(c.req.param("id"), body, pipeline);
     return r.ok ? c.json(r.challenge, 201) : c.json({ error: r.error }, statusOf[r.reason]);
+  });
+
+  app.get("/api/leaderboard", async (c) => c.json(await board.leaderboard()));
+
+  app.get("/leaderboard", async (c) => {
+    const rows = (await board.leaderboard()).map(
+      (r) => html`<tr><th>${r.operator}</th><td>${r.documents}</td><td>${r.challengesUpheld}</td><td>${r.totalSlashed} USDC</td></tr>`,
+    );
+    return c.html(
+      layout(
+        "Leaderboard",
+        html`<p><a href="/">All Documents</a></p><h1>Operators</h1>
+          <table><tr><th>Operator</th><th>Documents</th><th>Challenges upheld</th><th>Total Slashed</th></tr>${rows}</table>`,
+      ),
+    );
   });
 
   app.get("/documents/:id/challenge", (c) => {
     const d = board.document(c.req.param("id"));
     if (!d) return c.notFound();
+    const pipeline = c.req.query("pipeline") ?? "";
     return c.html(
       layout(
         "Challenge",
@@ -118,7 +136,8 @@ export function webApp(board: JobBoard): Hono {
           <h1>Challenge a Field</h1>
           <p>Cite the page and the exact words of the <a href="/documents/${d.id}/file">Document</a> that state the Correct value.</p>
           <form method="post" action="/documents/${d.id}/challenges">
-            <p><select name="field">${d.fields.map((f) => html`<option value="${f.name}">${f.label}</option>`)}</select></p>
+            <p><select name="pipeline">${Object.entries(d.pipelines).map(([name, v]) => html`<option value="${name}" ${name === pipeline ? "selected" : ""}>${name} (${v.operator})</option>`)}</select>
+              <select name="field">${d.fields.map((f) => html`<option value="${f.name}">${f.label}</option>`)}</select></p>
             <p><label>Page <input name="page" type="number" min="1" required></label></p>
             <p><label>Quote <input name="quote" required size="60"></label></p>
             <p><label>Correct value <input name="value" required></label>
@@ -132,7 +151,8 @@ export function webApp(board: JobBoard): Hono {
   app.post("/documents/:id/challenges", async (c) => {
     const id = c.req.param("id");
     const form = Object.fromEntries(Object.entries(await c.req.parseBody()).filter(([, v]) => v !== ""));
-    const r = board.challenge(id, form);
+    const { pipeline, ...rest } = form;
+    const r = board.challenge(id, rest, typeof pipeline === "string" ? pipeline : undefined);
     return r.ok ? c.redirect(`/documents/${id}`, 303) : c.text(`Challenge rejected: ${r.error}`, statusOf[r.reason]);
   });
 
