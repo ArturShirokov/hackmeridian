@@ -58,10 +58,23 @@ test("Copy Supplier Request opens the message and copies it", async () => {
   expect(writeText.mock.calls[0]![0]).toMatch(/^Hello Voltaris Mobility team/);
 });
 
+test("rows sit under their Template section; a Brand-authored Not stated Field is Brand to provide, with no Supplier Request", () => {
+  const d = doc();
+  const ns = d.views[0]!.fields.find((f) => f.status === "not stated")!;
+  Object.assign(ns, { author: "Brand", supplierRequest: undefined });
+  Object.assign(d.views[0]!, { supplierRequest: undefined, brandToProvide: [ns.name] });
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  expect(screen.getByText("Performance and durability · 3")).toBeTruthy();
+  expect(document.querySelector('[data-field="rated_capacity_ah"] [data-author]')!.textContent).toBe("Supplier");
+  expect(screen.getByText("Brand to provide · 1")).toBeTruthy();
+  expect(screen.getByText("Author: Brand")).toBeTruthy();
+  expect(screen.queryByText("Copy Supplier Request")).toBeNull();
+});
+
 test("the Compare tab counts the differences and marks them", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
-  expect(screen.getByText("2 differences in 12 Fields. Click a row to see its quote.")).toBeTruthy();
+  expect(screen.getByText("2 differences in 10 Fields. Click a row to see its quote.")).toBeTruthy();
   expect(screen.getAllByText("≠ Differs")).toHaveLength(2);
 });
 
@@ -95,20 +108,20 @@ test("all four view tabs render for a delivered Document, for each Operator", ()
 test("every Field row responds to a click, whatever its status", () => {
   const d = doc();
   const f = d.views[0]!.fields;
-  f[0] = { name: f[0]!.name, label: f[0]!.label, tieBreak: false, status: "converging" };
+  f[0] = { name: f[0]!.name, label: f[0]!.label, section: f[0]!.section, author: "Supplier", tieBreak: false, status: "converging" };
   const scan = f[1]!;
   if ("evidence" in scan) scan.evidence = { ...scan.evidence, rects: [] };
   const volt = f.find((x) => x.name === "nominal_voltage_v")!;
   Object.assign(volt, { challenge: { id: "c2", status: "upheld", value: "360 V", page: 1, quote: "Nominal voltage 360 V" }, corrected: { was: "36 V" } });
-  f.push({ name: "hazardous_substances", label: "Hazardous substances", tieBreak: false, status: "not stated", quotes: [], supplierRequest: "Hello" });
+  f.push({ name: "hazardous_substances", label: "Hazardous substances", section: "Battery materials and composition", author: "Supplier", tieBreak: false, status: "not stated", quotes: [], supplierRequest: "Hello" });
   const { container } = render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
   const click = (name: string) => fireEvent.click(container.querySelector(`[data-field="${name}"] > div`)!);
 
-  click("name");
+  click("manufacturing_place");
   expect(screen.getByText("Still converging")).toBeTruthy();
-  click("battery_identifier");
+  click("manufacturing_date");
   expect(screen.getByText("quote not found in the PDF text (scan)")).toBeTruthy();
-  expect(container.querySelector('[data-field="battery_identifier"]')!.textContent).toContain("Battery identifier BAT-EU-2027-000214");
+  expect(container.querySelector('[data-field="manufacturing_date"]')!.textContent).toContain("Date of manufacture February 2027");
   click("rated_capacity_ah");
   expect(screen.getByText(/Highlighted: Rated capacity/)).toBeTruthy();
   click("nominal_voltage_v");
@@ -127,8 +140,10 @@ test("every Field row responds to a click, whatever its status", () => {
 test("a Not stated Field the Brand provides says so instead of offering a Supplier Request", () => {
   const tpl = structuredClone((respond("/api/templates") as { name: string; fields: { name: string }[] }[]).find((t) => t.name === "battery")!);
   tpl.fields = tpl.fields.map((f) => (f.name === "initial_internal_resistance_ohm" ? { ...f, author: "Brand" } : f));
-  render(<ReviewView d={doc()} config={config} offset={0} template={tpl as never} file={vi.fn()} />);
-  expect(screen.getByText("Brand to provide")).toBeTruthy();
+  const d = doc();
+  Object.assign(d.views[0]!.fields.find((f) => f.name === "initial_internal_resistance_ohm")!, { author: "Brand" });
+  render(<ReviewView d={d} config={config} offset={0} template={tpl as never} file={vi.fn()} />);
+  expect(screen.getAllByText("Brand to provide").length).toBeGreaterThan(0);
   expect(screen.queryByText("Copy Supplier Request")).toBeNull();
 });
 

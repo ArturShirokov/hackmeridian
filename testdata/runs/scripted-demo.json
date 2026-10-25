@@ -1,32 +1,32 @@
 {
  "documents": [
   {
-   "id": "b4bf23a6-9e56-494e-86f7-a8e487908f1a",
+   "id": "c1231e97-c2fa-42b4-91e6-5bdebe139f81",
    "file": "battery-01-voltaris-pack-spec.pdf",
    "template": "battery"
   },
   {
-   "id": "8735a822-6dea-4d78-b87d-5a412ba2f69d",
+   "id": "f04d6454-c09f-49b9-9544-3ceaba16b245",
    "file": "battery-02-kestrel-18650-cell-datasheet.pdf",
    "template": "battery"
   },
   {
-   "id": "98dfad6d-2116-4bfc-9ecf-f1cf25a55d02",
+   "id": "ae921c5b-bc5f-47d5-97b7-622ba76443ef",
    "file": "battery-03-cityglide-ebike-test-report.pdf",
    "template": "battery"
   },
   {
-   "id": "1cb6cff9-6dd9-4bae-afd0-5466de27ecc4",
+   "id": "3a8d9622-d18b-4bc5-bf82-a3736939ae19",
    "file": "battery-04-helion-storage-module.pdf",
    "template": "battery"
   },
   {
-   "id": "23f0244c-eedc-4642-a9c4-6659c20d91dc",
+   "id": "b23267f1-bcf1-4b02-97f8-766bf632dd69",
    "file": "textile-01-northwind-grs-certificate.pdf",
    "template": "textile"
   },
   {
-   "id": "1bb7da64-b401-49e1-ade8-79680f60102a",
+   "id": "a12d19fe-7c46-46bc-9cb4-67764e3add1b",
    "file": "textile-02-lumen-tee-spec-sheet.pdf",
    "template": "textile"
   }
@@ -35,31 +35,35 @@
   {
    "t": 1000,
    "worker": "scripted-1",
-   "take": "7d8043a1-86d6-4f9e-a82b-b3489819f920"
+   "take": "ee8d7684-23a3-48da-a8ae-3c7aac601198"
   },
   {
    "t": 2000,
    "worker": "scripted-1",
-   "submit": "7d8043a1-86d6-4f9e-a82b-b3489819f920",
+   "submit": "ee8d7684-23a3-48da-a8ae-3c7aac601198",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "Voltaris NMC-800 EV Battery Pack",
+      "field": "commodity_code",
+      "value": "85076000",
       "page": 1,
-      "quote": "Voltaris NMC-800 EV Battery Pack"
+      "quote": "Commodity code (CN) 8507 60 00"
      },
      {
-      "field": "battery_identifier",
-      "value": "BAT-EU-2027-000214",
-      "page": 1,
-      "quote": "Battery identifier BAT-EU-2027-000214"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982), ul. Przemyslowa 8, 62-052 Komorniki, Poland",
       "page": 1,
       "quote": "Manufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982) Manufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland"
+     },
+     {
+      "field": "manufacturer_contact",
+      "value": "compliance@voltaris-cells.example",
+      "page": 1,
+      "quote": "Manufacturer contact compliance@voltaris-cells.example"
      },
      {
       "field": "manufacturing_place",
@@ -74,16 +78,16 @@
       "quote": "Date of manufacture February 2027"
      },
      {
+      "field": "warranty_period",
+      "value": "8 years or 160 000 km, whichever comes first",
+      "page": 1,
+      "quote": "Warranty 8 years or 160 000 km, whichever comes first"
+     },
+     {
       "field": "battery_category",
       "value": "EV",
       "page": 1,
       "quote": "Battery category Electric vehicle battery (EV)"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC811",
-      "page": 2,
-      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
      },
      {
       "field": "battery_mass_kg",
@@ -94,16 +98,194 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "value": "Large amounts of water; do not use CO2 on a burning pack",
+      "page": 1,
+      "quote": "Extinguishing agent Large amounts of water; do not use CO2 on a burning pack"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 41.8,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "value": 27.6,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Raw material acquisition and pre-processing 27.6"
+     },
+     {
+      "field": "cf_main_production",
+      "value": 11.2,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Main product production 11.2"
+     },
+     {
+      "field": "cf_distribution",
+      "value": 0.9,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Distribution 0.9"
+     },
+     {
+      "field": "cf_end_of_life",
+      "value": 2.1,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "End of life and recycling 2.1"
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC811",
+      "page": 2,
+      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "Lithium, cobalt, nickel, natural graphite",
       "page": 2,
       "quote": "Critical raw materials Lithium, cobalt, nickel, natural graphite"
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "value": "Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC",
+      "page": 2,
+      "quote": "Electrode and electrolyte Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC"
+     },
+     {
       "field": "hazardous_substances",
       "value": "Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%",
       "page": 2,
       "quote": "Hazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%."
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "value": "VM-811-12 (12 per pack); BMS board VB-360-02",
+      "page": 2,
+      "quote": "Module part number VM-811-12 (12 per pack); BMS board VB-360-02"
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "value": 22,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "recycled_content_lithium",
+      "value": 11,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "recycled_content_nickel",
+      "value": 16,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "recycled_content_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "value": 10,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "value": 14,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "value": 8,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "value": 5,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "renewable_content_percent",
+      "value": 2,
+      "unit": "%",
+      "page": 2,
+      "quote": "Renewable content share: 2 %"
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
      },
      {
       "field": "rated_capacity_ah",
@@ -114,12 +296,8 @@
       "qualifier": "rated"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 360,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 360 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -138,12 +316,31 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 360,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 360 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
       "value": 150000,
       "unit": "W",
       "page": 1,
       "quote": "Original power capability (nominal) 150 kW",
       "qualifier": "nominal"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "value": 180000,
+      "unit": "W",
+      "page": 2,
+      "quote": "Maximum permitted battery power 180 kW"
      },
      {
       "field": "initial_round_trip_efficiency_percent",
@@ -154,12 +351,34 @@
       "qualifier": "nominal"
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "value": 92,
+      "unit": "%",
+      "page": 2,
+      "quote": "Round-trip energy efficiency at 50 % of cycle life 92 %"
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "value": 0.135,
-      "unit": "ohm",
+      "unit": "Ω",
       "page": 1,
       "quote": "Initial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm",
       "qualifier": "nominal"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 8,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 8 calendar years"
      },
      {
       "field": "expected_lifetime_cycles",
@@ -168,6 +387,26 @@
       "page": 1,
       "quote": "Expected lifetime (nominal) 2500 cycles",
       "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "value": "IEC 62660-1",
+      "page": 2,
+      "quote": "Cycle-life reference test IEC 62660-1"
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "value": 1,
+      "unit": "A/Ah",
+      "page": 2,
+      "quote": "C-rate of cycle-life test 1C"
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "value": 70,
+      "unit": "%",
+      "page": 2,
+      "quote": "Capacity threshold for exhaustion 70 % of rated capacity"
      },
      {
       "field": "idle_temperature_lower_c",
@@ -184,41 +423,6 @@
       "page": 1,
       "quote": "Idle temperature range -20 °C to 45 °C",
       "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "value": 41.8,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "value": 22,
-      "unit": "%",
-      "page": 2,
-      "quote": "Cobalt 22 %"
-     },
-     {
-      "field": "recycled_content_lithium",
-      "value": 11,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lithium 11 %"
-     },
-     {
-      "field": "recycled_content_nickel",
-      "value": 16,
-      "unit": "%",
-      "page": 2,
-      "quote": "Nickel 16 %"
-     },
-     {
-      "field": "recycled_content_lead",
-      "value": 0,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lead 0 %"
      }
     ]
    }
@@ -226,31 +430,35 @@
   {
    "t": 3000,
    "worker": "scripted-2",
-   "take": "3efdf52a-2265-4135-af18-7a3f2c2eff64"
+   "take": "22bbe1a8-4529-4191-9b06-9a99717ca179"
   },
   {
    "t": 4000,
    "worker": "scripted-2",
-   "submit": "3efdf52a-2265-4135-af18-7a3f2c2eff64",
+   "submit": "22bbe1a8-4529-4191-9b06-9a99717ca179",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "Voltaris NMC-800 EV Battery Pack",
+      "field": "commodity_code",
+      "value": "85076000",
       "page": 1,
-      "quote": "Voltaris NMC-800 EV Battery Pack"
+      "quote": "Commodity code (CN) 8507 60 00"
      },
      {
-      "field": "battery_identifier",
-      "value": "BAT-EU-2027-000214",
-      "page": 1,
-      "quote": "Battery identifier BAT-EU-2027-000214"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982), ul. Przemyslowa 8, 62-052 Komorniki, Poland",
       "page": 1,
       "quote": "Manufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982) Manufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland"
+     },
+     {
+      "field": "manufacturer_contact",
+      "value": "compliance@voltaris-cells.example",
+      "page": 1,
+      "quote": "Manufacturer contact compliance@voltaris-cells.example"
      },
      {
       "field": "manufacturing_place",
@@ -265,16 +473,16 @@
       "quote": "Date of manufacture February 2027"
      },
      {
+      "field": "warranty_period",
+      "value": "8 years or 160 000 km, whichever comes first",
+      "page": 1,
+      "quote": "Warranty 8 years or 160 000 km, whichever comes first"
+     },
+     {
       "field": "battery_category",
       "value": "EV",
       "page": 1,
       "quote": "Battery category Electric vehicle battery (EV)"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC811",
-      "page": 2,
-      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
      },
      {
       "field": "battery_mass_kg",
@@ -285,16 +493,194 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "value": "Large amounts of water; do not use CO2 on a burning pack",
+      "page": 1,
+      "quote": "Extinguishing agent Large amounts of water; do not use CO2 on a burning pack"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 41.8,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "value": 27.6,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Raw material acquisition and pre-processing 27.6"
+     },
+     {
+      "field": "cf_main_production",
+      "value": 11.2,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Main product production 11.2"
+     },
+     {
+      "field": "cf_distribution",
+      "value": 0.9,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Distribution 0.9"
+     },
+     {
+      "field": "cf_end_of_life",
+      "value": 2.1,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "End of life and recycling 2.1"
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC811",
+      "page": 2,
+      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "Lithium, cobalt, nickel, natural graphite",
       "page": 2,
       "quote": "Critical raw materials Lithium, cobalt, nickel, natural graphite"
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "value": "Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC",
+      "page": 2,
+      "quote": "Electrode and electrolyte Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC"
+     },
+     {
       "field": "hazardous_substances",
       "value": "Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%",
       "page": 2,
       "quote": "Hazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%."
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "value": "VM-811-12 (12 per pack); BMS board VB-360-02",
+      "page": 2,
+      "quote": "Module part number VM-811-12 (12 per pack); BMS board VB-360-02"
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "value": 22,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "recycled_content_lithium",
+      "value": 11,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "recycled_content_nickel",
+      "value": 16,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "recycled_content_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "value": 10,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "value": 14,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "value": 8,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "value": 5,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "renewable_content_percent",
+      "value": 2,
+      "unit": "%",
+      "page": 2,
+      "quote": "Renewable content share: 2 %"
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
      },
      {
       "field": "rated_capacity_ah",
@@ -305,12 +691,8 @@
       "qualifier": "rated"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 360,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 360 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -329,12 +711,31 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 360,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 360 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
       "value": 150000,
       "unit": "W",
       "page": 1,
       "quote": "Original power capability (nominal) 150 kW",
       "qualifier": "nominal"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "value": 180000,
+      "unit": "W",
+      "page": 2,
+      "quote": "Maximum permitted battery power 180 kW"
      },
      {
       "field": "initial_round_trip_efficiency_percent",
@@ -345,12 +746,34 @@
       "qualifier": "nominal"
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "value": 92,
+      "unit": "%",
+      "page": 2,
+      "quote": "Round-trip energy efficiency at 50 % of cycle life 92 %"
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "value": 0.135,
-      "unit": "ohm",
+      "unit": "Ω",
       "page": 1,
       "quote": "Initial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm",
       "qualifier": "nominal"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 8,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 8 calendar years"
      },
      {
       "field": "expected_lifetime_cycles",
@@ -361,6 +784,26 @@
       "qualifier": "nominal"
      },
      {
+      "field": "cycle_life_reference_test",
+      "value": "IEC 62660-1",
+      "page": 2,
+      "quote": "Cycle-life reference test IEC 62660-1"
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "value": 1,
+      "unit": "A/Ah",
+      "page": 2,
+      "quote": "C-rate of cycle-life test 1C"
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "value": 70,
+      "unit": "%",
+      "page": 2,
+      "quote": "Capacity threshold for exhaustion 70 % of rated capacity"
+     },
+     {
       "field": "idle_temperature_lower_c",
       "value": -20,
       "unit": "°C",
@@ -375,41 +818,6 @@
       "page": 1,
       "quote": "Idle temperature range -20 °C to 45 °C",
       "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "value": 41.8,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "value": 22,
-      "unit": "%",
-      "page": 2,
-      "quote": "Cobalt 22 %"
-     },
-     {
-      "field": "recycled_content_lithium",
-      "value": 11,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lithium 11 %"
-     },
-     {
-      "field": "recycled_content_nickel",
-      "value": 16,
-      "unit": "%",
-      "page": 2,
-      "quote": "Nickel 16 %"
-     },
-     {
-      "field": "recycled_content_lead",
-      "value": 0,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lead 0 %"
      }
     ]
    }
@@ -417,22 +825,20 @@
   {
    "t": 5000,
    "worker": "scripted-3",
-   "take": "e90326d4-d296-441b-b4b6-449debb7fe11"
+   "take": "3493acbd-b351-42c8-81aa-2704943bd5b1"
   },
   {
    "t": 6000,
    "worker": "scripted-3",
-   "submit": "e90326d4-d296-441b-b4b6-449debb7fe11",
+   "submit": "3493acbd-b351-42c8-81aa-2704943bd5b1",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "KC-18650-32",
-      "page": 1,
-      "quote": "Lithium-ion Cylindrical Cell KC-18650-32"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
+      "field": "operator_identifier_information",
       "notStated": true
      },
      {
@@ -440,6 +846,10 @@
       "value": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia",
       "page": 1,
       "quote": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -452,16 +862,14 @@
       "notStated": true
      },
      {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
       "field": "battery_category",
       "value": "portable",
       "page": 1,
       "quote": "Category under Regulation (EU) 2023/1542: portable battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC",
-      "page": 1,
-      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
      },
      {
       "field": "battery_mass_kg",
@@ -472,11 +880,129 @@
       "qualifier": "maximum"
      },
      {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "notStated": true
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC",
+      "page": 1,
+      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
+     },
+     {
       "field": "critical_raw_materials",
       "notStated": true
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
       "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lithium",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_nickel",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lead",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
       "notStated": true
      },
      {
@@ -488,12 +1014,8 @@
       "qualifier": "nominal"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 3.6,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 3.6 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -512,7 +1034,23 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 3.6,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 3.6 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
+      "notStated": true
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
       "notStated": true
      },
      {
@@ -520,12 +1058,28 @@
       "notStated": true
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "value": 0.035,
-      "unit": "ohm",
+      "unit": "Ω",
       "page": 1,
       "quote": "AC impedance (max) 35 mOhm",
       "qualifier": "maximum"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
      },
      {
       "field": "expected_lifetime_cycles",
@@ -534,6 +1088,18 @@
       "page": 1,
       "quote": "Cycle life (min) 500 cycles",
       "qualifier": "minimum"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
      },
      {
       "field": "idle_temperature_lower_c",
@@ -550,26 +1116,6 @@
       "page": 1,
       "quote": "Storage temperature -20 to 45 °C",
       "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lithium",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_nickel",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lead",
-      "notStated": true
      }
     ]
    }
@@ -577,22 +1123,20 @@
   {
    "t": 7000,
    "worker": "scripted-4",
-   "take": "3030895c-3dc8-4fbc-b811-fef5721e78d2"
+   "take": "3de849e2-57c1-436b-955b-19fa772d47d3"
   },
   {
    "t": 8000,
    "worker": "scripted-4",
-   "submit": "3030895c-3dc8-4fbc-b811-fef5721e78d2",
+   "submit": "3de849e2-57c1-436b-955b-19fa772d47d3",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "KC-18650-32",
-      "page": 1,
-      "quote": "Lithium-ion Cylindrical Cell KC-18650-32"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
+      "field": "operator_identifier_information",
       "notStated": true
      },
      {
@@ -600,6 +1144,10 @@
       "value": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia",
       "page": 1,
       "quote": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -612,16 +1160,14 @@
       "notStated": true
      },
      {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
       "field": "battery_category",
       "value": "portable",
       "page": 1,
       "quote": "Category under Regulation (EU) 2023/1542: portable battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC",
-      "page": 1,
-      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
      },
      {
       "field": "battery_mass_kg",
@@ -632,11 +1178,129 @@
       "qualifier": "maximum"
      },
      {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "notStated": true
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC",
+      "page": 1,
+      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
+     },
+     {
       "field": "critical_raw_materials",
       "notStated": true
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
       "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lithium",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_nickel",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lead",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
       "notStated": true
      },
      {
@@ -648,12 +1312,8 @@
       "qualifier": "nominal"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 3.6,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 3.6 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -672,7 +1332,23 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 3.6,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 3.6 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
+      "notStated": true
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
       "notStated": true
      },
      {
@@ -680,12 +1356,28 @@
       "notStated": true
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "value": 0.035,
-      "unit": "ohm",
+      "unit": "Ω",
       "page": 1,
       "quote": "AC impedance (max) 35 mOhm",
       "qualifier": "maximum"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
      },
      {
       "field": "expected_lifetime_cycles",
@@ -694,6 +1386,18 @@
       "page": 1,
       "quote": "Cycle life (min) 500 cycles",
       "qualifier": "minimum"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
      },
      {
       "field": "idle_temperature_lower_c",
@@ -710,26 +1414,6 @@
       "page": 1,
       "quote": "Storage temperature -20 to 45 °C",
       "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lithium",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_nickel",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lead",
-      "notStated": true
      }
     ]
    }
@@ -737,31 +1421,31 @@
   {
    "t": 9000,
    "worker": "scripted-1",
-   "take": "4ac990b5-0270-41f4-8cec-9723c8d4a218"
+   "take": "2ebddddb-5942-401b-b125-5a4ab4757af0"
   },
   {
    "t": 10000,
    "worker": "scripted-1",
-   "submit": "4ac990b5-0270-41f4-8cec-9723c8d4a218",
+   "submit": "2ebddddb-5942-401b-b125-5a4ab4757af0",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "CityGlide CG-48-14 e-bike battery",
-      "page": 1,
-      "quote": "CityGlide CG-48-14 e-bike battery"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
-      "value": "CG48-2026-0007731",
-      "page": 1,
-      "quote": "serial number CG48-2026-0007731"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain",
       "page": 1,
       "quote": "by Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -771,21 +1455,19 @@
      },
      {
       "field": "manufacturing_date",
-      "value": "2026-09-14",
+      "value": "2026-09",
       "page": 1,
       "quote": "manufactured on 14 September 2026"
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
      },
      {
       "field": "battery_category",
       "value": "LMT",
       "page": 1,
       "quote": "a light means of transport (LMT) battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 1,
-      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
      },
      {
       "field": "battery_mass_kg",
@@ -796,10 +1478,51 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 72.4,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 1,
+      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "lithium, natural graphite",
       "page": 2,
       "quote": "Critical raw materials present: lithium, natural graphite."
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
      },
      {
       "field": "hazardous_substances",
@@ -808,83 +1531,24 @@
       "quote": "Hazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6)."
      },
      {
-      "field": "rated_capacity_ah",
-      "value": 14,
-      "unit": "Ah",
-      "page": 1,
-      "quote": "the rated capacity is 14 Ah",
-      "qualifier": "rated"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 1,
-      "quote": "the nominal voltage is 51.2 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 40,
-      "unit": "V",
-      "page": 1,
-      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 58.4,
-      "unit": "V",
-      "page": 1,
-      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "value": 750,
-      "unit": "W",
-      "page": 1,
-      "quote": "The maximum continuous power capability was 750 W.",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "value": 96.1,
-      "unit": "%",
-      "page": 1,
-      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
-      "qualifier": "typical"
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
-      "value": 0.085,
-      "unit": "ohm",
-      "page": 1,
-      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
-      "qualifier": "typical"
-     },
-     {
-      "field": "expected_lifetime_cycles",
-      "value": 2000,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "Expected lifetime is 2000 cycles (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "idle_temperature_lower_c",
+      "field": "substance_impact",
       "notStated": true
      },
      {
-      "field": "idle_temperature_upper_c",
+      "field": "component_part_numbers",
       "notStated": true
      },
      {
-      "field": "carbon_footprint_functional_unit",
-      "value": 72.4,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -903,6 +1567,162 @@
      },
      {
       "field": "recycled_content_lead",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 14,
+      "unit": "Ah",
+      "page": 1,
+      "quote": "the rated capacity is 14 Ah",
+      "qualifier": "rated"
+     },
+     {
+      "field": "capacity_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 40,
+      "unit": "V",
+      "page": 1,
+      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 58.4,
+      "unit": "V",
+      "page": 1,
+      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 1,
+      "quote": "the nominal voltage is 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "original_power_capability_w",
+      "value": 750,
+      "unit": "W",
+      "page": 1,
+      "quote": "The maximum continuous power capability was 750 W.",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "value": 96.1,
+      "unit": "%",
+      "page": 1,
+      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
+      "qualifier": "typical"
+     },
+     {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "value": 0.085,
+      "unit": "Ω",
+      "page": 1,
+      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
+      "qualifier": "typical"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 2000,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "Expected lifetime is 2000 cycles (nominal)",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_upper_c",
       "notStated": true
      }
     ]
@@ -911,31 +1731,31 @@
   {
    "t": 11000,
    "worker": "scripted-2",
-   "take": "aa7b3df5-8407-4856-a49f-46a6fd6aac93"
+   "take": "5ab408a2-ebd4-4e77-b798-1ee2dbbb33d9"
   },
   {
    "t": 12000,
    "worker": "scripted-2",
-   "submit": "aa7b3df5-8407-4856-a49f-46a6fd6aac93",
+   "submit": "5ab408a2-ebd4-4e77-b798-1ee2dbbb33d9",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "CityGlide CG-48-14 e-bike battery",
-      "page": 1,
-      "quote": "CityGlide CG-48-14 e-bike battery"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
-      "value": "CG48-2026-0007731",
-      "page": 1,
-      "quote": "serial number CG48-2026-0007731"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain",
       "page": 1,
       "quote": "by Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -945,21 +1765,19 @@
      },
      {
       "field": "manufacturing_date",
-      "value": "2026-09-14",
+      "value": "2026-09",
       "page": 1,
       "quote": "manufactured on 14 September 2026"
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
      },
      {
       "field": "battery_category",
       "value": "LMT",
       "page": 1,
       "quote": "a light means of transport (LMT) battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 1,
-      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
      },
      {
       "field": "battery_mass_kg",
@@ -970,10 +1788,51 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 72.4,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 1,
+      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "lithium, natural graphite",
       "page": 2,
       "quote": "Critical raw materials present: lithium, natural graphite."
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
      },
      {
       "field": "hazardous_substances",
@@ -982,83 +1841,24 @@
       "quote": "Hazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6)."
      },
      {
-      "field": "rated_capacity_ah",
-      "value": 14,
-      "unit": "Ah",
-      "page": 1,
-      "quote": "the rated capacity is 14 Ah",
-      "qualifier": "rated"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 1,
-      "quote": "the nominal voltage is 51.2 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 40,
-      "unit": "V",
-      "page": 1,
-      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 58.4,
-      "unit": "V",
-      "page": 1,
-      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "value": 750,
-      "unit": "W",
-      "page": 1,
-      "quote": "The maximum continuous power capability was 750 W.",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "value": 96.1,
-      "unit": "%",
-      "page": 1,
-      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
-      "qualifier": "typical"
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
-      "value": 0.085,
-      "unit": "ohm",
-      "page": 1,
-      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
-      "qualifier": "typical"
-     },
-     {
-      "field": "expected_lifetime_cycles",
-      "value": 2000,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "Expected lifetime is 2000 cycles (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "idle_temperature_lower_c",
+      "field": "substance_impact",
       "notStated": true
      },
      {
-      "field": "idle_temperature_upper_c",
+      "field": "component_part_numbers",
       "notStated": true
      },
      {
-      "field": "carbon_footprint_functional_unit",
-      "value": 72.4,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -1078,6 +1878,162 @@
      {
       "field": "recycled_content_lead",
       "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 14,
+      "unit": "Ah",
+      "page": 1,
+      "quote": "the rated capacity is 14 Ah",
+      "qualifier": "rated"
+     },
+     {
+      "field": "capacity_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 40,
+      "unit": "V",
+      "page": 1,
+      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 58.4,
+      "unit": "V",
+      "page": 1,
+      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 1,
+      "quote": "the nominal voltage is 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "original_power_capability_w",
+      "value": 750,
+      "unit": "W",
+      "page": 1,
+      "quote": "The maximum continuous power capability was 750 W.",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "value": 96.1,
+      "unit": "%",
+      "page": 1,
+      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
+      "qualifier": "typical"
+     },
+     {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "value": 0.085,
+      "unit": "Ω",
+      "page": 1,
+      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
+      "qualifier": "typical"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 2000,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "Expected lifetime is 2000 cycles (nominal)",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_upper_c",
+      "notStated": true
      }
     ]
    }
@@ -1085,31 +2041,31 @@
   {
    "t": 13000,
    "worker": "scripted-3",
-   "take": "cb02d4e4-f947-4e8f-8b40-f05b6bdf2c3c"
+   "take": "609a1cfc-a8ae-4cbe-a6f3-1c8039321b20"
   },
   {
    "t": 14000,
    "worker": "scripted-3",
-   "submit": "cb02d4e4-f947-4e8f-8b40-f05b6bdf2c3c",
+   "submit": "609a1cfc-a8ae-4cbe-a6f3-1c8039321b20",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "Helion HX-280 LFP storage module",
-      "page": 1,
-      "quote": "Helion HX-280 LFP storage module"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
-      "value": "HX280-26-004417",
-      "page": 2,
-      "quote": "Module serial number HX280-26-004417"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
       "page": 1,
       "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -1124,16 +2080,14 @@
       "quote": "Date of manufacture 2026-06"
      },
      {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
       "field": "battery_category",
       "value": "industrial",
       "page": 2,
       "quote": "Battery category Industrial battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 2,
-      "quote": "Cell chemistry LFP (LiFePO4)"
      },
      {
       "field": "battery_mass_kg",
@@ -1144,97 +2098,77 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "value": "Water mist",
+      "page": 2,
+      "quote": "Extinguishing agent Water mist"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 58.3,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 2,
+      "quote": "Cell chemistry LFP (LiFePO4)"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "lithium, natural graphite",
       "page": 2,
       "quote": "Critical raw materials lithium, natural graphite"
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
       "field": "hazardous_substances",
       "notStated": true
      },
      {
-      "field": "rated_capacity_ah",
-      "value": 280,
-      "unit": "Ah",
-      "page": 2,
-      "quote": "Rated capacity 280 Ah",
-      "qualifier": "rated"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 2,
-      "quote": "Nominal voltage 51.2 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 44.8,
-      "unit": "V",
-      "page": 2,
-      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 57.6,
-      "unit": "V",
-      "page": 2,
-      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "value": 14300,
-      "unit": "W",
-      "page": 2,
-      "quote": "Maximum power 14.3 kW",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "value": 95.5,
-      "unit": "%",
-      "page": 1,
-      "quote": "typical round-trip energy efficiency of 95.5 %",
-      "qualifier": "typical"
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
+      "field": "substance_impact",
       "notStated": true
      },
      {
-      "field": "expected_lifetime_cycles",
-      "value": 6000,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "6000 cycles nominal",
-      "qualifier": "nominal"
+      "field": "component_part_numbers",
+      "notStated": true
      },
      {
-      "field": "idle_temperature_lower_c",
-      "value": -10,
-      "unit": "°C",
-      "page": 2,
-      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
-      "qualifier": "minimum"
+      "field": "spare_parts_postal_address",
+      "notStated": true
      },
      {
-      "field": "idle_temperature_upper_c",
-      "value": 45,
-      "unit": "°C",
-      "page": 2,
-      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
-      "qualifier": "maximum"
+      "field": "spare_parts_email",
+      "notStated": true
      },
      {
-      "field": "carbon_footprint_functional_unit",
-      "value": 58.3,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -1254,79 +2188,49 @@
      {
       "field": "recycled_content_lead",
       "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 15000,
-   "worker": "scripted-4",
-   "take": "dd9973a7-bbdd-4919-884f-7d18ab45c21a"
-  },
-  {
-   "t": 16000,
-   "worker": "scripted-4",
-   "submit": "dd9973a7-bbdd-4919-884f-7d18ab45c21a",
-   "result": {
-    "fields": [
-     {
-      "field": "name",
-      "value": "Helion HX-280 LFP storage module",
-      "page": 1,
-      "quote": "Helion HX-280 LFP storage module"
      },
      {
-      "field": "battery_identifier",
-      "value": "HX280-26-004417",
-      "page": 2,
-      "quote": "Module serial number HX280-26-004417"
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
      },
      {
-      "field": "manufacturer_identifier_information",
-      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
-      "page": 1,
-      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
      },
      {
-      "field": "manufacturing_place",
-      "value": "Eindhoven, Netherlands",
-      "page": 2,
-      "quote": "Place of manufacture Eindhoven, Netherlands"
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
      },
      {
-      "field": "manufacturing_date",
-      "value": "2026-06",
-      "page": 2,
-      "quote": "Date of manufacture 2026-06"
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
      },
      {
-      "field": "battery_category",
-      "value": "industrial",
-      "page": 2,
-      "quote": "Battery category Industrial battery"
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
      },
      {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 2,
-      "quote": "Cell chemistry LFP (LiFePO4)"
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
      },
      {
-      "field": "battery_mass_kg",
-      "value": 128,
-      "unit": "kg",
-      "page": 2,
-      "quote": "Nominal mass 128 kg",
-      "qualifier": "nominal"
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
      },
      {
-      "field": "critical_raw_materials",
-      "value": "lithium, natural graphite",
-      "page": 2,
-      "quote": "Critical raw materials lithium, natural graphite"
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
      },
      {
-      "field": "hazardous_substances",
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
       "notStated": true
      },
      {
@@ -1338,12 +2242,8 @@
       "qualifier": "rated"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 2,
-      "quote": "Nominal voltage 51.2 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -1362,12 +2262,28 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 2,
+      "quote": "Nominal voltage 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
       "value": 14300,
       "unit": "W",
       "page": 2,
       "quote": "Maximum power 14.3 kW",
       "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
      },
      {
       "field": "initial_round_trip_efficiency_percent",
@@ -1378,8 +2294,27 @@
       "qualifier": "typical"
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "notStated": true
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 15,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 15 years"
      },
      {
       "field": "expected_lifetime_cycles",
@@ -1388,6 +2323,18 @@
       "page": 1,
       "quote": "6000 cycles nominal",
       "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
      },
      {
       "field": "idle_temperature_lower_c",
@@ -1404,13 +2351,141 @@
       "page": 2,
       "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
       "qualifier": "maximum"
+     }
+    ]
+   }
+  },
+  {
+   "t": 15000,
+   "worker": "scripted-4",
+   "take": "c8bdee4e-adf5-44a5-bbe9-b50d67dcdad6"
+  },
+  {
+   "t": 16000,
+   "worker": "scripted-4",
+   "submit": "c8bdee4e-adf5-44a5-bbe9-b50d67dcdad6",
+   "result": {
+    "fields": [
+     {
+      "field": "commodity_code",
+      "notStated": true
+     },
+     {
+      "field": "operator_identifier_information",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier_information",
+      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
+      "page": 1,
+      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
+     },
+     {
+      "field": "manufacturing_place",
+      "value": "Eindhoven, Netherlands",
+      "page": 2,
+      "quote": "Place of manufacture Eindhoven, Netherlands"
+     },
+     {
+      "field": "manufacturing_date",
+      "value": "2026-06",
+      "page": 2,
+      "quote": "Date of manufacture 2026-06"
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
+      "field": "battery_category",
+      "value": "industrial",
+      "page": 2,
+      "quote": "Battery category Industrial battery"
+     },
+     {
+      "field": "battery_mass_kg",
+      "value": 128,
+      "unit": "kg",
+      "page": 2,
+      "quote": "Nominal mass 128 kg",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "extinguishing_agent",
+      "value": "Water mist",
+      "page": 2,
+      "quote": "Extinguishing agent Water mist"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
      },
      {
       "field": "carbon_footprint_functional_unit",
       "value": 58.3,
-      "unit": "kg CO2e/kWh",
+      "unit": "kgCO2e/kWh",
       "page": 2,
       "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 2,
+      "quote": "Cell chemistry LFP (LiFePO4)"
+     },
+     {
+      "field": "critical_raw_materials",
+      "value": "lithium, natural graphite",
+      "page": 2,
+      "quote": "Critical raw materials lithium, natural graphite"
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
+      "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -1430,893 +2505,49 @@
      {
       "field": "recycled_content_lead",
       "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 17000,
-   "worker": "scripted-1",
-   "take": "c23b9be1-4115-4080-8759-2d7458fc2b78"
-  },
-  {
-   "t": 18000,
-   "worker": "scripted-1",
-   "submit": "c23b9be1-4115-4080-8759-2d7458fc2b78",
-   "result": {
-    "fields": [
-     {
-      "field": "product_name",
-      "value": "Harbour Fleece Hoodie",
-      "page": 1,
-      "quote": "Product Harbour Fleece Hoodie"
      },
      {
-      "field": "gtin",
-      "value": "5609876543212",
-      "page": 1,
-      "quote": "Article number (GTIN) 5609876543212"
-     },
-     {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
-     },
-     {
-      "field": "country_of_manufacture",
-      "value": "PT",
-      "page": 1,
-      "quote": "Country: Portugal"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-09-01",
-      "page": 1,
-      "quote": "Issue date: 2026-09-01"
-     },
-     {
-      "field": "product_category",
-      "value": "Hooded sweatshirt",
-      "page": 1,
-      "quote": "Product category Hooded sweatshirt"
-     },
-     {
-      "field": "fibre_composition",
-      "value": {
-       "polyester": 80,
-       "cotton": 20
-      },
-      "unit": "%",
-      "page": 1,
-      "quote": "Composition 80% polyester, 20% cotton"
-     },
-     {
-      "field": "recycled_content_percent",
-      "value": 80,
-      "unit": "%",
-      "page": 1,
-      "quote": "Recycled content 80 % of total product mass"
-     },
-     {
-      "field": "recycled_fibre_type",
-      "value": "post-consumer recycled polyester from PET bottles",
-      "page": 1,
-      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
-     },
-     {
-      "field": "carbon_footprint",
+      "field": "pre_consumer_recycled_nickel",
       "notStated": true
      },
      {
-      "field": "water_usage",
+      "field": "pre_consumer_recycled_cobalt",
       "notStated": true
      },
      {
-      "field": "fabric_weight",
+      "field": "pre_consumer_recycled_lithium",
       "notStated": true
      },
      {
-      "field": "certification_scheme",
-      "value": "GRS",
-      "page": 1,
-      "quote": "Product Certificate - Global Recycled Standard (GRS)"
-     },
-     {
-      "field": "certificate_number",
-      "value": "NWC-GRS-2026-01187",
-      "page": 1,
-      "quote": "Certificate number: NWC-GRS-2026-01187"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-08-31",
-      "page": 1,
-      "quote": "Valid until: 2027-08-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "complies with the GRS chemical restrictions (ZDHC MRSL)",
-      "page": 1,
-      "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)."
-     },
-     {
-      "field": "care_instructions",
+      "field": "pre_consumer_recycled_lead",
       "notStated": true
      },
      {
-      "field": "durability_rating",
-      "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 19000,
-   "worker": "scripted-2",
-   "take": "5ce596b7-9a1e-4956-aea7-c9f495af6ad7"
-  },
-  {
-   "t": 20000,
-   "worker": "scripted-2",
-   "submit": "5ce596b7-9a1e-4956-aea7-c9f495af6ad7",
-   "result": {
-    "fields": [
-     {
-      "field": "product_name",
-      "value": "Harbour Fleece Hoodie",
-      "page": 1,
-      "quote": "Product Harbour Fleece Hoodie"
-     },
-     {
-      "field": "gtin",
-      "value": "5609876543212",
-      "page": 1,
-      "quote": "Article number (GTIN) 5609876543212"
-     },
-     {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
-     },
-     {
-      "field": "country_of_manufacture",
-      "value": "PT",
-      "page": 1,
-      "quote": "Country: Portugal"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-09-01",
-      "page": 1,
-      "quote": "Issue date: 2026-09-01"
-     },
-     {
-      "field": "product_category",
-      "value": "Hooded sweatshirt",
-      "page": 1,
-      "quote": "Product category Hooded sweatshirt"
-     },
-     {
-      "field": "fibre_composition",
-      "value": {
-       "polyester": 80,
-       "cotton": 20
-      },
-      "unit": "%",
-      "page": 1,
-      "quote": "Composition 80% polyester, 20% cotton"
-     },
-     {
-      "field": "recycled_content_percent",
-      "value": 80,
-      "unit": "%",
-      "page": 1,
-      "quote": "Recycled content 80 % of total product mass"
-     },
-     {
-      "field": "recycled_fibre_type",
-      "value": "post-consumer recycled polyester from PET bottles",
-      "page": 1,
-      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
-     },
-     {
-      "field": "carbon_footprint",
+      "field": "post_consumer_recycled_nickel",
       "notStated": true
      },
      {
-      "field": "water_usage",
+      "field": "post_consumer_recycled_cobalt",
       "notStated": true
      },
      {
-      "field": "fabric_weight",
+      "field": "post_consumer_recycled_lithium",
       "notStated": true
      },
      {
-      "field": "certification_scheme",
-      "value": "GRS",
-      "page": 1,
-      "quote": "Product Certificate - Global Recycled Standard (GRS)"
-     },
-     {
-      "field": "certificate_number",
-      "value": "NWC-GRS-2026-01187",
-      "page": 1,
-      "quote": "Certificate number: NWC-GRS-2026-01187"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-08-31",
-      "page": 1,
-      "quote": "Valid until: 2027-08-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "complies with the GRS chemical restrictions (ZDHC MRSL)",
-      "page": 1,
-      "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)."
-     },
-     {
-      "field": "care_instructions",
+      "field": "post_consumer_recycled_lead",
       "notStated": true
      },
      {
-      "field": "durability_rating",
-      "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 21000,
-   "worker": "scripted-3",
-   "take": "865690ea-b0a5-4673-a14d-17abccece7af"
-  },
-  {
-   "t": 22000,
-   "worker": "scripted-3",
-   "submit": "865690ea-b0a5-4673-a14d-17abccece7af",
-   "result": {
-    "fields": [
-     {
-      "field": "product_name",
-      "value": "Lumen Everyday Tee",
-      "page": 1,
-      "quote": "Style Lumen Everyday Tee"
-     },
-     {
-      "field": "gtin",
-      "value": "5609876543229",
-      "page": 1,
-      "quote": "EAN / GTIN 5609876543229"
-     },
-     {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Supplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
-     },
-     {
-      "field": "country_of_manufacture",
-      "value": "PT",
-      "page": 1,
-      "quote": "Origin PT"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-08",
-      "page": 1,
-      "quote": "Production batch 2026-08"
-     },
-     {
-      "field": "product_category",
-      "value": "T-shirt",
-      "page": 1,
-      "quote": "Category T-shirt"
-     },
-     {
-      "field": "fibre_composition",
-      "value": {
-       "cotton": 60,
-       "polyester": 35,
-       "elastane": 5
-      },
-      "unit": "%",
-      "page": 1,
-      "quote": "Cotton 60 % organic Polyester 35 % recycled, pre-consumer Elastane 5 %"
-     },
-     {
-      "field": "recycled_content_percent",
-      "value": 35,
-      "unit": "%",
-      "page": 1,
-      "quote": "Recycled content: 35 % of garment mass"
-     },
-     {
-      "field": "recycled_fibre_type",
-      "value": "recycled polyester from pre-consumer production waste",
-      "page": 1,
-      "quote": "recycled polyester from pre-consumer production waste"
-     },
-     {
-      "field": "carbon_footprint",
-      "value": 4.1,
-      "unit": "kg CO2e",
-      "page": 1,
-      "quote": "Carbon footprint: 4.1 kg CO2e"
-     },
-     {
-      "field": "water_usage",
-      "value": 1900,
-      "unit": "L",
-      "page": 1,
-      "quote": "Water use: 1.9 m3"
-     },
-     {
-      "field": "fabric_weight",
-      "value": 180,
-      "unit": "g/m2",
-      "page": 1,
-      "quote": "Fabric Single jersey, 180 gsm (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "certification_scheme",
-      "value": "OEKO-TEX 100",
-      "page": 1,
-      "quote": "Tested to STANDARD 100 by OEKO-TEX"
-     },
-     {
-      "field": "certificate_number",
-      "value": "26-LT-0412",
-      "page": 1,
-      "quote": "certificate no. 26-LT-0412"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-03-31",
-      "page": 1,
-      "quote": "valid until 2027-03-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "REACH: no SVHC above 0.1 % w/w; STANDARD 100 by OEKO-TEX",
-      "page": 1,
-      "quote": "REACH: no SVHC above 0.1 % w/w."
-     },
-     {
-      "field": "care_instructions",
-      "value": "machine wash 30 °C, do not tumble dry, iron low",
-      "page": 1,
-      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
-     },
-     {
-      "field": "durability_rating",
-      "value": "pilling grade 4 after 2000 rubs (ISO 12945-2)",
-      "page": 1,
-      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
-     }
-    ]
-   }
-  },
-  {
-   "t": 23000,
-   "worker": "scripted-4",
-   "take": "5c091307-454e-4898-806e-b257ae6bd15a"
-  },
-  {
-   "t": 24000,
-   "worker": "scripted-4",
-   "submit": "5c091307-454e-4898-806e-b257ae6bd15a",
-   "result": {
-    "fields": [
-     {
-      "field": "product_name",
-      "value": "Lumen Everyday Tee",
-      "page": 1,
-      "quote": "Style Lumen Everyday Tee"
-     },
-     {
-      "field": "gtin",
-      "value": "5609876543229",
-      "page": 1,
-      "quote": "EAN / GTIN 5609876543229"
-     },
-     {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Supplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
-     },
-     {
-      "field": "country_of_manufacture",
-      "value": "PT",
-      "page": 1,
-      "quote": "Origin PT"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-08",
-      "page": 1,
-      "quote": "Production batch 2026-08"
-     },
-     {
-      "field": "product_category",
-      "value": "T-shirt",
-      "page": 1,
-      "quote": "Category T-shirt"
-     },
-     {
-      "field": "fibre_composition",
-      "value": {
-       "cotton": 60,
-       "polyester": 35,
-       "elastane": 5
-      },
-      "unit": "%",
-      "page": 1,
-      "quote": "Cotton 60 % organic Polyester 35 % recycled, pre-consumer Elastane 5 %"
-     },
-     {
-      "field": "recycled_content_percent",
-      "value": 35,
-      "unit": "%",
-      "page": 1,
-      "quote": "Recycled content: 35 % of garment mass"
-     },
-     {
-      "field": "recycled_fibre_type",
-      "value": "recycled polyester from pre-consumer production waste",
-      "page": 1,
-      "quote": "recycled polyester from pre-consumer production waste"
-     },
-     {
-      "field": "carbon_footprint",
-      "value": 4.1,
-      "unit": "kg CO2e",
-      "page": 1,
-      "quote": "Carbon footprint: 4.1 kg CO2e"
-     },
-     {
-      "field": "water_usage",
-      "value": 1900,
-      "unit": "L",
-      "page": 1,
-      "quote": "Water use: 1.9 m3"
-     },
-     {
-      "field": "fabric_weight",
-      "value": 180,
-      "unit": "g/m2",
-      "page": 1,
-      "quote": "Fabric Single jersey, 180 gsm (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "certification_scheme",
-      "value": "OEKO-TEX 100",
-      "page": 1,
-      "quote": "Tested to STANDARD 100 by OEKO-TEX"
-     },
-     {
-      "field": "certificate_number",
-      "value": "26-LT-0412",
-      "page": 1,
-      "quote": "certificate no. 26-LT-0412"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-03-31",
-      "page": 1,
-      "quote": "valid until 2027-03-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "REACH: no SVHC above 0.1 % w/w; STANDARD 100 by OEKO-TEX",
-      "page": 1,
-      "quote": "REACH: no SVHC above 0.1 % w/w."
-     },
-     {
-      "field": "care_instructions",
-      "value": "machine wash 30 °C, do not tumble dry, iron low",
-      "page": 1,
-      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
-     },
-     {
-      "field": "durability_rating",
-      "value": "pilling grade 4 after 2000 rubs (ISO 12945-2)",
-      "page": 1,
-      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
-     }
-    ]
-   }
-  },
-  {
-   "t": 25000,
-   "worker": "scripted-1",
-   "take": "717875ca-cb71-442f-805f-567356146b82"
-  },
-  {
-   "t": 26000,
-   "worker": "scripted-1",
-   "submit": "717875ca-cb71-442f-805f-567356146b82",
-   "result": {
-    "markdown": "<!-- page 1 -->\nVoltaris Mobility - Product Specification Sheet\nVoltaris NMC-800 EV Battery Pack\n80 kWh lithium-ion traction battery pack for mid-size electric passenger vehicles.\n1. Identification\nBattery identifier BAT-EU-2027-000214\nBattery category Electric vehicle battery (EV)\nManufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982)\nManufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland\nPlace of manufacture Komorniki, Poland\nDate of manufacture February 2027\n2. Electrical characteristics\nRated capacity 220 Ah\nNominal voltage 360 V\nMinimum voltage 288 V\nMaximum voltage 403 V\nOriginal power capability (nominal) 150 kW\nInitial round-trip energy efficiency (nominal) 95 %\nInitial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm\nExpected lifetime (nominal) 2500 cycles (IEC 62660-1, 25 °C, 1C/1C, 100% DoD)\n3. Physical\nNominal mass 482 kg\nIdle temperature range -20 °C to 45 °C\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\n4. Materials and composition\nChemistry Lithium nickel manganese cobalt oxide (NMC 811), graphite anode\nCritical raw materials Lithium, cobalt, nickel, natural graphite\nHazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%;\ncobalt compounds 3.2%; nickel compounds 9.8%.\n5. Carbon footprint\nLife-cycle carbon footprint per kWh of total energy over the service life: 41.8 kg CO2e/kWh\nCarbon footprint performance class: Class B\n6. Recycled content (pre- and post-consumer combined)\nMaterial Recycled share\nCobalt 22 %\nLithium 11 %\nNickel 16 %\nLead 0 %\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 27000,
-   "worker": "scripted-2",
-   "take": "a8d3bc23-28dc-4818-89e7-378636569eda"
-  },
-  {
-   "t": 28000,
-   "worker": "scripted-2",
-   "submit": "a8d3bc23-28dc-4818-89e7-378636569eda",
-   "result": {
-    "markdown": "<!-- page 1 -->\nKESTREL ENERGY\nLithium-ion Cylindrical Cell KC-18650-32\nDatasheet revision C, issued 2026-03-02\nKestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia\nMade in Malaysia\nCategory under Regulation (EU) 2023/1542: portable battery\nChemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode\nSpecifications\nItem Value Condition\nNominal capacity 3200 mAh 0.2C discharge to 2.5 V, 25 °C\nNominal voltage 3.6 V\nCharge voltage (max) 4.20 V CC/CV\nDischarge cut-off voltage 2.50 V minimum\nMax. continuous discharge current 10 A 25 °C\nAC impedance (max) 35 mOhm 1 kHz, 50% SoC\nCycle life (min) 500 cycles to 80% of nominal capacity\nWeight (max) 46.5 g\nOperating temperature -10 to 60 °C discharge\nStorage temperature -20 to 45 °C up to 3 months\nValues are typical unless stated otherwise. Specifications may change without notice.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 29000,
-   "worker": "scripted-3",
-   "take": "e1e4f2a2-fd89-4ac3-92a0-30dd128b731f"
-  },
-  {
-   "t": 30000,
-   "worker": "scripted-3",
-   "submit": "e1e4f2a2-fd89-4ac3-92a0-30dd128b731f",
-   "result": {
-    "markdown": "<!-- page 1 -->\nArbor Test Laboratories - Test Report AT-2026-1184\nClient: Arbor Mobility Components S.L.\nTest item\nThe test item is a CityGlide CG-48-14 e-bike battery, a light means of transport (LMT) battery,\nserial number CG48-2026-0007731, manufactured on 14 September 2026 by Arbor Mobility Components S.L.,\nCalle de la Industria 14, 46980 Paterna, Spain, at its plant in Paterna, Spain.\nThe pack is built from 16 lithium iron phosphate (LiFePO4) prismatic cells in series.\nAccording to the manufacturer the rated capacity is 14 Ah and the nominal voltage is 51.2 V.\nThe discharge cut-off (minimum voltage) is 40.0 V and the end-of-charge (maximum voltage) is 58.4 V.\nThe nominal mass declared on the label is 3.9 kg.\nResults\nCapacity measured at 0.5C and 25 °C was 13.8 Ah, which is within the tolerance of the rated value.\nThe maximum continuous power capability was 750 W. The typical initial round-trip energy efficiency\nwas 96.1 % at 0.5C. The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.\nExpected lifetime is 2000 cycles (nominal) to 80% of rated capacity.\nOperating temperature range (discharge): -10 °C to 55 °C.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nSustainability declarations supplied by the client\nCritical raw materials present: lithium, natural graphite.\nHazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6).\nCarbon footprint: 72.4 kg CO2e/kWh (declared by the client, not verified by this laboratory).\nRecycled lithium content: 4 % (pre- and post-consumer combined).\nApproved by: J. Doe, Head of Laboratory. This report covers only the item tested.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 31000,
-   "worker": "scripted-4",
-   "take": "4dd7c6f4-02a6-4811-8547-d25e05e2ee7a"
-  },
-  {
-   "t": 32000,
-   "worker": "scripted-4",
-   "submit": "4dd7c6f4-02a6-4811-8547-d25e05e2ee7a",
-   "result": {
-    "markdown": "<!-- page 1 -->\nHELION STORAGE\nHelion HX-280 LFP storage module\nStationary energy storage for commercial and industrial sites.\nBuilt for a circular future\n16 % recycled lithium\nRoadmap target for 2031\nWhy HX-280?\nLong life: 6000 cycles nominal at 25 °C, 0.5C, 90% DoD.\nHigh efficiency: typical round-trip energy efficiency of 95.5 %.\nManufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nTechnical data\nParameter Value\nModule serial number HX280-26-004417\nBattery category Industrial battery\nCell chemistry LFP (LiFePO4)\nRated capacity 280 Ah\nNominal voltage 51.2 V\nVoltage range (min / max) 44.8 V / 57.6 V\nMaximum power 14.3 kW\nNominal mass 128 kg\nIdle (storage) temperature min -10 °C, max 45 °C\nPlace of manufacture Eindhoven, Netherlands\nDate of manufacture 2026-06\nCritical raw materials lithium, natural graphite\nCarbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh\nRecycled lithium, this production lot (pre + post consumer) 6 %\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 33000,
-   "worker": "scripted-1",
-   "take": "f518ee57-2ff9-4032-b0d0-83ca7d048bab"
-  },
-  {
-   "t": 34000,
-   "worker": "scripted-1",
-   "submit": "f518ee57-2ff9-4032-b0d0-83ca7d048bab",
-   "result": {
-    "markdown": "<!-- page 1 -->\nNorthwind Certification Ltd\nProduct Certificate - Global Recycled Standard (GRS)\nCertificate number: NWC-GRS-2026-01187\nIssue date: 2026-09-01\nValid until: 2027-08-31\nCertified organisation\nLumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nCountry: Portugal\nCertified product\nProduct Harbour Fleece Hoodie\nArticle number (GTIN) 5609876543212\nProduct category Hooded sweatshirt\nComposition 80% polyester, 20% cotton\nRecycled content 80 % of total product mass\nRecycled material post-consumer recycled polyester from PET bottles\nChemical requirements: the certified product complies with the GRS chemical restrictions (ZDHC MRSL).\nThis certificate does not cover social or environmental claims beyond those listed above.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 35000,
-   "worker": "scripted-2",
-   "take": "c831ffd8-52b4-4f34-8d82-19afe53993f8"
-  },
-  {
-   "t": 36000,
-   "worker": "scripted-2",
-   "submit": "c831ffd8-52b4-4f34-8d82-19afe53993f8",
-   "result": {
-    "markdown": "<!-- page 1 -->\nLUMEN TEXTILES - Garment Technical Sheet\nStyle Lumen Everyday Tee\nEAN / GTIN 5609876543229\nCategory T-shirt\nSupplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nOrigin PT\nProduction batch 2026-08\nFabric Single jersey, 180 gsm (nominal)\nFibre composition (by mass)\nFibre Share Note\nCotton 60 % organic\nPolyester 35 % recycled, pre-consumer\nElastane 5 %\nRecycled content: 35 % of garment mass (recycled polyester from pre-consumer production waste).\nEnvironmental data (per garment, cradle to gate)\nCarbon footprint: 4.1 kg CO2e\nWater use: 1.9 m3\nCompliance and care\nTested to STANDARD 100 by OEKO-TEX, certificate no. 26-LT-0412, valid until 2027-03-31.\nREACH: no SVHC above 0.1 % w/w.\nCare: machine wash 30 °C, do not tumble dry, iron low.\nDurability: pilling grade 4 after 2000 rubs (ISO 12945-2).\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
-   }
-  },
-  {
-   "t": 37000,
-   "worker": "scripted-3",
-   "take": "4678cf41-5baf-48c6-94e2-4c1d5511f35c"
-  },
-  {
-   "t": 38000,
-   "worker": "scripted-3",
-   "submit": "4678cf41-5baf-48c6-94e2-4c1d5511f35c",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 39000,
-   "worker": "scripted-4",
-   "take": "8f2daaa4-8136-4510-b377-bfeea3772331"
-  },
-  {
-   "t": 40000,
-   "worker": "scripted-4",
-   "submit": "8f2daaa4-8136-4510-b377-bfeea3772331",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 41000,
-   "worker": "scripted-1",
-   "take": "2a7e44d0-9150-46b2-a3c9-54c23aa4c794"
-  },
-  {
-   "t": 42000,
-   "worker": "scripted-1",
-   "submit": "2a7e44d0-9150-46b2-a3c9-54c23aa4c794",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 43000,
-   "worker": "scripted-2",
-   "take": "a795a75a-880e-490e-9be0-26cf5a6d4574"
-  },
-  {
-   "t": 44000,
-   "worker": "scripted-2",
-   "submit": "a795a75a-880e-490e-9be0-26cf5a6d4574",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 45000,
-   "worker": "scripted-3",
-   "take": "640173b4-80ab-4655-a607-a99830933615"
-  },
-  {
-   "t": 46000,
-   "worker": "scripted-3",
-   "submit": "640173b4-80ab-4655-a607-a99830933615",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 47000,
-   "worker": "scripted-4",
-   "take": "cc2f2106-9615-492a-a35e-13beeae10ff6"
-  },
-  {
-   "t": 48000,
-   "worker": "scripted-4",
-   "submit": "cc2f2106-9615-492a-a35e-13beeae10ff6",
-   "result": {
-    "pass": true
-   }
-  },
-  {
-   "t": 49000,
-   "worker": "scripted-1",
-   "take": "50a45832-c149-4d87-b480-3120f30d111e"
-  },
-  {
-   "t": 50000,
-   "worker": "scripted-1",
-   "submit": "50a45832-c149-4d87-b480-3120f30d111e",
-   "result": {
-    "fields": [
-     {
-      "field": "name",
-      "value": "KC-18650-32",
-      "page": 1,
-      "quote": "Lithium-ion Cylindrical Cell KC-18650-32"
-     },
-     {
-      "field": "battery_identifier",
+      "field": "renewable_content_percent",
       "notStated": true
      },
      {
-      "field": "manufacturer_identifier_information",
-      "value": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia",
-      "page": 1,
-      "quote": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia"
-     },
-     {
-      "field": "manufacturing_place",
-      "value": "Malaysia",
-      "page": 1,
-      "quote": "Made in Malaysia"
-     },
-     {
-      "field": "manufacturing_date",
+      "field": "eu_recycling_bonus",
       "notStated": true
      },
      {
-      "field": "battery_category",
-      "value": "portable",
-      "page": 1,
-      "quote": "Category under Regulation (EU) 2023/1542: portable battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC",
-      "page": 1,
-      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
-     },
-     {
-      "field": "battery_mass_kg",
-      "value": 0.0465,
-      "unit": "kg",
-      "page": 1,
-      "quote": "Weight (max) 46.5 g",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "critical_raw_materials",
-      "notStated": true
-     },
-     {
-      "field": "hazardous_substances",
-      "notStated": true
-     },
-     {
-      "field": "rated_capacity_ah",
-      "value": 3.2,
-      "unit": "Ah",
-      "page": 1,
-      "quote": "Nominal capacity 3200 mAh",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 3.6,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 3.6 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 2.5,
-      "unit": "V",
-      "page": 1,
-      "quote": "Discharge cut-off voltage 2.50 V minimum",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 4.2,
-      "unit": "V",
-      "page": 1,
-      "quote": "Charge voltage (max) 4.20 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "notStated": true
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "notStated": true
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
-      "value": 0.035,
-      "unit": "ohm",
-      "page": 1,
-      "quote": "AC impedance (max) 35 mOhm",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "expected_lifetime_cycles",
-      "value": 500,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "Cycle life (min) 500 cycles",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "idle_temperature_lower_c",
-      "value": -20,
-      "unit": "°C",
-      "page": 1,
-      "quote": "Storage temperature -20 to 45 °C",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "idle_temperature_upper_c",
-      "value": 45,
-      "unit": "°C",
-      "page": 1,
-      "quote": "Storage temperature -20 to 45 °C",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lithium",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_nickel",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lead",
-      "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 51000,
-   "worker": "scripted-2",
-   "take": "9990d2df-23f3-41c6-ad53-859f8132098c"
-  },
-  {
-   "t": 52000,
-   "worker": "scripted-2",
-   "submit": "9990d2df-23f3-41c6-ad53-859f8132098c",
-   "result": {
-    "fields": [
-     {
-      "field": "name",
-      "value": "Helion HX-280 LFP storage module",
-      "page": 1,
-      "quote": "Helion HX-280 LFP storage module"
-     },
-     {
-      "field": "battery_identifier",
-      "value": "HX280-26-004417",
-      "page": 2,
-      "quote": "Module serial number HX280-26-004417"
-     },
-     {
-      "field": "manufacturer_identifier_information",
-      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
-      "page": 1,
-      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
-     },
-     {
-      "field": "manufacturing_place",
-      "value": "Eindhoven, Netherlands",
-      "page": 2,
-      "quote": "Place of manufacture Eindhoven, Netherlands"
-     },
-     {
-      "field": "manufacturing_date",
-      "value": "2026-06",
-      "page": 2,
-      "quote": "Date of manufacture 2026-06"
-     },
-     {
-      "field": "battery_category",
-      "value": "industrial",
-      "page": 2,
-      "quote": "Battery category Industrial battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 2,
-      "quote": "Cell chemistry LFP (LiFePO4)"
-     },
-     {
-      "field": "battery_mass_kg",
-      "value": 128,
-      "unit": "kg",
-      "page": 2,
-      "quote": "Nominal mass 128 kg",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "critical_raw_materials",
-      "value": "lithium, natural graphite",
-      "page": 2,
-      "quote": "Critical raw materials lithium, natural graphite"
-     },
-     {
-      "field": "hazardous_substances",
+      "field": "eu_recycler_share_percent",
       "notStated": true
      },
      {
@@ -2328,12 +2559,8 @@
       "qualifier": "rated"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 2,
-      "quote": "Nominal voltage 51.2 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -2352,12 +2579,28 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 2,
+      "quote": "Nominal voltage 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
       "value": 14300,
       "unit": "W",
       "page": 2,
       "quote": "Maximum power 14.3 kW",
       "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
      },
      {
       "field": "initial_round_trip_efficiency_percent",
@@ -2368,8 +2611,27 @@
       "qualifier": "typical"
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "notStated": true
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 15,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 15 years"
      },
      {
       "field": "expected_lifetime_cycles",
@@ -2378,6 +2640,18 @@
       "page": 1,
       "quote": "6000 cycles nominal",
       "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
      },
      {
       "field": "idle_temperature_lower_c",
@@ -2394,13 +2668,1373 @@
       "page": 2,
       "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
       "qualifier": "maximum"
+     }
+    ]
+   }
+  },
+  {
+   "t": 17000,
+   "worker": "scripted-1",
+   "take": "ca8670a1-2bf1-4e22-9d24-12fa886ae87b"
+  },
+  {
+   "t": 18000,
+   "worker": "scripted-1",
+   "submit": "ca8670a1-2bf1-4e22-9d24-12fa886ae87b",
+   "result": {
+    "fields": [
+     {
+      "field": "gtin",
+      "value": "5609876543212",
+      "page": 1,
+      "quote": "Article number (GTIN) 5609876543212"
+     },
+     {
+      "field": "brand_name",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier",
+      "value": "PT509876543",
+      "page": 1,
+      "quote": "EORI number: PT509876543"
+     },
+     {
+      "field": "facility_identifier",
+      "value": "LT-FAM-02",
+      "page": 1,
+      "quote": "Site of final processing: facility ID LT-FAM-02"
+     },
+     {
+      "field": "country_of_final_assembly",
+      "value": "PT",
+      "page": 1,
+      "quote": "Country: Portugal"
+     },
+     {
+      "field": "product_category",
+      "value": "Hooded sweatshirt",
+      "page": 1,
+      "quote": "Product category Hooded sweatshirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "notStated": true
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "notStated": true
+     },
+     {
+      "field": "fibre_composition",
+      "value": {
+       "polyester": 80,
+       "cotton": 20
+      },
+      "unit": "%",
+      "page": 1,
+      "quote": "Composition 80% polyester, 20% cotton"
+     },
+     {
+      "field": "recycled_content_percent",
+      "value": 80,
+      "unit": "%",
+      "page": 1,
+      "quote": "Recycled content 80 % of total product mass"
+     },
+     {
+      "field": "recycled_content_origin",
+      "value": "post-consumer",
+      "page": 1,
+      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "notStated": true
+     },
+     {
+      "field": "pfas_presence",
+      "notStated": true
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "notStated": true
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "notStated": true
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "notStated": true
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "notStated": true
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint",
+      "notStated": true
+     },
+     {
+      "field": "water_usage",
+      "notStated": true
+     },
+     {
+      "field": "pef_reference_link",
+      "notStated": true
+     }
+    ]
+   }
+  },
+  {
+   "t": 19000,
+   "worker": "scripted-2",
+   "take": "41311a8f-eb85-4031-803e-2e8c8b561558"
+  },
+  {
+   "t": 20000,
+   "worker": "scripted-2",
+   "submit": "41311a8f-eb85-4031-803e-2e8c8b561558",
+   "result": {
+    "fields": [
+     {
+      "field": "gtin",
+      "value": "5609876543212",
+      "page": 1,
+      "quote": "Article number (GTIN) 5609876543212"
+     },
+     {
+      "field": "brand_name",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier",
+      "value": "PT509876543",
+      "page": 1,
+      "quote": "EORI number: PT509876543"
+     },
+     {
+      "field": "facility_identifier",
+      "value": "LT-FAM-02",
+      "page": 1,
+      "quote": "Site of final processing: facility ID LT-FAM-02"
+     },
+     {
+      "field": "country_of_final_assembly",
+      "value": "PT",
+      "page": 1,
+      "quote": "Country: Portugal"
+     },
+     {
+      "field": "product_category",
+      "value": "Hooded sweatshirt",
+      "page": 1,
+      "quote": "Product category Hooded sweatshirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "notStated": true
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "notStated": true
+     },
+     {
+      "field": "fibre_composition",
+      "value": {
+       "polyester": 80,
+       "cotton": 20
+      },
+      "unit": "%",
+      "page": 1,
+      "quote": "Composition 80% polyester, 20% cotton"
+     },
+     {
+      "field": "recycled_content_percent",
+      "value": 80,
+      "unit": "%",
+      "page": 1,
+      "quote": "Recycled content 80 % of total product mass"
+     },
+     {
+      "field": "recycled_content_origin",
+      "value": "post-consumer",
+      "page": 1,
+      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "notStated": true
+     },
+     {
+      "field": "pfas_presence",
+      "notStated": true
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "notStated": true
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "notStated": true
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "notStated": true
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "notStated": true
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint",
+      "notStated": true
+     },
+     {
+      "field": "water_usage",
+      "notStated": true
+     },
+     {
+      "field": "pef_reference_link",
+      "notStated": true
+     }
+    ]
+   }
+  },
+  {
+   "t": 21000,
+   "worker": "scripted-3",
+   "take": "c434c5af-e5b3-4376-9342-5be06b1853ed"
+  },
+  {
+   "t": 22000,
+   "worker": "scripted-3",
+   "submit": "c434c5af-e5b3-4376-9342-5be06b1853ed",
+   "result": {
+    "fields": [
+     {
+      "field": "gtin",
+      "value": "5609876543229",
+      "page": 1,
+      "quote": "EAN / GTIN 5609876543229"
+     },
+     {
+      "field": "brand_name",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier",
+      "notStated": true
+     },
+     {
+      "field": "facility_identifier",
+      "notStated": true
+     },
+     {
+      "field": "country_of_final_assembly",
+      "value": "PT",
+      "page": 1,
+      "quote": "Origin PT"
+     },
+     {
+      "field": "product_category",
+      "value": "T-shirt",
+      "page": 1,
+      "quote": "Category T-shirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "value": 0.19,
+      "unit": "kg",
+      "page": 1,
+      "quote": "Garment weight (size M): 190 g."
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "value": "XS-XXL (EU)",
+      "page": 1,
+      "quote": "Sizes XS-XXL (EU)."
+     },
+     {
+      "field": "fibre_composition",
+      "value": {
+       "cotton": 60,
+       "polyester": 35,
+       "elastane": 5
+      },
+      "unit": "%",
+      "page": 1,
+      "quote": "Cotton 60 % organic Polyester 35 % recycled, pre-consumer Elastane 5 %"
+     },
+     {
+      "field": "recycled_content_percent",
+      "value": 35,
+      "unit": "%",
+      "page": 1,
+      "quote": "Recycled content: 35 % of garment mass"
+     },
+     {
+      "field": "recycled_content_origin",
+      "value": "pre-consumer",
+      "page": 1,
+      "quote": "recycled polyester from pre-consumer production waste"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "value": "no SVHC above 0.1 % w/w",
+      "page": 1,
+      "quote": "REACH: no SVHC above 0.1 % w/w."
+     },
+     {
+      "field": "pfas_presence",
+      "value": "none intentionally added",
+      "page": 1,
+      "quote": "PFAS: none intentionally added."
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Colour fastness to washing (ISO 105-C06): grade 4."
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "value": -3,
+      "unit": "%",
+      "page": 1,
+      "quote": "Dimensional stability after washing: -3 %."
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "value": "machine wash 30 °C, do not tumble dry, iron low",
+      "page": 1,
+      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint",
+      "value": 4.1,
+      "unit": "kg CO2e",
+      "page": 1,
+      "quote": "Carbon footprint: 4.1 kg CO2e"
+     },
+     {
+      "field": "water_usage",
+      "value": 1900,
+      "unit": "L",
+      "page": 1,
+      "quote": "Water use: 1.9 m3"
+     },
+     {
+      "field": "pef_reference_link",
+      "notStated": true
+     }
+    ]
+   }
+  },
+  {
+   "t": 23000,
+   "worker": "scripted-4",
+   "take": "d320d3f2-c96d-460e-a891-d56c05fe580f"
+  },
+  {
+   "t": 24000,
+   "worker": "scripted-4",
+   "submit": "d320d3f2-c96d-460e-a891-d56c05fe580f",
+   "result": {
+    "fields": [
+     {
+      "field": "gtin",
+      "value": "5609876543229",
+      "page": 1,
+      "quote": "EAN / GTIN 5609876543229"
+     },
+     {
+      "field": "brand_name",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier",
+      "notStated": true
+     },
+     {
+      "field": "facility_identifier",
+      "notStated": true
+     },
+     {
+      "field": "country_of_final_assembly",
+      "value": "PT",
+      "page": 1,
+      "quote": "Origin PT"
+     },
+     {
+      "field": "product_category",
+      "value": "T-shirt",
+      "page": 1,
+      "quote": "Category T-shirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "value": 0.19,
+      "unit": "kg",
+      "page": 1,
+      "quote": "Garment weight (size M): 190 g."
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "value": "XS-XXL (EU)",
+      "page": 1,
+      "quote": "Sizes XS-XXL (EU)."
+     },
+     {
+      "field": "fibre_composition",
+      "value": {
+       "cotton": 60,
+       "polyester": 35,
+       "elastane": 5
+      },
+      "unit": "%",
+      "page": 1,
+      "quote": "Cotton 60 % organic Polyester 35 % recycled, pre-consumer Elastane 5 %"
+     },
+     {
+      "field": "recycled_content_percent",
+      "value": 35,
+      "unit": "%",
+      "page": 1,
+      "quote": "Recycled content: 35 % of garment mass"
+     },
+     {
+      "field": "recycled_content_origin",
+      "value": "pre-consumer",
+      "page": 1,
+      "quote": "recycled polyester from pre-consumer production waste"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "value": "no SVHC above 0.1 % w/w",
+      "page": 1,
+      "quote": "REACH: no SVHC above 0.1 % w/w."
+     },
+     {
+      "field": "pfas_presence",
+      "value": "none intentionally added",
+      "page": 1,
+      "quote": "PFAS: none intentionally added."
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Colour fastness to washing (ISO 105-C06): grade 4."
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "value": -3,
+      "unit": "%",
+      "page": 1,
+      "quote": "Dimensional stability after washing: -3 %."
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "value": "machine wash 30 °C, do not tumble dry, iron low",
+      "page": 1,
+      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint",
+      "value": 4.1,
+      "unit": "kg CO2e",
+      "page": 1,
+      "quote": "Carbon footprint: 4.1 kg CO2e"
+     },
+     {
+      "field": "water_usage",
+      "value": 1900,
+      "unit": "L",
+      "page": 1,
+      "quote": "Water use: 1.9 m3"
+     },
+     {
+      "field": "pef_reference_link",
+      "notStated": true
+     }
+    ]
+   }
+  },
+  {
+   "t": 25000,
+   "worker": "scripted-1",
+   "take": "93185b54-d12a-44d8-9cb3-2ca8988c0d75"
+  },
+  {
+   "t": 26000,
+   "worker": "scripted-1",
+   "submit": "93185b54-d12a-44d8-9cb3-2ca8988c0d75",
+   "result": {
+    "markdown": "<!-- page 1 -->\nVoltaris Mobility - Product Specification Sheet\nVoltaris NMC-800 EV Battery Pack\n80 kWh lithium-ion traction battery pack for mid-size electric passenger vehicles.\n1. Identification\nBattery identifier BAT-EU-2027-000214\nBattery category Electric vehicle battery (EV)\nManufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982)\nManufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland\nManufacturer contact compliance@voltaris-cells.example\nPlace of manufacture Komorniki, Poland\nDate of manufacture February 2027\nCommodity code (CN) 8507 60 00\nWarranty 8 years or 160 000 km, whichever comes first\n2. Electrical characteristics\nRated capacity 220 Ah\nNominal voltage 360 V\nMinimum voltage 288 V\nMaximum voltage 403 V\nOriginal power capability (nominal) 150 kW\nInitial round-trip energy efficiency (nominal) 95 %\nInitial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm\nExpected lifetime (nominal) 2500 cycles (IEC 62660-1, 25 °C, 1C/1C, 100% DoD)\n3. Physical\nNominal mass 482 kg\nIdle temperature range -20 °C to 45 °C\nExtinguishing agent Large amounts of water; do not use CO2 on a burning pack\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\n4. Materials and composition\nChemistry Lithium nickel manganese cobalt oxide (NMC 811), graphite anode\nCritical raw materials Lithium, cobalt, nickel, natural graphite\nElectrode and electrolyte Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC\nModule part number VM-811-12 (12 per pack); BMS board VB-360-02\nHazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%;\ncobalt compounds 3.2%; nickel compounds 9.8%.\n5. Carbon footprint\nLife-cycle carbon footprint per kWh of total energy over the service life: 41.8 kg CO2e/kWh\nCarbon footprint performance class: Class B\nLife-cycle stage kg CO2e/kWh\nRaw material acquisition and pre-processing 27.6\nMain product production 11.2\nDistribution 0.9\nEnd of life and recycling 2.1\n6. Recycled content (pre- and post-consumer combined)\nMaterial Recycled share Pre-consumer Post-consumer\nCobalt 22 % 14 % 8 %\nLithium 11 % 6 % 5 %\nNickel 16 % 10 % 6 %\nLead 0 % 0 % 0 %\nRenewable content share: 2 %\n7. Durability\nExpected lifetime 8 calendar years\nCycle-life reference test IEC 62660-1\nC-rate of cycle-life test 1C\nCapacity threshold for exhaustion 70 % of rated capacity\nRound-trip energy efficiency at 50 % of cycle life 92 %\nMaximum permitted battery power 180 kW\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 27000,
+   "worker": "scripted-2",
+   "take": "fcbda164-e2ac-4bc3-b4d9-25b6530305d1"
+  },
+  {
+   "t": 28000,
+   "worker": "scripted-2",
+   "submit": "fcbda164-e2ac-4bc3-b4d9-25b6530305d1",
+   "result": {
+    "markdown": "<!-- page 1 -->\nKESTREL ENERGY\nLithium-ion Cylindrical Cell KC-18650-32\nDatasheet revision C, issued 2026-03-02\nKestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia\nMade in Malaysia\nCategory under Regulation (EU) 2023/1542: portable battery\nChemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode\nSpecifications\nItem Value Condition\nNominal capacity 3200 mAh 0.2C discharge to 2.5 V, 25 °C\nNominal voltage 3.6 V\nCharge voltage (max) 4.20 V CC/CV\nDischarge cut-off voltage 2.50 V minimum\nMax. continuous discharge current 10 A 25 °C\nAC impedance (max) 35 mOhm 1 kHz, 50% SoC\nCycle life (min) 500 cycles to 80% of nominal capacity\nWeight (max) 46.5 g\nOperating temperature -10 to 60 °C discharge\nStorage temperature -20 to 45 °C up to 3 months\nValues are typical unless stated otherwise. Specifications may change without notice.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 29000,
+   "worker": "scripted-3",
+   "take": "931fce28-1349-49bf-b461-b3971a4cfd2f"
+  },
+  {
+   "t": 30000,
+   "worker": "scripted-3",
+   "submit": "931fce28-1349-49bf-b461-b3971a4cfd2f",
+   "result": {
+    "markdown": "<!-- page 1 -->\nArbor Test Laboratories - Test Report AT-2026-1184\nClient: Arbor Mobility Components S.L.\nTest item\nThe test item is a CityGlide CG-48-14 e-bike battery, a light means of transport (LMT) battery,\nserial number CG48-2026-0007731, manufactured on 14 September 2026 by Arbor Mobility Components S.L.,\nCalle de la Industria 14, 46980 Paterna, Spain, at its plant in Paterna, Spain.\nThe pack is built from 16 lithium iron phosphate (LiFePO4) prismatic cells in series.\nAccording to the manufacturer the rated capacity is 14 Ah and the nominal voltage is 51.2 V.\nThe discharge cut-off (minimum voltage) is 40.0 V and the end-of-charge (maximum voltage) is 58.4 V.\nThe nominal mass declared on the label is 3.9 kg.\nResults\nCapacity measured at 0.5C and 25 °C was 13.8 Ah, which is within the tolerance of the rated value.\nThe maximum continuous power capability was 750 W. The typical initial round-trip energy efficiency\nwas 96.1 % at 0.5C. The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.\nExpected lifetime is 2000 cycles (nominal) to 80% of rated capacity.\nOperating temperature range (discharge): -10 °C to 55 °C.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nSustainability declarations supplied by the client\nCritical raw materials present: lithium, natural graphite.\nHazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6).\nCarbon footprint: 72.4 kg CO2e/kWh (declared by the client, not verified by this laboratory).\nRecycled lithium content: 4 % (pre- and post-consumer combined).\nApproved by: J. Doe, Head of Laboratory. This report covers only the item tested.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 31000,
+   "worker": "scripted-4",
+   "take": "13fc59cf-f4d5-4d1b-a4ea-4385eb11c853"
+  },
+  {
+   "t": 32000,
+   "worker": "scripted-4",
+   "submit": "13fc59cf-f4d5-4d1b-a4ea-4385eb11c853",
+   "result": {
+    "markdown": "<!-- page 1 -->\nHELION STORAGE\nHelion HX-280 LFP storage module\nStationary energy storage for commercial and industrial sites.\nBuilt for a circular future\n16 % recycled lithium\nRoadmap target for 2031\nWhy HX-280?\nLong life: 6000 cycles nominal at 25 °C, 0.5C, 90% DoD.\nHigh efficiency: typical round-trip energy efficiency of 95.5 %.\nManufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nTechnical data\nParameter Value\nModule serial number HX280-26-004417\nBattery category Industrial battery\nCell chemistry LFP (LiFePO4)\nRated capacity 280 Ah\nNominal voltage 51.2 V\nVoltage range (min / max) 44.8 V / 57.6 V\nMaximum power 14.3 kW\nNominal mass 128 kg\nIdle (storage) temperature min -10 °C, max 45 °C\nPlace of manufacture Eindhoven, Netherlands\nDate of manufacture 2026-06\nCritical raw materials lithium, natural graphite\nCarbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh\nRecycled lithium, this production lot (pre + post consumer) 6 %\nExpected lifetime 15 years\nExtinguishing agent Water mist\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 33000,
+   "worker": "scripted-1",
+   "take": "09c60bd5-6a73-4a96-aa39-e462db6d7956"
+  },
+  {
+   "t": 34000,
+   "worker": "scripted-1",
+   "submit": "09c60bd5-6a73-4a96-aa39-e462db6d7956",
+   "result": {
+    "markdown": "<!-- page 1 -->\nNorthwind Certification Ltd\nProduct Certificate - Global Recycled Standard (GRS)\nCertificate number: NWC-GRS-2026-01187\nIssue date: 2026-09-01\nValid until: 2027-08-31\nCertified organisation\nLumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nCountry: Portugal\nEORI number: PT509876543\nSite of final processing: facility ID LT-FAM-02\nCertified product\nProduct Harbour Fleece Hoodie\nArticle number (GTIN) 5609876543212\nProduct category Hooded sweatshirt\nComposition 80% polyester, 20% cotton\nRecycled content 80 % of total product mass\nRecycled material post-consumer recycled polyester from PET bottles\nChemical requirements: the certified product complies with the GRS chemical restrictions (ZDHC MRSL).\nThis certificate does not cover social or environmental claims beyond those listed above.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 35000,
+   "worker": "scripted-2",
+   "take": "83edb7a8-75e5-44f9-adbb-81610db921cc"
+  },
+  {
+   "t": 36000,
+   "worker": "scripted-2",
+   "submit": "83edb7a8-75e5-44f9-adbb-81610db921cc",
+   "result": {
+    "markdown": "<!-- page 1 -->\nLUMEN TEXTILES - Garment Technical Sheet\nStyle Lumen Everyday Tee\nEAN / GTIN 5609876543229\nCategory T-shirt\nSupplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nOrigin PT\nProduction batch 2026-08\nFabric Single jersey, 180 gsm (nominal)\nFibre composition (by mass)\nFibre Share Note\nCotton 60 % organic\nPolyester 35 % recycled, pre-consumer\nElastane 5 %\nRecycled content: 35 % of garment mass (recycled polyester from pre-consumer production waste).\nEnvironmental data (per garment, cradle to gate)\nCarbon footprint: 4.1 kg CO2e\nWater use: 1.9 m3\nCompliance and care\nTested to STANDARD 100 by OEKO-TEX, certificate no. 26-LT-0412, valid until 2027-03-31.\nREACH: no SVHC above 0.1 % w/w.\nCare: machine wash 30 °C, do not tumble dry, iron low.\nDurability: pilling grade 4 after 2000 rubs (ISO 12945-2).\nColour fastness to washing (ISO 105-C06): grade 4. Dimensional stability after washing: -3 %.\nPFAS: none intentionally added. Garment weight (size M): 190 g. Sizes XS-XXL (EU).\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
+   }
+  },
+  {
+   "t": 37000,
+   "worker": "scripted-3",
+   "take": "a1a872c5-f43f-496e-bbb1-53037e677c9e"
+  },
+  {
+   "t": 38000,
+   "worker": "scripted-3",
+   "submit": "a1a872c5-f43f-496e-bbb1-53037e677c9e",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 39000,
+   "worker": "scripted-4",
+   "take": "229d3363-f16a-427e-840a-5e585b4ded51"
+  },
+  {
+   "t": 40000,
+   "worker": "scripted-4",
+   "submit": "229d3363-f16a-427e-840a-5e585b4ded51",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 41000,
+   "worker": "scripted-1",
+   "take": "8f841a01-6e12-4fd8-8fa4-6981addfa540"
+  },
+  {
+   "t": 42000,
+   "worker": "scripted-1",
+   "submit": "8f841a01-6e12-4fd8-8fa4-6981addfa540",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 43000,
+   "worker": "scripted-2",
+   "take": "f29ff0e9-3f0c-4fc1-a588-ad1bafdb1ebd"
+  },
+  {
+   "t": 44000,
+   "worker": "scripted-2",
+   "submit": "f29ff0e9-3f0c-4fc1-a588-ad1bafdb1ebd",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 45000,
+   "worker": "scripted-3",
+   "take": "0c94facf-29a9-4b67-a884-2c99fb657f98"
+  },
+  {
+   "t": 46000,
+   "worker": "scripted-3",
+   "submit": "0c94facf-29a9-4b67-a884-2c99fb657f98",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 47000,
+   "worker": "scripted-4",
+   "take": "196ad392-2071-4853-a028-bf73e502c60a"
+  },
+  {
+   "t": 48000,
+   "worker": "scripted-4",
+   "submit": "196ad392-2071-4853-a028-bf73e502c60a",
+   "result": {
+    "pass": true
+   }
+  },
+  {
+   "t": 49000,
+   "worker": "scripted-1",
+   "take": "bd514ef9-b30c-49ee-b2fa-b19574c78c2e"
+  },
+  {
+   "t": 50000,
+   "worker": "scripted-1",
+   "submit": "bd514ef9-b30c-49ee-b2fa-b19574c78c2e",
+   "result": {
+    "fields": [
+     {
+      "field": "commodity_code",
+      "notStated": true
+     },
+     {
+      "field": "operator_identifier_information",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier_information",
+      "value": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia",
+      "page": 1,
+      "quote": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
+     },
+     {
+      "field": "manufacturing_place",
+      "value": "Malaysia",
+      "page": 1,
+      "quote": "Made in Malaysia"
+     },
+     {
+      "field": "manufacturing_date",
+      "notStated": true
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
+      "field": "battery_category",
+      "value": "portable",
+      "page": 1,
+      "quote": "Category under Regulation (EU) 2023/1542: portable battery"
+     },
+     {
+      "field": "battery_mass_kg",
+      "value": 0.0465,
+      "unit": "kg",
+      "page": 1,
+      "quote": "Weight (max) 46.5 g",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "notStated": true
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC",
+      "page": 1,
+      "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode"
+     },
+     {
+      "field": "critical_raw_materials",
+      "notStated": true
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
+      "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lithium",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_nickel",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lead",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 3.2,
+      "unit": "Ah",
+      "page": 1,
+      "quote": "Nominal capacity 3200 mAh",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "capacity_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 2.5,
+      "unit": "V",
+      "page": 1,
+      "quote": "Discharge cut-off voltage 2.50 V minimum",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 4.2,
+      "unit": "V",
+      "page": 1,
+      "quote": "Charge voltage (max) 4.20 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 3.6,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 3.6 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "original_power_capability_w",
+      "notStated": true
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "value": 0.035,
+      "unit": "Ω",
+      "page": 1,
+      "quote": "AC impedance (max) 35 mOhm",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 500,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "Cycle life (min) 500 cycles",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "value": -20,
+      "unit": "°C",
+      "page": 1,
+      "quote": "Storage temperature -20 to 45 °C",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "idle_temperature_upper_c",
+      "value": 45,
+      "unit": "°C",
+      "page": 1,
+      "quote": "Storage temperature -20 to 45 °C",
+      "qualifier": "maximum"
+     }
+    ]
+   }
+  },
+  {
+   "t": 51000,
+   "worker": "scripted-2",
+   "take": "87e58c56-6b88-41c9-8ee3-f88d4e2649d4"
+  },
+  {
+   "t": 52000,
+   "worker": "scripted-2",
+   "submit": "87e58c56-6b88-41c9-8ee3-f88d4e2649d4",
+   "result": {
+    "fields": [
+     {
+      "field": "commodity_code",
+      "notStated": true
+     },
+     {
+      "field": "operator_identifier_information",
+      "notStated": true
+     },
+     {
+      "field": "manufacturer_identifier_information",
+      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
+      "page": 1,
+      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
+     },
+     {
+      "field": "manufacturing_place",
+      "value": "Eindhoven, Netherlands",
+      "page": 2,
+      "quote": "Place of manufacture Eindhoven, Netherlands"
+     },
+     {
+      "field": "manufacturing_date",
+      "value": "2026-06",
+      "page": 2,
+      "quote": "Date of manufacture 2026-06"
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
+     },
+     {
+      "field": "battery_category",
+      "value": "industrial",
+      "page": 2,
+      "quote": "Battery category Industrial battery"
+     },
+     {
+      "field": "battery_mass_kg",
+      "value": 128,
+      "unit": "kg",
+      "page": 2,
+      "quote": "Nominal mass 128 kg",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "extinguishing_agent",
+      "value": "Water mist",
+      "page": 2,
+      "quote": "Extinguishing agent Water mist"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
      },
      {
       "field": "carbon_footprint_functional_unit",
       "value": 58.3,
-      "unit": "kg CO2e/kWh",
+      "unit": "kgCO2e/kWh",
       "page": 2,
       "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 2,
+      "quote": "Cell chemistry LFP (LiFePO4)"
+     },
+     {
+      "field": "critical_raw_materials",
+      "value": "lithium, natural graphite",
+      "page": 2,
+      "quote": "Critical raw materials lithium, natural graphite"
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
+     },
+     {
+      "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -2420,6 +4054,169 @@
      {
       "field": "recycled_content_lead",
       "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 280,
+      "unit": "Ah",
+      "page": 2,
+      "quote": "Rated capacity 280 Ah",
+      "qualifier": "rated"
+     },
+     {
+      "field": "capacity_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 44.8,
+      "unit": "V",
+      "page": 2,
+      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 57.6,
+      "unit": "V",
+      "page": 2,
+      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 2,
+      "quote": "Nominal voltage 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "original_power_capability_w",
+      "value": 14300,
+      "unit": "W",
+      "page": 2,
+      "quote": "Maximum power 14.3 kW",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "value": 95.5,
+      "unit": "%",
+      "page": 1,
+      "quote": "typical round-trip energy efficiency of 95.5 %",
+      "qualifier": "typical"
+     },
+     {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "notStated": true
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 15,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 15 years"
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 6000,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "6000 cycles nominal",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "value": -10,
+      "unit": "°C",
+      "page": 2,
+      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "idle_temperature_upper_c",
+      "value": 45,
+      "unit": "°C",
+      "page": 2,
+      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
+      "qualifier": "maximum"
      }
     ]
    }
@@ -2427,31 +4224,35 @@
   {
    "t": 53000,
    "worker": "scripted-3",
-   "take": "f7a58a33-4b2f-4403-9131-856959bd9c4d"
+   "take": "1bfbb4bc-18e5-400e-805c-6cb933fea191"
   },
   {
    "t": 54000,
    "worker": "scripted-3",
-   "submit": "f7a58a33-4b2f-4403-9131-856959bd9c4d",
+   "submit": "1bfbb4bc-18e5-400e-805c-6cb933fea191",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "Voltaris NMC-800 EV Battery Pack",
+      "field": "commodity_code",
+      "value": "85076000",
       "page": 1,
-      "quote": "Voltaris NMC-800 EV Battery Pack"
+      "quote": "Commodity code (CN) 8507 60 00"
      },
      {
-      "field": "battery_identifier",
-      "value": "BAT-EU-2027-000214",
-      "page": 1,
-      "quote": "Battery identifier BAT-EU-2027-000214"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982), ul. Przemyslowa 8, 62-052 Komorniki, Poland",
       "page": 1,
       "quote": "Manufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982) Manufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland"
+     },
+     {
+      "field": "manufacturer_contact",
+      "value": "compliance@voltaris-cells.example",
+      "page": 1,
+      "quote": "Manufacturer contact compliance@voltaris-cells.example"
      },
      {
       "field": "manufacturing_place",
@@ -2466,16 +4267,16 @@
       "quote": "Date of manufacture February 2027"
      },
      {
+      "field": "warranty_period",
+      "value": "8 years or 160 000 km, whichever comes first",
+      "page": 1,
+      "quote": "Warranty 8 years or 160 000 km, whichever comes first"
+     },
+     {
       "field": "battery_category",
       "value": "EV",
       "page": 1,
       "quote": "Battery category Electric vehicle battery (EV)"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "NMC811",
-      "page": 2,
-      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
      },
      {
       "field": "battery_mass_kg",
@@ -2486,16 +4287,194 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "value": "Large amounts of water; do not use CO2 on a burning pack",
+      "page": 1,
+      "quote": "Extinguishing agent Large amounts of water; do not use CO2 on a burning pack"
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 41.8,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "value": 27.6,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Raw material acquisition and pre-processing 27.6"
+     },
+     {
+      "field": "cf_main_production",
+      "value": 11.2,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Main product production 11.2"
+     },
+     {
+      "field": "cf_distribution",
+      "value": 0.9,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Distribution 0.9"
+     },
+     {
+      "field": "cf_end_of_life",
+      "value": 2.1,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "End of life and recycling 2.1"
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "NMC811",
+      "page": 2,
+      "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "Lithium, cobalt, nickel, natural graphite",
       "page": 2,
       "quote": "Critical raw materials Lithium, cobalt, nickel, natural graphite"
      },
      {
+      "field": "electrode_electrolyte_materials",
+      "value": "Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC",
+      "page": 2,
+      "quote": "Electrode and electrolyte Cathode NMC 811; anode natural graphite; electrolyte LiPF6 in EC/DMC"
+     },
+     {
       "field": "hazardous_substances",
       "value": "Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%",
       "page": 2,
       "quote": "Hazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%."
+     },
+     {
+      "field": "substance_impact",
+      "notStated": true
+     },
+     {
+      "field": "component_part_numbers",
+      "value": "VM-811-12 (12 per pack); BMS board VB-360-02",
+      "page": 2,
+      "quote": "Module part number VM-811-12 (12 per pack); BMS board VB-360-02"
+     },
+     {
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "value": 22,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "recycled_content_lithium",
+      "value": 11,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "recycled_content_nickel",
+      "value": 16,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "recycled_content_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "value": 10,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "value": 14,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Nickel 16 % 10 % 6 %"
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "value": 8,
+      "unit": "%",
+      "page": 2,
+      "quote": "Cobalt 22 % 14 % 8 %"
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "value": 5,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lithium 11 % 6 % 5 %"
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "value": 0,
+      "unit": "%",
+      "page": 2,
+      "quote": "Lead 0 % 0 % 0 %"
+     },
+     {
+      "field": "renewable_content_percent",
+      "value": 2,
+      "unit": "%",
+      "page": 2,
+      "quote": "Renewable content share: 2 %"
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
      },
      {
       "field": "rated_capacity_ah",
@@ -2506,12 +4485,8 @@
       "qualifier": "rated"
      },
      {
-      "field": "nominal_voltage_v",
-      "value": 360,
-      "unit": "V",
-      "page": 1,
-      "quote": "Nominal voltage 360 V",
-      "qualifier": "nominal"
+      "field": "capacity_fade_percent",
+      "notStated": true
      },
      {
       "field": "minimum_voltage_v",
@@ -2530,12 +4505,31 @@
       "qualifier": "maximum"
      },
      {
+      "field": "nominal_voltage_v",
+      "value": 360,
+      "unit": "V",
+      "page": 1,
+      "quote": "Nominal voltage 360 V",
+      "qualifier": "nominal"
+     },
+     {
       "field": "original_power_capability_w",
       "value": 150000,
       "unit": "W",
       "page": 1,
       "quote": "Original power capability (nominal) 150 kW",
       "qualifier": "nominal"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "value": 180000,
+      "unit": "W",
+      "page": 2,
+      "quote": "Maximum permitted battery power 180 kW"
      },
      {
       "field": "initial_round_trip_efficiency_percent",
@@ -2546,12 +4540,34 @@
       "qualifier": "nominal"
      },
      {
+      "field": "round_trip_efficiency_half_life_percent",
+      "value": 92,
+      "unit": "%",
+      "page": 2,
+      "quote": "Round-trip energy efficiency at 50 % of cycle life 92 %"
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
       "field": "initial_internal_resistance_ohm",
       "value": 0.135,
-      "unit": "ohm",
+      "unit": "Ω",
       "page": 1,
       "quote": "Initial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm",
       "qualifier": "nominal"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "value": 8,
+      "unit": "years",
+      "page": 2,
+      "quote": "Expected lifetime 8 calendar years"
      },
      {
       "field": "expected_lifetime_cycles",
@@ -2560,6 +4576,26 @@
       "page": 1,
       "quote": "Expected lifetime (nominal) 2500 cycles",
       "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "value": "IEC 62660-1",
+      "page": 2,
+      "quote": "Cycle-life reference test IEC 62660-1"
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "value": 1,
+      "unit": "A/Ah",
+      "page": 2,
+      "quote": "C-rate of cycle-life test 1C"
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "value": 70,
+      "unit": "%",
+      "page": 2,
+      "quote": "Capacity threshold for exhaustion 70 % of rated capacity"
      },
      {
       "field": "idle_temperature_lower_c",
@@ -2576,41 +4612,6 @@
       "page": 1,
       "quote": "Idle temperature range -20 °C to 45 °C",
       "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "value": 41.8,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh"
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "value": 22,
-      "unit": "%",
-      "page": 2,
-      "quote": "Cobalt 22 %"
-     },
-     {
-      "field": "recycled_content_lithium",
-      "value": 11,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lithium 11 %"
-     },
-     {
-      "field": "recycled_content_nickel",
-      "value": 16,
-      "unit": "%",
-      "page": 2,
-      "quote": "Nickel 16 %"
-     },
-     {
-      "field": "recycled_content_lead",
-      "value": 0,
-      "unit": "%",
-      "page": 2,
-      "quote": "Lead 0 %"
      }
     ]
    }
@@ -2618,31 +4619,31 @@
   {
    "t": 55000,
    "worker": "scripted-4",
-   "take": "a1952658-e956-4b71-a257-51fcccdadf63"
+   "take": "811f6581-3feb-4b1d-9a92-4256b490af0d"
   },
   {
    "t": 56000,
    "worker": "scripted-4",
-   "submit": "a1952658-e956-4b71-a257-51fcccdadf63",
+   "submit": "811f6581-3feb-4b1d-9a92-4256b490af0d",
    "result": {
     "fields": [
      {
-      "field": "name",
-      "value": "CityGlide CG-48-14 e-bike battery",
-      "page": 1,
-      "quote": "CityGlide CG-48-14 e-bike battery"
+      "field": "commodity_code",
+      "notStated": true
      },
      {
-      "field": "battery_identifier",
-      "value": "CG48-2026-0007731",
-      "page": 1,
-      "quote": "serial number CG48-2026-0007731"
+      "field": "operator_identifier_information",
+      "notStated": true
      },
      {
       "field": "manufacturer_identifier_information",
       "value": "Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain",
       "page": 1,
       "quote": "by Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain"
+     },
+     {
+      "field": "manufacturer_contact",
+      "notStated": true
      },
      {
       "field": "manufacturing_place",
@@ -2652,21 +4653,19 @@
      },
      {
       "field": "manufacturing_date",
-      "value": "2026-09-14",
+      "value": "2026-09",
       "page": 1,
       "quote": "manufactured on 14 September 2026"
+     },
+     {
+      "field": "warranty_period",
+      "notStated": true
      },
      {
       "field": "battery_category",
       "value": "LMT",
       "page": 1,
       "quote": "a light means of transport (LMT) battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 1,
-      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
      },
      {
       "field": "battery_mass_kg",
@@ -2677,10 +4676,51 @@
       "qualifier": "nominal"
      },
      {
+      "field": "extinguishing_agent",
+      "notStated": true
+     },
+     {
+      "field": "labels_meaning",
+      "notStated": true
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 72.4,
+      "unit": "kgCO2e/kWh",
+      "page": 2,
+      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+     },
+     {
+      "field": "cf_raw_material",
+      "notStated": true
+     },
+     {
+      "field": "cf_main_production",
+      "notStated": true
+     },
+     {
+      "field": "cf_distribution",
+      "notStated": true
+     },
+     {
+      "field": "cf_end_of_life",
+      "notStated": true
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 1,
+      "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells"
+     },
+     {
       "field": "critical_raw_materials",
       "value": "lithium, natural graphite",
       "page": 2,
       "quote": "Critical raw materials present: lithium, natural graphite."
+     },
+     {
+      "field": "electrode_electrolyte_materials",
+      "notStated": true
      },
      {
       "field": "hazardous_substances",
@@ -2689,83 +4729,24 @@
       "quote": "Hazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6)."
      },
      {
-      "field": "rated_capacity_ah",
-      "value": 14,
-      "unit": "Ah",
-      "page": 1,
-      "quote": "the rated capacity is 14 Ah",
-      "qualifier": "rated"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 1,
-      "quote": "the nominal voltage is 51.2 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 40,
-      "unit": "V",
-      "page": 1,
-      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 58.4,
-      "unit": "V",
-      "page": 1,
-      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "value": 750,
-      "unit": "W",
-      "page": 1,
-      "quote": "The maximum continuous power capability was 750 W.",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "value": 96.1,
-      "unit": "%",
-      "page": 1,
-      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
-      "qualifier": "typical"
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
-      "value": 0.085,
-      "unit": "ohm",
-      "page": 1,
-      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
-      "qualifier": "typical"
-     },
-     {
-      "field": "expected_lifetime_cycles",
-      "value": 2000,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "Expected lifetime is 2000 cycles (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "idle_temperature_lower_c",
+      "field": "substance_impact",
       "notStated": true
      },
      {
-      "field": "idle_temperature_upper_c",
+      "field": "component_part_numbers",
       "notStated": true
      },
      {
-      "field": "carbon_footprint_functional_unit",
-      "value": 72.4,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "Carbon footprint: 72.4 kg CO2e/kWh"
+      "field": "spare_parts_postal_address",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_email",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_web",
+      "notStated": true
      },
      {
       "field": "recycled_content_cobalt",
@@ -2785,6 +4766,162 @@
      {
       "field": "recycled_content_lead",
       "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "pre_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_nickel",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lithium",
+      "notStated": true
+     },
+     {
+      "field": "post_consumer_recycled_lead",
+      "notStated": true
+     },
+     {
+      "field": "renewable_content_percent",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycling_bonus",
+      "notStated": true
+     },
+     {
+      "field": "eu_recycler_share_percent",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 14,
+      "unit": "Ah",
+      "page": 1,
+      "quote": "the rated capacity is 14 Ah",
+      "qualifier": "rated"
+     },
+     {
+      "field": "capacity_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 40,
+      "unit": "V",
+      "page": 1,
+      "quote": "The discharge cut-off (minimum voltage) is 40.0 V",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 58.4,
+      "unit": "V",
+      "page": 1,
+      "quote": "the end-of-charge (maximum voltage) is 58.4 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 1,
+      "quote": "the nominal voltage is 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "original_power_capability_w",
+      "value": 750,
+      "unit": "W",
+      "page": 1,
+      "quote": "The maximum continuous power capability was 750 W.",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "power_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "maximum_permitted_power_w",
+      "notStated": true
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "value": 96.1,
+      "unit": "%",
+      "page": 1,
+      "quote": "The typical initial round-trip energy efficiency was 96.1 %",
+      "qualifier": "typical"
+     },
+     {
+      "field": "round_trip_efficiency_half_life_percent",
+      "notStated": true
+     },
+     {
+      "field": "round_trip_efficiency_fade_percent",
+      "notStated": true
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "value": 0.085,
+      "unit": "Ω",
+      "page": 1,
+      "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.",
+      "qualifier": "typical"
+     },
+     {
+      "field": "internal_resistance_increase_percent",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_years",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 2000,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "Expected lifetime is 2000 cycles (nominal)",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "cycle_life_reference_test",
+      "notStated": true
+     },
+     {
+      "field": "cycle_life_c_rate",
+      "notStated": true
+     },
+     {
+      "field": "capacity_threshold_exhaustion_percent",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "notStated": true
+     },
+     {
+      "field": "idle_temperature_upper_c",
+      "notStated": true
      }
     ]
    }
@@ -2792,20 +4929,14 @@
   {
    "t": 57000,
    "worker": "scripted-1",
-   "take": "7110bfd5-d836-4725-87f5-c207eaa28158"
+   "take": "b97efd86-3efa-45ab-a71a-2ea29607b600"
   },
   {
    "t": 58000,
    "worker": "scripted-1",
-   "submit": "7110bfd5-d836-4725-87f5-c207eaa28158",
+   "submit": "b97efd86-3efa-45ab-a71a-2ea29607b600",
    "result": {
     "fields": [
-     {
-      "field": "product_name",
-      "value": "Lumen Everyday Tee",
-      "page": 1,
-      "quote": "Style Lumen Everyday Tee"
-     },
      {
       "field": "gtin",
       "value": "5609876543229",
@@ -2813,28 +4944,49 @@
       "quote": "EAN / GTIN 5609876543229"
      },
      {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Supplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
+      "field": "brand_name",
+      "notStated": true
      },
      {
-      "field": "country_of_manufacture",
+      "field": "manufacturer_identifier",
+      "notStated": true
+     },
+     {
+      "field": "facility_identifier",
+      "notStated": true
+     },
+     {
+      "field": "country_of_final_assembly",
       "value": "PT",
       "page": 1,
       "quote": "Origin PT"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-08",
-      "page": 1,
-      "quote": "Production batch 2026-08"
      },
      {
       "field": "product_category",
       "value": "T-shirt",
       "page": 1,
       "quote": "Category T-shirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "value": 0.19,
+      "unit": "kg",
+      "page": 1,
+      "quote": "Garment weight (size M): 190 g."
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "value": "XS-XXL (EU)",
+      "page": 1,
+      "quote": "Sizes XS-XXL (EU)."
      },
      {
       "field": "fibre_composition",
@@ -2855,10 +5007,109 @@
       "quote": "Recycled content: 35 % of garment mass"
      },
      {
-      "field": "recycled_fibre_type",
-      "value": "recycled polyester from pre-consumer production waste",
+      "field": "recycled_content_origin",
+      "value": "pre-consumer",
       "page": 1,
       "quote": "recycled polyester from pre-consumer production waste"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "value": "no SVHC above 0.1 % w/w",
+      "page": 1,
+      "quote": "REACH: no SVHC above 0.1 % w/w."
+     },
+     {
+      "field": "pfas_presence",
+      "value": "none intentionally added",
+      "page": 1,
+      "quote": "PFAS: none intentionally added."
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "value": 4,
+      "unit": "grade",
+      "page": 1,
+      "quote": "Colour fastness to washing (ISO 105-C06): grade 4."
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "value": -3,
+      "unit": "%",
+      "page": 1,
+      "quote": "Dimensional stability after washing: -3 %."
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "value": "machine wash 30 °C, do not tumble dry, iron low",
+      "page": 1,
+      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
      },
      {
       "field": "carbon_footprint",
@@ -2875,48 +5126,8 @@
       "quote": "Water use: 1.9 m3"
      },
      {
-      "field": "fabric_weight",
-      "value": 180,
-      "unit": "g/m2",
-      "page": 1,
-      "quote": "Fabric Single jersey, 180 gsm (nominal)",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "certification_scheme",
-      "value": "OEKO-TEX 100",
-      "page": 1,
-      "quote": "Tested to STANDARD 100 by OEKO-TEX"
-     },
-     {
-      "field": "certificate_number",
-      "value": "26-LT-0412",
-      "page": 1,
-      "quote": "certificate no. 26-LT-0412"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-03-31",
-      "page": 1,
-      "quote": "valid until 2027-03-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "REACH: no SVHC above 0.1 % w/w; STANDARD 100 by OEKO-TEX",
-      "page": 1,
-      "quote": "REACH: no SVHC above 0.1 % w/w."
-     },
-     {
-      "field": "care_instructions",
-      "value": "machine wash 30 °C, do not tumble dry, iron low",
-      "page": 1,
-      "quote": "Care: machine wash 30 °C, do not tumble dry, iron low."
-     },
-     {
-      "field": "durability_rating",
-      "value": "pilling grade 4 after 2000 rubs (ISO 12945-2)",
-      "page": 1,
-      "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
+      "field": "pef_reference_link",
+      "notStated": true
      }
     ]
    }
@@ -2924,20 +5135,14 @@
   {
    "t": 60000,
    "worker": "scripted-3",
-   "take": "e4223b95-1d21-491a-a286-681271c3107e"
+   "take": "fe70ed89-43cc-490e-9072-cde5ac84c924"
   },
   {
    "t": 61000,
    "worker": "scripted-3",
-   "submit": "e4223b95-1d21-491a-a286-681271c3107e",
+   "submit": "fe70ed89-43cc-490e-9072-cde5ac84c924",
    "result": {
     "fields": [
-     {
-      "field": "product_name",
-      "value": "Harbour Fleece Hoodie",
-      "page": 1,
-      "quote": "Product Harbour Fleece Hoodie"
-     },
      {
       "field": "gtin",
       "value": "5609876543212",
@@ -2945,28 +5150,48 @@
       "quote": "Article number (GTIN) 5609876543212"
      },
      {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
+      "field": "brand_name",
+      "notStated": true
      },
      {
-      "field": "country_of_manufacture",
+      "field": "manufacturer_identifier",
+      "value": "PT509876543",
+      "page": 1,
+      "quote": "EORI number: PT509876543"
+     },
+     {
+      "field": "facility_identifier",
+      "value": "LT-FAM-02",
+      "page": 1,
+      "quote": "Site of final processing: facility ID LT-FAM-02"
+     },
+     {
+      "field": "country_of_final_assembly",
       "value": "PT",
       "page": 1,
       "quote": "Country: Portugal"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-09-01",
-      "page": 1,
-      "quote": "Issue date: 2026-09-01"
      },
      {
       "field": "product_category",
       "value": "Hooded sweatshirt",
       "page": 1,
       "quote": "Product category Hooded sweatshirt"
+     },
+     {
+      "field": "product_mass_kg",
+      "notStated": true
+     },
+     {
+      "field": "date_placed_on_market",
+      "notStated": true
+     },
+     {
+      "field": "declaration_of_conformity_id",
+      "notStated": true
+     },
+     {
+      "field": "size",
+      "notStated": true
      },
      {
       "field": "fibre_composition",
@@ -2986,10 +5211,94 @@
       "quote": "Recycled content 80 % of total product mass"
      },
      {
-      "field": "recycled_fibre_type",
-      "value": "post-consumer recycled polyester from PET bottles",
+      "field": "recycled_content_origin",
+      "value": "post-consumer",
       "page": 1,
       "quote": "Recycled material post-consumer recycled polyester from PET bottles"
+     },
+     {
+      "field": "animal_origin_parts",
+      "notStated": true
+     },
+     {
+      "field": "coatings_membranes_laminates",
+      "notStated": true
+     },
+     {
+      "field": "substances_of_concern",
+      "notStated": true
+     },
+     {
+      "field": "pfas_presence",
+      "notStated": true
+     },
+     {
+      "field": "dyeing_finishing_class",
+      "notStated": true
+     },
+     {
+      "field": "durability_class",
+      "notStated": true
+     },
+     {
+      "field": "abrasion_resistance_cycles",
+      "notStated": true
+     },
+     {
+      "field": "pilling_grade",
+      "notStated": true
+     },
+     {
+      "field": "colour_fastness_washing_grade",
+      "notStated": true
+     },
+     {
+      "field": "dimensional_stability_percent",
+      "notStated": true
+     },
+     {
+      "field": "microfibre_release_class",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_wash_cycles",
+      "notStated": true
+     },
+     {
+      "field": "care_instructions",
+      "notStated": true
+     },
+     {
+      "field": "repairability_score",
+      "notStated": true
+     },
+     {
+      "field": "spare_parts_availability",
+      "notStated": true
+     },
+     {
+      "field": "repair_instructions_link",
+      "notStated": true
+     },
+     {
+      "field": "commercial_guarantee_months",
+      "notStated": true
+     },
+     {
+      "field": "recyclability_class",
+      "notStated": true
+     },
+     {
+      "field": "disassembly_information_link",
+      "notStated": true
+     },
+     {
+      "field": "take_back_scheme_link",
+      "notStated": true
+     },
+     {
+      "field": "packaging_composition",
+      "notStated": true
      },
      {
       "field": "carbon_footprint",
@@ -3000,39 +5309,7 @@
       "notStated": true
      },
      {
-      "field": "fabric_weight",
-      "notStated": true
-     },
-     {
-      "field": "certification_scheme",
-      "value": "GRS",
-      "page": 1,
-      "quote": "Product Certificate - Global Recycled Standard (GRS)"
-     },
-     {
-      "field": "certificate_number",
-      "value": "NWC-GRS-2026-01187",
-      "page": 1,
-      "quote": "Certificate number: NWC-GRS-2026-01187"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-08-31",
-      "page": 1,
-      "quote": "Valid until: 2027-08-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "complies with the GRS chemical restrictions (ZDHC MRSL)",
-      "page": 1,
-      "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)."
-     },
-     {
-      "field": "care_instructions",
-      "notStated": true
-     },
-     {
-      "field": "durability_rating",
+      "field": "pef_reference_link",
       "notStated": true
      }
     ]

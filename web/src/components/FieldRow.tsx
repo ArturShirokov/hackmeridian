@@ -59,7 +59,10 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
         style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.25fr) 128px 40px 92px", alignItems: "center", gap: 10, padding: "0 20px", minHeight: 52, cursor: "pointer" }}>
         <span style={{ font: "500 14.5px/1.25 var(--sans)", display: "flex", flexDirection: "column", gap: 3 }}>
           {field.label}
-          {tieBreak && <TieBreakTag small />}
+          <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {field.author && <span data-author style={{ font: "500 11px/1 var(--mono)", color: "#3D3A34", border: "1px solid var(--rule)", padding: "2px 5px" }}>{field.author}</span>}
+            {tieBreak && <TieBreakTag small />}
+          </span>
         </span>
         <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
           {badge === "upheld" && final?.corrected && <span style={{ font: "500 13px/1.2 var(--mono)", color: "#5E594F", textDecoration: "line-through" }}>{final.corrected.was}</span>}

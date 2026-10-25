@@ -22,12 +22,14 @@ extraction tools exist, but when a value is wrong the Brand carries the cost and
 
 ## How it works
 
-1. The Brand uploads a Supplier's PDF and picks a Template (battery or textile).
+1. The Brand uploads a Supplier's PDF and picks a Template: battery (60 Fields) or textile (37), the official lists
+   in [docs/templates/official-templates.md](docs/templates/official-templates.md), grouped by section.
 2. Our Pipeline turns the Document into Field values. It is a chain of independent Sieves, each a different view of
    the Document read by a different AI Worker: extract from the original PDF, turn it into Markdown, check the
    Markdown against the original, extract again from the checked Markdown. Where the two extractions disagree, a
    third Worker breaks the tie. A Field that still has no clear answer comes back as **Not stated**, with the quotes
-   as evidence, and becomes a Supplier Request instead of a guess.
+   as evidence. Each Field has an Author: the Supplier's Not stated Fields go into one Supplier Request per Document
+   instead of a guess, and the Brand's are listed as "Brand to provide".
 3. On delivery the Operator locks a Bond, and the Brand a Fee, in escrow on Stellar. The escrow holds a hash of the
    delivered values, so the output cannot change quietly afterwards.
 4. During the Challenge Window anyone can Challenge a Field by citing the page and the words of the Document that
@@ -110,6 +112,11 @@ Then give the session this prompt:
 
 > You are Worker `<your-id>`. Call `next_job` with worker `<your-id>`. If there is no Job, wait 10 seconds and
 > try again. Otherwise do the Job as its instructions say and hand it in with `submit_job`. Repeat.
+
+One extraction Job covers the whole Template, up to 60 Fields, answered in one submission. Measured once
+(25 Oct 2026): a Claude Code session (Opus 5.5) acting as Worker took the "Original" extraction Job for
+`battery-01-voltaris-pack-spec.pdf` over MCP and handed in all 60 Fields in **37 s** from `next_job` to the accepted
+`submit_job`, first try, no rejection. One Document, one model, one run: a latency sample, not a benchmark.
 
 Use a different id for every session. The Job Board uses it to keep Sieves independent: a Worker does at most one
 extraction Sieve (or tie-break) per Document, across both Pipelines. A live run with our Pipeline and the Baseline

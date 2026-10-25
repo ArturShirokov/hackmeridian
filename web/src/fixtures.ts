@@ -39,12 +39,15 @@ const templateList: ApiTemplate[] = Object.values(templates).map((t) => ({
 
 const q = (page: number, quote: string, rect?: Rect, mark?: string): ApiQuote => ({ page, quote, rects: rect ? [rect] : [], ...(mark && { mark }) });
 const r = (x: number, y: number, w: number, h = 0.011): Rect => ({ x, y, w, h });
+/** Section and Author of a battery Field, from the Template. */
+const meta = (name: string) => {
+  const f = templates.battery!.fields.find((f) => f.name === name)!;
+  return { section: f.section, author: f.author };
+};
 const final = (name: string, label: string, display: string, value: number | string, evidence: ApiQuote, extra: Partial<ApiField> = {}): ApiField =>
-  ({ name, label, tieBreak: false, status: "final", value, display, evidence, ...extra }) as ApiField;
+  ({ name, label, ...meta(name), tieBreak: false, status: "final", value, display, evidence, ...extra }) as ApiField;
 
 const ours: ApiField[] = [
-  final("name", "Battery model name", "Voltaris NMC-800 EV Battery Pack", "Voltaris NMC-800 EV Battery Pack", q(1, "Voltaris NMC-800 EV Battery Pack", r(0.084, 0.086, 0.381, 0.017))),
-  final("battery_identifier", "Battery identifier", "BAT-EU-2027-000214", "BAT-EU-2027-000214", q(1, "Battery identifier BAT-EU-2027-000214", r(0.084, 0.169, 0.41), "BAT-EU-2027-000214")),
   final("manufacturing_place", "Place of manufacture", "Komorniki, Poland", "Komorniki, Poland", q(1, "Place of manufacture Komorniki, Poland", r(0.084, 0.245, 0.382), "Komorniki, Poland")),
   final("manufacturing_date", "Date of manufacture", "2027-02", "2027-02", q(1, "Date of manufacture February 2027", r(0.084, 0.264, 0.356), "February 2027")),
   final("rated_capacity_ah", "Rated capacity", "220 Ah (rated)", 220, q(1, "Rated capacity 220 Ah", r(0.084, 0.319, 0.471), "220 Ah"), { unit: "Ah", qualifier: "rated", tieBreak: true }),
@@ -53,7 +56,7 @@ const ours: ApiField[] = [
     q(1, "Expected lifetime (nominal) 2500 cycles (IEC 62660-1, 25 °C, 1C/1C, 100% DoD)", r(0.084, 0.452, 0.798), "2500 cycles"), { unit: "cycles", qualifier: "nominal" }),
   final("battery_mass_kg", "Battery mass", "482 kg (nominal)", 482, q(1, "Nominal mass 482 kg", r(0.084, 0.507, 0.468), "482 kg"), { unit: "kg", qualifier: "nominal" }),
   {
-    name: "initial_internal_resistance_ohm", label: "Initial internal resistance (pack)", tieBreak: true, status: "not stated",
+    name: "initial_internal_resistance_ohm", label: "Initial internal resistance (pack)", ...meta("initial_internal_resistance_ohm"), tieBreak: true, status: "not stated",
     quotes: [q(1, "Initial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm", r(0.084, 0.433, 0.655))],
     supplierRequest: "Hello Voltaris Mobility team,\n\nFor the Voltaris NMC-800 EV Battery Pack we need one value for our EU battery passport:\n\nInitial internal resistance of the pack (ohm), with the document and page that states it.\n\nThank you,\nInês Duarte\nVoltaris",
   },
@@ -98,7 +101,8 @@ const doc1: ApiDocument = {
   fileUrl: "/fixtures/battery-01-voltaris-pack-spec.pdf",
   views: [
     {
-      pipeline: "ours", label: "Origyn", operator: "Origyn", deliveredAt: t0 - 2 * min, fields: ours,
+      pipeline: "ours", label: "Origyn", operator: "Origyn", deliveredAt: t0 - 2 * min, fields: ours, brandToProvide: [],
+      supplierRequest: (ours.find((f) => f.status === "not stated") as { supplierRequest: string }).supplierRequest,
       markdown: "<!-- page 1 -->\n# Voltaris NMC-800 EV Battery Pack\n\n| Property | Value |\n|---|---|\n| Battery identifier | BAT-EU-2027-000214 |\n| Rated capacity | 220 Ah |\n| Nominal voltage | 360 V |\n\n<!-- page 2 -->\n## Chemistry\n\nLithium nickel manganese cobalt oxide (NMC 811), graphite anode\n",
       escrow: escrow("Origyn", 0, "e4b1c0ffee00000000000000000000000000000000000000000000000090af"),
       stations: [
@@ -110,7 +114,7 @@ const doc1: ApiDocument = {
       ],
     },
     {
-      pipeline: "baseline", label: "Baseline", operator: "Baseline", deliveredAt: t0 - 6 * min, fields: baseline,
+      pipeline: "baseline", label: "Baseline", operator: "Baseline", deliveredAt: t0 - 6 * min, fields: baseline, brandToProvide: [],
       escrow: escrow("Baseline", 0, "7c02beef00000000000000000000000000000000000000000000000000e91b"),
       stations: [station(0, "extract", "One-pass extraction", "done", "12 values stated", "OpenCode")],
     },
@@ -119,16 +123,16 @@ const doc1: ApiDocument = {
 };
 
 const converging = (f: ApiField, i: number): ApiField =>
-  i < 3 ? { name: f.name, label: f.label, tieBreak: false, status: "final", withheld: true } : { name: f.name, label: f.label, tieBreak: i % 4 === 0, status: "converging" };
+  i < 3 ? { name: f.name, label: f.label, ...meta(f.name), tieBreak: false, status: "final", withheld: true } : { name: f.name, label: f.label, ...meta(f.name), tieBreak: i % 4 === 0, status: "converging" };
 const doc2Ours = ours.map(converging);
-const doc2Base = ours.map((f) => ({ name: f.name, label: f.label, tieBreak: false, status: "final", withheld: true }) as ApiField);
+const doc2Base = ours.map((f) => ({ name: f.name, label: f.label, ...meta(f.name), tieBreak: false, status: "final", withheld: true }) as ApiField);
 const doc2: ApiDocument = {
   id: "doc-2", name: "battery-02-kestrel-18650-cell-datasheet.pdf", supplier: "Kestrel Cells", template: "battery", pages: 2, uploadedAt: t0 - 3 * min,
   pipelines: { ours: { status: "processing", counts: counts(doc2Ours) }, baseline: { status: "processing", counts: counts(doc2Base) } },
   fileUrl: "/fixtures/battery-02-kestrel-18650-cell-datasheet.pdf",
   views: [
     {
-      pipeline: "ours", label: "Origyn", operator: "Origyn", fields: doc2Ours,
+      pipeline: "ours", label: "Origyn", operator: "Origyn", fields: doc2Ours, brandToProvide: [],
       stations: [
         station(0, "extract", "Original", "done", "11 values stated", "Claude Code"),
         station(1, "markdown", "Markdown", "done", "2 pages · 2 tables", "OpenCode"),
@@ -138,7 +142,7 @@ const doc2: ApiDocument = {
       ],
     },
     {
-      pipeline: "baseline", label: "Baseline", operator: "Baseline", fields: doc2Base,
+      pipeline: "baseline", label: "Baseline", operator: "Baseline", fields: doc2Base, brandToProvide: [],
       stations: [station(0, "extract", "One-pass extraction", "done", "12 values stated", "OpenCode")],
     },
   ],

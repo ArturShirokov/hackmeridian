@@ -1,9 +1,9 @@
 // The JSON contract between the Job Board (web.ts) and the front end (web/). Types only: web/ imports this file.
 // Sieve independence: while any Pipeline for a Document is still extracting, no value, quote, rect, differs or export is served.
 import type { SieveKind } from "./pipelines.js";
-import type { FieldType } from "./templates.js";
+import type { Author, FieldType } from "./templates.js";
 
-export type { SieveKind, FieldType };
+export type { Author, SieveKind, FieldType };
 
 /** USDC decimal string, as in ledger.ts ("10", "2.5"). */
 export type Usdc = string;
@@ -28,7 +28,19 @@ export interface ApiConfig {
 export interface ApiTemplate {
   name: string;
   label: string;
-  fields: { name: string; label: string; type: FieldType; unit?: string; qualifiers?: string[]; highStake?: boolean }[];
+  fields: {
+    /** Number in the source list: "18", "38a", "2.2.1". */
+    no: string;
+    name: string;
+    label: string;
+    type: FieldType;
+    unit?: string;
+    qualifiers?: string[];
+    highStake?: boolean;
+    section: string;
+    author: Author;
+    hint?: string;
+  }[];
   /** Three example Field labels for the Upload card. */
   examples: string[];
 }
@@ -73,7 +85,8 @@ export interface ApiQuote {
   mark?: string;
 }
 
-export type ApiField = { name: string; label: string; tieBreak: boolean; challenge?: ApiChallengeSummary } & (
+/** section and author come from the Template: the Review groups rows by section; author routes a Not stated Field. */
+export type ApiField = { name: string; label: string; section: string; author: Author; tieBreak: boolean; challenge?: ApiChallengeSummary } & (
   /** Includes Sieves disagreeing: never any values while converging. */
   | { status: "converging" }
   | {
@@ -87,7 +100,8 @@ export type ApiField = { name: string; label: string; tieBreak: boolean; challen
       /** Set when an upheld Challenge replaced the delivered value; `was` is the delivered display ("Not stated" if none). */
       corrected?: { was: string };
     }
-  | { status: "not stated"; quotes: ApiQuote[]; supplierRequest: string }
+  /** supplierRequest (this Field alone) only when the Supplier is the Author; a Brand Field is "Brand to provide". */
+  | { status: "not stated"; quotes: ApiQuote[]; supplierRequest?: string }
   /** The status is known but its value is held back while another Sieve for this Document is still extracting. */
   | { status: "final" | "not stated"; withheld: true }
 );
@@ -157,6 +171,10 @@ export interface ApiPipelineView {
   /** Source Markdown: the checked Markdown this Pipeline read; absent for Pipelines without one, and while withheld. */
   markdown?: string;
   fields: ApiField[];
+  /** Once values are shown: one combined Supplier Request for every Supplier-authored Not stated Field, if any. */
+  supplierRequest?: string;
+  /** Once values are shown: the names of the Brand-authored Not stated Fields, for the Brand to fill in itself. */
+  brandToProvide: string[];
 }
 
 /** GET /api/documents/:id */

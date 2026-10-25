@@ -70,7 +70,7 @@ test("a second failed faithfulness check delivers every Field as Not stated, wit
   expect(await (await worker("w2")).nextJob()).toBeNull();
 
   const doc = await brand.document(docId);
-  expect(doc.fields.every((f) => f.status === "not stated" && f.supplierRequest)).toBe(true);
+  expect(doc.fields.every((f) => f.status === "not stated" && !!f.supplierRequest === (f.author === "Supplier"))).toBe(true);
   const cap = doc.fields.find((f) => f.name === "rated_capacity_ah")!;
   expect(cap.quotes).toMatchObject([{ page: 1, quote: "Capacity: 3200 mAh (nominal)" }]);
   expect(cap.supplierRequest).toContain("Capacity: 3200 mAh (nominal)");
@@ -100,21 +100,21 @@ test("on a scan with no text layer, quotes are checked against the checked Markd
   const inMarkdown = { ...capacity, quote: "3200 mAh (nominal)" };
   const name = { value: "Cell C-32", page: 1, quote: "Cell C-99" }; // not in the Markdown
   const e1 = (await w1.nextJob())!;
-  await w1.submitJob(e1.id, extraction(e1, { rated_capacity_ah: inMarkdown, name }));
+  await w1.submitJob(e1.id, extraction(e1, { rated_capacity_ah: inMarkdown, manufacturing_place: name }));
   const md = (await w1.nextJob())!;
   await w1.submitJob(md.id, { markdown });
   const check = (await w1.nextJob())!;
   await w1.submitJob(check.id, { pass: true });
   const e2 = (await w2.nextJob())!;
-  await w2.submitJob(e2.id, extraction(e2, { rated_capacity_ah: inMarkdown, name }));
+  await w2.submitJob(e2.id, extraction(e2, { rated_capacity_ah: inMarkdown, manufacturing_place: name }));
 
   const fields = (await brand.document(docId)).fields;
   expect(fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ status: "final", withheld: true }); // until the tie-break is in
-  expect(fields.find((f) => f.name === "name")).toMatchObject({ status: "converging", tieBreak: true });
+  expect(fields.find((f) => f.name === "manufacturing_place")).toMatchObject({ status: "converging", tieBreak: true });
   const w3 = await worker("w3");
   const tie = (await w3.nextJob())!;
   await w3.submitJob(tie.id, extraction(tie));
   const delivered = (await brand.document(docId)).fields;
   expect(delivered.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, evidence: { rects: [] } }); // a scan: no boxes
-  expect(delivered.find((f) => f.name === "name")).toMatchObject({ status: "not stated" });
+  expect(delivered.find((f) => f.name === "manufacturing_place")).toMatchObject({ status: "not stated" });
 });

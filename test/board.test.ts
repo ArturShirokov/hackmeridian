@@ -47,7 +47,7 @@ test("a malformed submission is rejected with what is wrong, and the Worker can 
   const cases: [unknown, RegExp][] = [
     [{ fields: full.fields.filter((f) => f.field !== "battery_chemistry") }, /missing.*battery_chemistry/],
     [{ fields: [...full.fields, { field: "colour", notStated: true }] }, /unknown Field "colour"/],
-    [{ fields: [...full.fields, { field: "name", notStated: true }] }, /"name" given more than once/],
+    [{ fields: [...full.fields, { field: "manufacturing_place", notStated: true }] }, /"manufacturing_place" given more than once/],
     [extraction(job, { rated_capacity_ah: { ...capacity, value: "220" } }), /rated_capacity_ah.*number/],
     [extraction(job, { rated_capacity_ah: { ...capacity, unit: undefined } }), /rated_capacity_ah.*unit/],
     [extraction(job, { rated_capacity_ah: { ...capacity, qualifier: "peak" } }), /rated_capacity_ah.*qualifier "peak"/],
