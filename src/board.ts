@@ -1,6 +1,7 @@
 // The Job Board: owns Documents, Jobs and Sieve results. Workers reach it through mcp.ts,
 // the Brand through web.ts. It touches the outside world only through the Storage and Ledger adapters.
 import { createHash, randomUUID } from "node:crypto";
+import { StrKey } from "@stellar/stellar-sdk";
 import * as z from "zod";
 import { Challenges } from "./challenges.js";
 import type {
@@ -8,7 +9,7 @@ import type {
   ApiStation, ApiWorker, DocStatus,
 } from "./api.js";
 import type { Challenge } from "./challenges.js";
-import { compositionSum, converge, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
+import { compositionSum, converge, fold, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
 import { addUsdc, minUsdc, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
 import { quoteRects, readPdf, type TextItem } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
@@ -96,7 +97,32 @@ interface Doc {
   delivered: Map<string, FieldResult[]>;
   /** Field values so far by Pipeline name, while a tie-break is still out. */
   progress: Map<string, FieldResult[]>;
+  /** Outside Operators' claims, by their Stellar address (which is also their Pipeline's name). */
+  claims: Map<string, Claim>;
 }
+
+/**
+ * An outside Operator's claim on a whole Document. Its Pipeline is a black box named by its address.
+ * step: what the transaction waiting for its signature does (bond, delivery), or where the claim is (claimed, delivered).
+ */
+interface Claim {
+  operator: string;
+  label: string;
+  escrowId: string;
+  step: "bond" | "claimed" | "delivery" | "delivered";
+  /** The transaction waiting for the Operator's signature. */
+  xdr?: string;
+  claimedAt?: number;
+  /** The validated Fields waiting for the Operator to sign their output hash. */
+  fields?: FieldResult[];
+  link?: string;
+}
+
+/** The one station shown for an outside Operator's Pipeline: how it works inside is its own business. */
+const blackBox: Pipeline["sieves"] = [{ kind: "extract", label: "Black box", view: "original", instructions: "" }];
+
+/** What an outside Operator delivers: the extraction result shape our Sieves hand in. */
+const outsideInstructions = baseline.sieves[0]!.instructions.replace(/result\.fields/, "deliver's `fields`");
 
 /** What an Operator puts up and is paid per Document, in USDC decimal strings. */
 export interface OperatorTerms {
@@ -104,6 +130,8 @@ export interface OperatorTerms {
   bond: string;
   fee: string;
 }
+
+const outputHash = (fields: FieldResult[]) => createHash("sha256").update(JSON.stringify(fields)).digest("hex");
 
 /** One escrow per (Document, Pipeline). */
 const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([documentId, pipeline]);
@@ -241,7 +269,7 @@ export class JobBoard {
     if (this.seen.has(meta.id)) return;
     this.seen.add(meta.id);
     const template = templates[meta.template]!;
-    this.docs.set(meta.id, { meta, template, text, items, rects: new Map(), delivered: new Map(), progress: new Map() });
+    this.docs.set(meta.id, { meta, template, text, items, rects: new Map(), delivered: new Map(), progress: new Map(), claims: new Map() });
     for (const p of this.pipelines) this.post(p, 0, meta.id);
   }
 
@@ -391,7 +419,7 @@ export class JobBoard {
       documentId: doc.meta.id,
       ...terms,
       brand: doc.meta.uploader,
-      outputHash: createHash("sha256").update(JSON.stringify(fields)).digest("hex"),
+      outputHash: outputHash(fields),
     };
     const { escrowId, link } = await this.ledger.openEscrow(req);
     this.escrows.set(escrowKey(doc.meta.id, pipeline), {
@@ -403,6 +431,139 @@ export class JobBoard {
       closesAt: this.now() + this.challengeWindowMs,
       status: "open",
     });
+  }
+
+  // Outside Operators: claim_document, deliver and submit_signed in mcp.ts. Each claim is a Pipeline named by the
+  // Operator's address, with one escrow per (Document, Operator) like ours. After delivery, Challenges, the Arbiter
+  // and settlement treat it exactly like ours.
+
+  /** Our Pipelines, then the outside Operators' that are claimed and not expired. */
+  private pipelinesOf(d: Doc): Pipeline[] {
+    return [...this.pipelines, ...[...d.claims.values()].filter((c) => this.active(c)).map((c) => ({ name: c.operator, label: c.label, sieves: blackBox }))];
+  }
+
+  /** Every Pipeline that has run on any Document. */
+  private allPipelines(): Pipeline[] {
+    const seen = new Map(this.pipelines.map((p) => [p.name, p]));
+    for (const d of this.docs.values()) for (const p of this.pipelinesOf(d)) if (!seen.has(p.name)) seen.set(p.name, p);
+    return [...seen.values()];
+  }
+
+  /** Bond in and not past the claim timeout (the Job timeout) without delivering. */
+  private active(c: Claim): boolean {
+    if (c.step === "bond") return false;
+    return c.step === "delivered" || this.now() - c.claimedAt! < this.jobTimeoutMs;
+  }
+
+  /** Documents an outside Operator may claim: values not shown yet (so nothing to copy), not already claimed by it. */
+  openDocuments(operator: string) {
+    return [...this.docs.values()]
+      .filter((d) => this.withheld(d) && !(d.claims.get(operator) && this.active(d.claims.get(operator)!)))
+      .map((d) => ({
+        id: d.meta.id,
+        name: d.meta.name,
+        supplier: d.meta.supplier,
+        template: d.template,
+        url: `${this.baseUrl}/documents/${d.meta.id}/file`,
+        text: d.text,
+        ...this.terms(operator),
+        instructions: outsideInstructions,
+      }));
+  }
+
+  private outsideError(operator: string, documentId: string): string | undefined {
+    if (!StrKey.isValidEd25519PublicKey(operator)) return `operator must be your Stellar testnet address (G...), not "${operator}"`;
+    if (!this.ledger.prepareBond) return "this Job Board's Ledger takes no outside Operators (start it with LEDGER=fake or trustless-work)";
+    if (!this.docs.has(documentId)) return `unknown Document "${documentId}"`;
+  }
+
+  /** Claim a Document: returns the transaction that locks the Operator's Bond, for it to sign and hand in with submitSigned. */
+  async claim(operator: string, documentId: string, label?: string): Promise<{ ok: true; xdr: string } | { ok: false; error: string }> {
+    const err = this.outsideError(operator, documentId);
+    if (err) return { ok: false, error: err };
+    const d = this.docs.get(documentId)!;
+    const c = d.claims.get(operator);
+    if (c?.step === "bond") return { ok: true, xdr: c.xdr! };
+    if (c && this.active(c)) return { ok: false, error: `you already claimed Document "${documentId}"` };
+    if (!this.withheld(d)) return { ok: false, error: `Document "${documentId}" is no longer open: every Pipeline has delivered it` };
+    const { bond, fee } = this.terms(operator);
+    const have = await this.ledger.usdcBalance!(operator);
+    const short = subUsdc(bond, have);
+    if (short !== "0")
+      return {
+        ok: false,
+        error: `claim refused: ${operator} holds ${have} USDC on Stellar testnet and the Bond is ${bond} USDC. Add at least ${short} USDC to it, then claim again.`,
+      };
+    try {
+      const { escrowId, xdr } = await this.ledger.prepareBond!({ documentId, operator, brand: d.meta.uploader, bond, fee });
+      d.claims.set(operator, { operator, label: label?.trim() || `Operator ${operator.slice(0, 4)}…${operator.slice(-4)}`, escrowId, step: "bond", xdr });
+      return { ok: true, xdr };
+    } catch (e) {
+      return { ok: false, error: `could not open the escrow, try again: ${(e as Error).message}` };
+    }
+  }
+
+  /** Validate the Fields like an extraction Sieve's, plus every quote must be in the text; returns the transaction recording their hash. */
+  async deliverOutside(operator: string, documentId: string, result: unknown): Promise<{ ok: true; xdr: string } | { ok: false; error: string }> {
+    const err = this.outsideError(operator, documentId);
+    if (err) return { ok: false, error: err };
+    const d = this.docs.get(documentId)!;
+    const c = d.claims.get(operator);
+    if (!c || c.step === "bond") return { ok: false, error: `claim Document "${documentId}" first (claim_document, then submit_signed)` };
+    if (c.step === "delivered") return { ok: false, error: `you already delivered Document "${documentId}"` };
+    if (!this.active(c)) return { ok: false, error: `your claim on Document "${documentId}" expired before you delivered` };
+    const parsed = extractionResult.safeParse(result);
+    if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+    const problems = checkAgainstTemplate(parsed.data.fields, d.template, d.text.length);
+    const text = fold(d.text.join(" "));
+    // ponytail: a scan has no text layer, so its quotes go unchecked here; check them against Markdown if outside Operators take scans.
+    if (text)
+      for (const v of parsed.data.fields)
+        if ("quote" in v && !text.includes(fold(v.quote))) problems.push(`Field "${v.field}": quote not found in the Document's text: "${v.quote}"`);
+    if (problems.length) return { ok: false, error: problems.join("\n") };
+    const fields = converge(d.template, [parsed.data.fields], d.text);
+    try {
+      const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(fields));
+      Object.assign(c, { step: "delivery", xdr, fields });
+      return { ok: true, xdr };
+    } catch (e) {
+      return { ok: false, error: `could not prepare the delivery, try again: ${(e as Error).message}` };
+    }
+  }
+
+  /** Hand in the transaction claim or deliver returned, signed by the Operator's key. */
+  async submitSigned(operator: string, documentId: string, signedXdr: string): Promise<{ ok: true; done: string } | { ok: false; error: string }> {
+    const err = this.outsideError(operator, documentId);
+    if (err) return { ok: false, error: err };
+    const d = this.docs.get(documentId)!;
+    const c = d.claims.get(operator);
+    if (!c || (c.step !== "bond" && c.step !== "delivery")) return { ok: false, error: `nothing waiting for your signature on Document "${documentId}"` };
+    if (c.step === "bond" && !this.withheld(d)) return { ok: false, error: `Document "${documentId}" is no longer open: every Pipeline has delivered it` };
+    if (c.step === "delivery" && !this.active(c)) return { ok: false, error: `your claim on Document "${documentId}" expired before you delivered` };
+    let link: string | undefined;
+    try {
+      ({ link } = await this.ledger.submitSigned!(c.escrowId, signedXdr));
+    } catch (e) {
+      return { ok: false, error: `rejected: ${(e as Error).message}` };
+    }
+    delete c.xdr;
+    if (c.step === "bond") {
+      Object.assign(c, { step: "claimed", claimedAt: this.now(), ...(link && { link }) });
+      return { ok: true, done: `claimed: your Bond is locked. Deliver within ${Math.round(this.jobTimeoutMs / 60_000)} min with deliver.` };
+    }
+    const fields = c.fields!;
+    delete c.fields;
+    c.step = "delivered";
+    d.delivered.set(operator, fields);
+    const { bond, fee } = this.terms(operator);
+    this.escrows.set(escrowKey(documentId, operator), {
+      documentId, operator, brand: d.meta.uploader, bond, fee, outputHash: outputHash(fields), pipeline: operator, escrowId: c.escrowId,
+      ...(c.link && { link: c.link }),
+      openedAt: this.now(),
+      closesAt: this.now() + this.challengeWindowMs,
+      status: "open",
+    });
+    return { ok: true, done: `delivered: the Challenge Window is open for ${Math.round(this.challengeWindowMs / 60_000)} min, then the escrow settles` };
   }
 
   /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
@@ -487,7 +648,7 @@ export class JobBoard {
   document(id: string) {
     const d = this.docs.get(id);
     if (!d) return undefined;
-    const pipelines = Object.fromEntries(this.pipelines.map((p) => [p.name, this.view(d, p.name)]));
+    const pipelines = Object.fromEntries(this.pipelinesOf(d).map((p) => [p.name, this.view(d, p.name)]));
     return { id, template: d.template.name, uploadedAt: d.meta.uploadedAt, ...pipelines[this.pipelines[0]!.name]!, pipelines };
   }
 
@@ -496,7 +657,7 @@ export class JobBoard {
    * until every Pipeline has delivered it (no extraction Job for it can be open or still to come).
    */
   private withheld(d: Doc): boolean {
-    return this.pipelines.some((p) => !d.delivered.has(p.name));
+    return this.pipelinesOf(d).some((p) => !d.delivered.has(p.name));
   }
 
   /** Per Template Field: what the Brand sees for this Pipeline, with an upheld Challenge's correction applied. */
@@ -551,7 +712,7 @@ export class JobBoard {
 
   private summary(d: Doc): ApiDocumentSummary {
     const pipelines = Object.fromEntries(
-      this.pipelines.map((p) => {
+      this.pipelinesOf(d).map((p) => {
         const e = this.escrows.get(escrowKey(d.meta.id, p.name));
         const es = this.entries(d, p.name);
         const n = (s: string) => es.filter(({ v }) => v.status === s).length;
@@ -572,6 +733,12 @@ export class JobBoard {
   private stations(d: Doc, p: Pipeline): ApiStation[] {
     const jobs = this.jobsOf(p.name, d.meta.id);
     const delivered = d.delivered.has(p.name);
+    const claim = d.claims.get(p.name);
+    if (claim) {
+      const e = this.escrows.get(escrowKey(d.meta.id, p.name));
+      const meta = delivered ? `${d.delivered.get(p.name)!.filter((v) => v.status === "final").length} values` : "";
+      return [{ index: 0, kind: "extract", label: "Black box", state: delivered ? "done" : "run", worker: p.name, takenAt: claim.claimedAt!, ...(e && { doneAt: e.openedAt }), attempt: 1, meta }];
+    }
     const extractsBefore = (i: number) => p.sieves.slice(0, i).some((s) => s.kind === "extract");
     return p.sieves.map((s, index) => {
       const mine = jobs.filter((j) => j.sieve === index);
@@ -626,8 +793,8 @@ export class JobBoard {
 
   /** Field names whose values differ between the Pipelines, once all have delivered. */
   private differs(d: Doc): string[] {
-    if (this.withheld(d) || this.pipelines.length < 2) return [];
-    const keyed = this.pipelines.map((p) => this.entries(d, p.name));
+    if (this.withheld(d) || this.pipelinesOf(d).length < 2) return [];
+    const keyed = this.pipelinesOf(d).map((p) => this.entries(d, p.name));
     return d.template.fields.flatMap((f, i) => {
       const keys = keyed.map((es) => {
         const v = es[i]!.v;
@@ -642,7 +809,7 @@ export class JobBoard {
     const d = this.docs.get(id);
     if (!d) return undefined;
     const withheld = this.withheld(d);
-    const views = this.pipelines.map((p): ApiPipelineView => {
+    const views = this.pipelinesOf(d).map((p): ApiPipelineView => {
       const e = this.escrows.get(escrowKey(id, p.name));
       return {
         pipeline: p.name,
@@ -692,7 +859,7 @@ export class JobBoard {
     const d = this.docs.get(c.documentId)!;
     const e = this.escrows.get(escrowKey(c.documentId, c.pipeline))!;
     const f = d.template.fields.find((f) => f.name === c.field)!;
-    const p = this.pipelines.find((p) => p.name === c.pipeline)!;
+    const p = this.allPipelines().find((p) => p.name === c.pipeline)!;
     const was = c.challenged;
     return {
       ...this.challengeSummary(c),
@@ -788,10 +955,10 @@ export class JobBoard {
 
   /** Per Operator, in Pipeline order: the Ledger's record plus what the board knows. accuracy is added by web.ts. */
   async leaderboard(): Promise<ApiLeaderRow[]> {
-    const ops = [...new Set(this.pipelines.map((p) => this.terms(p.name).operator))];
+    const ops = [...new Set(this.allPipelines().map((p) => this.terms(p.name).operator))];
     return Promise.all(
       ops.map(async (operator) => {
-        const ps = this.pipelines.filter((p) => this.terms(p.name).operator === operator);
+        const ps = this.allPipelines().filter((p) => this.terms(p.name).operator === operator);
         const mine = [...this.docs.values()].flatMap((d) =>
           ps.flatMap((p) => {
             const e = this.escrows.get(escrowKey(d.meta.id, p.name));
