@@ -46,7 +46,7 @@ test("config and Templates: terms per Pipeline with Sieve labels, the window len
     arbiterFee: "0.1",
     brand: { name: "Voltaris", reviewer: "Inês Duarte" },
     operators: [
-      { pipeline: "ours", label: "Origyn Pipeline", operator: "origyn", bond: "20", fee: "2",
+      { pipeline: "ours", label: "Origyn", operator: "origyn", bond: "20", fee: "2",
         sieves: ["Original", "Markdown", "Faithfulness check", "Markdown extraction", "Tie-break"].map((label, i) => ({ kind: ours.sieves[i]!.kind, label })) },
       { pipeline: "baseline", label: "Baseline", operator: "one-pass", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction" }] },
     ],

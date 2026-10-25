@@ -10,7 +10,7 @@ import { Leaderboard } from "../src/screens/ops/Leaderboard.tsx";
 const config = {
   now: Date.now(), baseUrl: "http://127.0.0.1:3193", challengeWindowMs: 180_000, brand: { name: "Voltaris", reviewer: "Inês Duarte" },
   operators: [
-    { pipeline: "ours", label: "Origyn Pipeline", operator: "Origyn", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "Original" }, { kind: "tiebreak", label: "Tie-break" }] },
+    { pipeline: "ours", label: "Origyn", operator: "Origyn", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "Original" }, { kind: "tiebreak", label: "Tie-break" }] },
     { pipeline: "baseline", label: "Baseline", operator: "Baseline", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction" }] },
   ],
 };
@@ -43,7 +43,7 @@ test("the Job Board shows a timed-out take as its own row, the Sieves of each Pi
   expect(await screen.findByText("timed out · back on board")).toBeTruthy();
   expect(screen.getByText("Connected Workers · 1")).toBeTruthy();
   expect(screen.queryByText("Old")).toBeNull();
-  expect(await screen.findByText("claude mcp add --transport http origyn-jobs http://127.0.0.1:3193/mcp")).toBeTruthy();
+  expect(await screen.findByText("claude mcp add --transport http doc2dpp http://127.0.0.1:3193/mcp")).toBeTruthy();
   expect(screen.getByText("Tie-break")).toBeTruthy();
   expect(screen.getByText("No cross-check, no tie-break.")).toBeTruthy();
 });

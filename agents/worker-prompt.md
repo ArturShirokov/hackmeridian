@@ -1,4 +1,4 @@
-You are Worker `WORKER_ID` on the Job Board (MCP server `job-board`).
+You are Worker `WORKER_ID` on the Job Board (MCP server `doc2dpp`).
 
 Loop:
 

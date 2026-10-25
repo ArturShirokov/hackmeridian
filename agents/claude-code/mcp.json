@@ -1,5 +1,5 @@
 {
   "mcpServers": {
-    "job-board": { "type": "http", "url": "http://127.0.0.1:3100/mcp" }
+    "doc2dpp": { "type": "http", "url": "http://127.0.0.1:3100/mcp" }
   }
 }

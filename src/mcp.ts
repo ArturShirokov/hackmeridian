@@ -6,7 +6,7 @@ import type { JobBoard } from "./board.js";
 const text = (s: string) => [{ type: "text" as const, text: s }];
 
 export function buildMcpServer(board: JobBoard): McpServer {
-  const server = new McpServer({ name: "job-board", version: "0.1.0" });
+  const server = new McpServer({ name: "doc2dpp", version: "0.1.0" });
 
   server.registerTool(
     "next_job",

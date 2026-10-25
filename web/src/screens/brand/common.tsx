@@ -37,7 +37,7 @@ export function MobileView({ d, view, live, config, offset }: { d: ApiDocument; 
   return (
     <div className="om-mobile-only" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", background: "var(--paper)" }}>
       <div style={{ padding: "16px 16px 16px", borderBottom: "1px solid var(--rule)" }}>
-        <div style={{ font: "500 22px/1 var(--serif)" }}>Origyn</div>
+        <div style={{ font: "500 22px/1 var(--serif)" }}>doc2dpp</div>
         <div style={{ marginTop: 14, font: "600 17px/1.25 var(--sans)", overflowWrap: "anywhere" }}>{d.name.replace(/\.pdf$/i, "")}</div>
         <div style={{ marginTop: 4, font: "400 14px/1.3 var(--sans)", color: "#3D3A34" }}>{d.supplier || "—"} · {templateLabel(d.template)}</div>
         <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", font: "500 13px/1.3 var(--mono)" }}>{status}</div>

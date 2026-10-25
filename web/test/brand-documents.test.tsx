@@ -52,13 +52,13 @@ test("filters by Template, Supplier and status, and search matches name or Suppl
   expect(ids({ template: "textile", status: "Settled" })).toEqual([]);
 });
 
-const labels = { ours: "Origyn Pipeline", baseline: "Baseline" };
+const labels = { ours: "Origyn", baseline: "Baseline" };
 
 test("the list: a row per Document with Operator chips and links by status; filters narrow it and say when nothing matches", () => {
   render(<DocumentsView docs={docs} labels={labels} now={now} />);
   const rows = screen.getAllByRole("link", { name: /\.pdf/ });
   expect(rows.map((r) => r.getAttribute("href"))).toEqual(["/documents/new-cell/pipeline", "/documents/tee", "/documents/helion"]);
-  expect(within(rows[0]!).getByText("Origyn Pipeline")).toBeTruthy();
+  expect(within(rows[0]!).getByText("Origyn")).toBeTruthy();
   expect(within(rows[0]!).getByText("Baseline")).toBeTruthy();
   expect(within(rows[2]!).getByText("Slashed")).toBeTruthy();
   expect(screen.getByLabelText("Documents this month").textContent).toBe("2");

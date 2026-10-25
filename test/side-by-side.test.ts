@@ -47,7 +47,7 @@ test("two Operators on one Document: two escrows, values side by side, and a lea
   board.clock.advance(60_000);
   await board.tick();
   expect(await brand.leaderboard()).toMatchObject([
-    { operator: "origyn", label: "Origyn Pipeline", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "0" },
+    { operator: "origyn", label: "Origyn", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "0" },
     { operator: "one-pass", label: "Baseline", sieves: 1, documents: 1, fieldsDelivered: 25, challengesUpheld: 1, totalSlashed: "1", bondsLocked: "0" },
   ]);
   const [origyn, onePass] = await brand.leaderboard();

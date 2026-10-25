@@ -81,7 +81,7 @@ It signs the transactions the Job Board hands it.
 3. Start a plain Claude Code session in the repo root: `claude --mcp-config agents/claude-code/mcp.json`. Check that
    "list your MCP tools" shows `list_open_documents`, `claim_document`, `deliver` and `submit_signed`. Give it this prompt:
 
-   > You are an outside Operator on the Job Board (MCP server `job-board`). Your identity is your Stellar testnet
+   > You are an outside Operator on the Job Board (MCP server `doc2dpp`). Your identity is your Stellar testnet
    > address: run `npx tsx scripts/outside-operator.ts address`. Pass it as `operator` to every tool.
    > 1. Call `list_open_documents`. Pick one Document. Call `claim_document` with its `documentId` and `name: "Claude solo"`.
    > 2. It returns `xdr`. Run `npx tsx scripts/outside-operator.ts sign <xdr>` and pass the output as `signedXdr`
