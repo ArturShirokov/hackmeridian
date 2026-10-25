@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { ours } from "../src/pipelines.js";
-import { extraction, makePdf, startBoard } from "./seam.js";
+import { checkedMarkdown, extraction, makePdf, startBoard } from "./seam.js";
 
 const sheet = () =>
   makePdf([["Cell C-32", "Capacity: 3200 mAh (nominal)", "Capacity 3.3 Ah nominal", "Chemistry: LiFePO4"], ["Recycled cobalt: 12 % minimum", "Recycled cobalt 16 % minimum"]]);
@@ -10,13 +10,14 @@ const chemistry = { value: "LiFePO4", page: 1, quote: "Chemistry: LiFePO4" };
 const cobalt12 = { value: 12, unit: "%", qualifier: "minimum", page: 2, quote: "Recycled cobalt: 12 % minimum" };
 const cobalt16 = { ...cobalt12, value: 16, quote: "Recycled cobalt 16 % minimum" };
 
-/** Our Pipeline: w1 and w2 do the two extraction Sieves; returns the board and a third Worker. */
+/** Our Pipeline: w1 and w2 do the two extraction Sieves (w1 also the checked Markdown between them); returns the board and a third Worker. */
 async function afterTwo(first: Record<string, object>, second: Record<string, object>) {
   const board = startBoard({ pipelines: [ours] });
   const docId = await board.brand.upload(await sheet());
   const [w1, w2] = [await board.worker("w1"), await board.worker("w2")];
   const j1 = (await w1.nextJob())!;
   expect(await w1.submitJob(j1.id, extraction(j1, first))).toMatchObject({ ok: true });
+  await checkedMarkdown(w1);
   const j2 = (await w2.nextJob())!;
   expect(await w2.submitJob(j2.id, extraction(j2, second))).toMatchObject({ ok: true });
   const field = async (name: string) => (await board.brand.document(docId)).fields.find((f) => f.name === name)!;
