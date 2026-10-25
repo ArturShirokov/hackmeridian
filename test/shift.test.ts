@@ -13,7 +13,7 @@ const shifts: AbortController[] = [];
 afterEach(() => shifts.splice(0).forEach((s) => s.abort()));
 
 /** A Worker whose harness is the fake: `good` hands in a valid result, `garbage` prints prose. Its runs go to `log`. */
-function fakeWorker(mode: "good" | "garbage", model: string) {
+function fakeWorker(mode: "good" | "garbage" | "sleep", model: string) {
   const log = join(mkdtempSync(join(tmpdir(), "fake-harness-")), "runs.log");
   const runs = () => {
     try {
@@ -23,11 +23,11 @@ function fakeWorker(mode: "good" | "garbage", model: string) {
     }
   };
   const config: WorkerConfig = { harness: "fake", model, command: [process.execPath, fake, mode, log] };
-  return { config, runs };
+  return { config, runs, log };
 }
 
 /** Start a shift against a board served in process: the runner's HTTP goes to `serve()`, which a test can swap or drop. */
-function shift(workers: WorkerConfig[], serve: () => (url: string, init?: RequestInit) => Response | Promise<Response>) {
+function shift(workers: WorkerConfig[], serve: () => (url: string, init?: RequestInit) => Response | Promise<Response>, more: { runTimeoutMs?: number } = {}) {
   const stop = new AbortController();
   shifts.push(stop);
   const lines: string[] = [];
@@ -38,6 +38,7 @@ function shift(workers: WorkerConfig[], serve: () => (url: string, init?: Reques
     fetch: async (url, init) => serve()(String(url), init),
     log: (l) => lines.push(l),
     retryMs: 50,
+    ...more,
   });
   return { lines, stop, done };
 }
@@ -144,6 +145,51 @@ test("OpenCode runs read-only: JSON events and a permission config that denies e
   expect(permission.bash ?? permission["*"]).toBe("deny");
   expect(permission.read).toBe("allow");
 });
+
+/** The pids the `sleep` fake harness wrote (itself and its grandchild), and whether each is still running. */
+const pids = (log: string) => {
+  try {
+    return readFileSync(`${log}.pids`, "utf8").trim().split(/\s+/).map(Number);
+  } catch {
+    return [];
+  }
+};
+const alive = (pid: number) => {
+  try {
+    return process.kill(pid, 0);
+  } catch {
+    return false;
+  }
+};
+// A failing run must not leave them behind either.
+const sleepers: string[] = [];
+afterEach(() => sleepers.splice(0).flatMap(pids).filter(alive).forEach((p) => process.kill(p, "SIGKILL")));
+
+test("ending the shift mid-Job leaves no process of the harness running, grandchildren included", async () => {
+  const board = startBoard();
+  const w = fakeWorker("sleep", "s");
+  sleepers.push(w.log);
+  const { stop, done } = shift([w.config], () => board.web.request);
+  await vi.waitFor(() => expect(board.clock.waiting()).toBe(1), { timeout: 5000 });
+  await board.brand.upload(await sheet(), "battery", { name: "battery-02.pdf" });
+  await vi.waitFor(() => expect(pids(w.log)).toHaveLength(2), { timeout: 5000 });
+
+  stop.abort();
+  await done;
+  expect(pids(w.log).filter(alive)).toEqual([]);
+}, 15000);
+
+test("a harness run past the run timeout is killed with all its children", async () => {
+  const board = startBoard();
+  const w = fakeWorker("sleep", "s");
+  sleepers.push(w.log);
+  const { lines } = shift([w.config], () => board.web.request, { runTimeoutMs: 500 });
+  await vi.waitFor(() => expect(board.clock.waiting()).toBe(1), { timeout: 5000 });
+  await board.brand.upload(await sheet(), "battery", { name: "battery-02.pdf" });
+  await vi.waitFor(() => expect(lines.at(-1)).toMatch(/gave up/), { timeout: 10000 });
+  expect(pids(w.log)).toHaveLength(4);
+  expect(pids(w.log).filter(alive)).toEqual([]);
+}, 15000);
 
 test("Ctrl-C ends the shift", async () => {
   const board = startBoard();

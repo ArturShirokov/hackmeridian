@@ -97,16 +97,52 @@ export function parseResult(out: string): Record<string, unknown> | undefined {
   return undefined;
 }
 
-/** Run a command in `cwd` with no stdin; resolves with stdout and the end of stderr, rejects with that on a non-zero exit. */
-function run([cmd, ...args]: string[], cwd: string, signal: AbortSignal, env?: Record<string, string>): Promise<{ out: string; err: string }> {
+/** Process groups of the harness runs still going; whatever is left when the process exits gets SIGKILL. */
+const running = new Set<number>();
+const killGroup = (pid: number, sig: NodeJS.Signals) => {
+  try {
+    process.kill(-pid, sig);
+  } catch {} // already gone
+};
+process.on("exit", () => running.forEach((pid) => killGroup(pid, "SIGKILL")));
+
+/**
+ * Run a command in `cwd` with no stdin; resolves with stdout and the end of stderr, rejects with that on a non-zero exit.
+ * The command gets its own process group, so on abort or timeout everything it started goes too: SIGTERM, then
+ * SIGKILL after 2 s. It settles once every process holding its output has ended.
+ */
+function run([cmd, ...args]: string[], cwd: string, signal: AbortSignal, timeoutMs: number, env?: Record<string, string>): Promise<{ out: string; err: string }> {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd!, args, { cwd, signal, timeout: RUN_TIMEOUT_MS, stdio: ["ignore", "pipe", "pipe"], env: env && { ...process.env, ...env } });
+    const child = spawn(cmd!, args, { cwd, detached: true, stdio: ["ignore", "pipe", "pipe"], env: env && { ...process.env, ...env } });
+    const pid = child.pid;
     let out = "";
     let err = "";
+    let why = "";
+    let force: NodeJS.Timeout | undefined;
+    const stop = (reason: string) => {
+      if (!pid || why) return;
+      why = reason;
+      killGroup(pid, "SIGTERM");
+      force = setTimeout(() => killGroup(pid, "SIGKILL"), 2000);
+    };
+    const onAbort = () => stop("the shift ended");
+    const timer = setTimeout(() => stop(`timed out after ${Math.round(timeoutMs / 1000)} s`), timeoutMs);
+    if (pid) running.add(pid);
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
     child.stdout.on("data", (d) => (out += d));
     child.stderr.on("data", (d) => (err = (err + d).slice(-2000)));
     child.on("error", reject);
-    child.on("close", (code, sig) => (code === 0 ? resolve({ out, err }) : reject(new Error(`${cmd} exited ${code ?? sig}: ${err.trim().split("\n").pop() ?? ""}`))));
+    child.on("close", (code, sig) => {
+      clearTimeout(timer);
+      clearTimeout(force);
+      signal.removeEventListener("abort", onAbort);
+      if (pid) running.delete(pid);
+      // The group's leader has ended; anything left in the group (a child that closed its output) goes now.
+      if (pid && why) killGroup(pid, "SIGKILL");
+      if (code === 0 && !why) resolve({ out, err });
+      else reject(new Error(`${cmd} ${why || `exited ${code ?? sig}`}: ${err.trim().split("\n").pop() ?? ""}`));
+    });
   });
 }
 
@@ -127,8 +163,10 @@ export async function runShift(opts: {
   log?: (line: string) => void;
   /** Pause before reconnecting after the Job Board is unreachable. */
   retryMs?: number;
+  /** How long one harness run may take before it and its children are killed. */
+  runTimeoutMs?: number;
 }): Promise<void> {
-  const { url, signal, fetch = globalThis.fetch, log = console.log, retryMs = 2000 } = opts;
+  const { url, signal, fetch = globalThis.fetch, log = console.log, retryMs = 2000, runTimeoutMs = RUN_TIMEOUT_MS } = opts;
   const mcpUrl = new URL(`${url.replace(/\/$/, "")}/mcp`);
 
   /** A client whose calls fail at once when its response stream drops (the SDK would otherwise wait out the timeout). */
@@ -203,7 +241,7 @@ export async function runShift(opts: {
       for (let attempt = 1; ; attempt++) {
         let result: Record<string, unknown> | undefined;
         try {
-          ({ out, err } = await run(command(prompt, dir), dir, signal, { ...env, PWD: dir }));
+          ({ out, err } = await run(command(prompt, dir), dir, signal, runTimeoutMs, { ...env, PWD: dir }));
           result = parseResult(out);
           rejection = result ? "" : `your output was not one JSON object (it began: ${JSON.stringify(out.trim().slice(0, 200))})`;
         } catch (e) {
@@ -241,11 +279,16 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const { values } = parseArgs({ options: { url: { type: "string" } } });
   const url = values.url ?? process.env.DOC2DPP_URL ?? "http://127.0.0.1:3100";
   const stop = new AbortController();
-  process.on("SIGINT", () => {
+  // Either signal ends the shift: every harness run is stopped with its children (see run), then the process exits.
+  // A second one, or a shift still not over after 5 s, exits at once; the exit handler SIGKILLs what is left.
+  const end = () => {
     if (stop.signal.aborted) process.exit(130);
     console.log("Ending the shift (Ctrl-C again to quit at once)...");
     stop.abort();
-  });
+    setTimeout(() => process.exit(130), 5000).unref();
+  };
+  process.on("SIGINT", end);
+  process.on("SIGTERM", end);
   console.log(`Shift on ${url}: ${defaultWorkers.map((w) => `${w.harness}/${w.model.split("/").pop()}`).join(", ")}`);
   await runShift({ url, workers: defaultWorkers, signal: stop.signal });
   console.log("Shift over.");
