@@ -274,19 +274,26 @@ export class JobBoard {
     }
     s.done = true;
     if (s.pass === false) {
-      // A failed check reruns the Markdown Sieve before it, once. A second fail stops this Pipeline for the Document.
-      // ponytail: the Document then stays converging with no delivery; add a fallback (all Not stated) if demos hit it.
+      // A failed check reruns the Markdown Sieve before it, once. A second fail delivers every Field as Not stated,
+      // with whatever the first extraction quoted, since no checked Markdown exists to extract from.
       const md = p.sieves.findLastIndex((v, i) => i < s.sieve && v.kind === "markdown");
-      const runs = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.sieve === md).length;
-      if (md >= 0 && runs < 2) this.post(p, md, doc.meta.id);
-      return { ok: true };
+      if (md >= 0 && this.jobsOf(p.name, doc.meta.id).filter((j) => j.sieve === md).length < 2) {
+        this.post(p, md, doc.meta.id);
+        return { ok: true };
+      }
+      const first = this.jobsOf(p.name, doc.meta.id).find((j) => extracts(j.job.sieve))?.result ?? [];
+      const fields = doc.template.fields.map((f): FieldResult => {
+        const v = first.find((v) => v.field === f.name);
+        return { field: f.name, status: "not stated", notStated: true, quotes: v && "quote" in v ? [{ page: v.page, quote: v.quote }] : [] };
+      });
+      return this.deliver(s, doc, p.name, fields);
     }
     const next = s.sieve + 1;
     if (next < p.sieves.length && p.sieves[next]!.kind !== "tiebreak") {
       this.post(p, next, doc.meta.id);
       return { ok: true };
     }
-    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && extracts(j.job.sieve));
+    const ran = this.jobsOf(p.name, doc.meta.id).filter((j) => extracts(j.job.sieve));
     // A scan has no text layer, so quotes are checked against the checked Markdown instead.
     const scan = doc.text.every((t) => !t.trim());
     const markdown = this.latestMarkdown(p.name, doc.meta.id);
@@ -300,16 +307,27 @@ export class JobBoard {
         return { ok: true };
       }
     }
-    doc.delivered.set(p.name, fields);
+    return this.deliver(s, doc, p.name, fields);
+  }
+
+  /** Deliver a Pipeline's Field values and open its escrow; if the escrow fails, the submission is undone. */
+  private async deliver(s: JobState, doc: Doc, pipeline: string, fields: FieldResult[]): Promise<SubmitOutcome> {
+    doc.delivered.set(pipeline, fields);
     try {
-      await this.openEscrow(doc, p.name, fields);
+      await this.openEscrow(doc, pipeline, fields);
     } catch (e) {
       s.done = false;
       delete s.result;
-      doc.delivered.delete(p.name);
+      delete s.pass;
+      doc.delivered.delete(pipeline);
       return { ok: false, error: `could not open the escrow, try again: ${(e as Error).message}` };
     }
     return { ok: true };
+  }
+
+  /** Every Job posted so far for this Pipeline and Document, in posting order. */
+  private jobsOf(pipeline: string, documentId: string): JobState[] {
+    return this.jobs.filter((j) => j.pipeline === pipeline && j.job.documentId === documentId);
   }
 
   /** Delivery: lock the Operator's Bond and the Brand's Fee behind a hash of the delivered Field values. */

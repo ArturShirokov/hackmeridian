@@ -54,12 +54,12 @@ test("a failed faithfulness check reruns the Markdown Sieve once, and the second
   expect(e2).toMatchObject({ sieve: "extract", document: { markdown } });
 });
 
-test("a second failed faithfulness check reruns nothing and offers no extraction from the Markdown", async () => {
-  const { worker, brand } = startBoard({ pipelines: [ours] });
-  await brand.upload(await sheet());
+test("a second failed faithfulness check delivers every Field as Not stated, with the first extraction's quotes, and opens the escrow", async () => {
+  const { worker, brand, ledger } = startBoard({ pipelines: [ours] });
+  const docId = await brand.upload(await sheet());
   const w = await worker("w1");
   const e1 = (await w.nextJob())!;
-  await w.submitJob(e1.id, extraction(e1));
+  await w.submitJob(e1.id, extraction(e1, { rated_capacity_ah: capacity }));
   for (let i = 0; i < 2; i++) {
     const md = (await w.nextJob())!;
     await w.submitJob(md.id, { markdown: "# wrong" });
@@ -68,6 +68,14 @@ test("a second failed faithfulness check reruns nothing and offers no extraction
   }
   expect(await w.nextJob()).toBeNull();
   expect(await (await worker("w2")).nextJob()).toBeNull();
+
+  const doc = await brand.document(docId);
+  expect(doc.fields.every((f) => f.status === "not stated" && f.supplierRequest)).toBe(true);
+  const cap = doc.fields.find((f) => f.name === "rated_capacity_ah")!;
+  expect(cap.quotes).toEqual([{ page: 1, quote: "Capacity: 3200 mAh (nominal)" }]);
+  expect(cap.supplierRequest).toContain("Capacity: 3200 mAh (nominal)");
+  expect(ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(1);
+  expect(doc.escrow).toMatchObject({ status: "open" });
 });
 
 test("malformed Markdown and faithfulness results are rejected with what is wrong", async () => {
