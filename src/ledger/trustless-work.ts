@@ -1,9 +1,10 @@
 // Ledger on Trustless Work v1 REST: one multi-release escrow per (Document, Operator) with one milestone of
 // Bond + Fee. Each action asks the API for an unsigned transaction, signs it with the role's key and posts it back.
 // Roles: Operator = service provider, Brand = approver, Arbiter = release signer and dispute resolver.
+// Challenge Deposits sit outside the contract, in the Job Board's DepositAccount (see there for why).
 import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
-import { addUsdc, type EscrowRequest, type Ledger } from "../ledger.js";
-import { Escrows, explorer, keyFor, split, USDC_ISSUER } from "./stellar.js";
+import { addUsdc, settlement, type Deposit, type EscrowRequest, type Ledger, type Payee } from "../ledger.js";
+import { DepositAccount, Escrows, explorer, keyFor, USDC_ISSUER } from "./stellar.js";
 
 export interface TrustlessWorkOptions {
   apiKey: string;
@@ -12,6 +13,8 @@ export interface TrustlessWorkOptions {
   arbiter: Keypair;
   /** Operator id (as in EscrowRequest.operator) to its key. */
   operators: Record<string, Keypair>;
+  /** Where Challenge Deposits are paid; without it, no Challenge can be filed. */
+  deposits?: DepositAccount;
   baseUrl?: string;
   fetch?: typeof fetch;
   /** Gap between requests. The API allows 50 per minute; 1300 ms keeps us at about 46. */
@@ -82,16 +85,21 @@ export class TrustlessWorkLedger implements Ledger {
     return { link: explorer("tx", txHash) };
   }
 
-  async settleWithSlashes(contractId: string, slashes: string[]) {
+  /**
+   * Deposits are paid out of the DepositAccount, in full. Bond + Fee: with no Slash, the clean release; else the Brand
+   * disputes and the Arbiter resolves with the settlement() split, one distribution per address.
+   */
+  async settleWithSlashes(contractId: string, slashes: string[], deposits: Deposit[] = [], arbiterFee = "0") {
     const req = this.escrows.get(contractId);
     const brand = this.brand(req.brand);
-    const { toBrand, toOperator } = split(req, slashes);
+    const split = settlement(req, slashes, deposits, arbiterFee);
+    if (split.deposits.length) await this.depositAccount().payOut(split.deposits.map((p) => [this.address(req, p.to), p.amount]), req.outputHash);
+    if (!slashes.length) return this.settleClean(contractId);
     const m = { contractId, milestoneIndex: "0" };
-    // Amounts are gross: the contract takes its 0.3% fee out of each share.
-    const distributions = [
-      { address: brand.publicKey(), amount: Number(toBrand) },
-      { address: this.operator(req.operator).publicKey(), amount: Number(toOperator) },
-    ].filter((d) => d.amount > 0);
+    // Amounts are gross and sum to Bond + Fee exactly: the contract takes its 0.3% fee out of each share.
+    const byAddress = new Map<string, string>();
+    for (const p of split.escrow) byAddress.set(this.address(req, p.to), addUsdc(byAddress.get(this.address(req, p.to)) ?? "0", p.amount));
+    const distributions = [...byAddress].map(([address, amount]) => ({ address, amount: Number(amount) }));
     await this.act(`${M}/dispute-milestone`, { ...m, signer: brand.publicKey() }, brand);
     const { txHash } = await this.act(
       `${M}/resolve-milestone-dispute`,
@@ -107,6 +115,27 @@ export class TrustlessWorkLedger implements Ledger {
   // so it can't give the upheld Challenges or the total Slashed. Read them from the resolve txs if the record must survive restarts.
   async operatorRecord(operator: string) {
     return this.escrows.record(operator);
+  }
+
+  async lockDeposit(contractId: string, d: { challenger: string; amount: string; signedXdr?: string }) {
+    const req = this.escrows.get(contractId);
+    return this.depositAccount().lock(this.o.brands[d.challenger] ?? { signedXdr: d.signedXdr ?? "" }, d.amount, req.outputHash);
+  }
+
+  async prepareDeposit(contractId: string, challenger: string, amount: string) {
+    return this.depositAccount().prepare(challenger, amount, this.escrows.get(contractId).outputHash);
+  }
+
+  private depositAccount() {
+    if (!this.o.deposits) throw new Error("no deposit account for Challenge Deposits (ESCROW_SECRET)");
+    return this.o.deposits;
+  }
+
+  private address(req: EscrowRequest, to: Payee): string {
+    if (to === "brand") return this.brand(req.brand).publicKey();
+    if (to === "operator") return this.operator(req.operator).publicKey();
+    if (to === "arbiter") return this.o.arbiter.publicKey();
+    return this.o.brands[to.challenger]?.publicKey() ?? to.challenger;
   }
 
   private operator = (id: string) => keyFor(this.o.operators, "Operator", id);

@@ -14,6 +14,8 @@ const config: ApiConfig = {
   now: t0,
   baseUrl: "http://127.0.0.1:3000",
   challengeWindowMs: windowMs,
+  challengeDeposit: "1",
+  arbiterFee: "0.1",
   brand: { name: "Voltaris", reviewer: "Inês Duarte" },
   operators: [
     {
@@ -151,9 +153,9 @@ const challenge: ApiChallenge = {
   filedAt: t0 - 1 * min, closesAt: t0 - 2 * min + windowMs,
   delivered: { display: "80 Ah", evidence: (baseline[4] as Extract<ApiField, { evidence: ApiQuote }>).evidence },
   claim: { display: "220 Ah (rated)", evidence: q(1, "Rated capacity 220 Ah", r(0.084, 0.319, 0.471), "220 Ah") },
-  slash: "5",
+  slash: "5", challenger: "brand", deposit: "1",
 };
-const arbiter: ApiArbiter = { open: [challenge], decided: [], record: { decided: 0, upheld: 0, rejected: 0 } };
+const arbiter: ApiArbiter = { open: [challenge], decided: [], record: { decided: 0, upheld: 0, rejected: 0, earned: "0" } };
 
 const leaderboard: ApiLeaderRow[] = [
   {

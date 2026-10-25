@@ -1,5 +1,5 @@
-// Challenges: the Brand cites a page and a quote against one delivered Field; the Arbiter upholds or rejects.
-// The Job Board decides when a Challenge may be filed (the Challenge Window) and settles with the upheld ones.
+// Challenges: a challenger cites a page and a quote against one delivered Field; the Arbiter upholds or rejects.
+// The Job Board decides when a Challenge may be filed (the Challenge Window), locks its Challenge Deposit, and settles.
 import { randomUUID } from "node:crypto";
 import * as z from "zod";
 import type { FieldResult } from "./converge.js";
@@ -12,7 +12,11 @@ export type Challenge = z.infer<typeof input> & {
   id: string;
   documentId: string;
   pipeline: string;
-  /** The delivered value being challenged, as the Brand saw it. */
+  /** Who filed it and locked the Deposit: a party id the Ledger holds a key for (the Brand), or a Stellar address. */
+  challenger: string;
+  /** The Challenge Deposit locked, USDC. */
+  deposit: string;
+  /** The delivered value being challenged, as the challenger saw it. */
   challenged: FieldResult;
   decision?: "upheld" | "rejected";
   filedAt: number;
@@ -36,7 +40,8 @@ export class Challenges {
 
   constructor(private readonly now: () => number = Date.now) {}
 
-  fileChallenge(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
+  /** Checks a Challenge against the Target; it is not filed until add(). */
+  check(t: Target, raw: unknown, by: { challenger: string; deposit: string }): { ok: true; challenge: Challenge } | { ok: false; error: string } {
     const r = input.safeParse(raw);
     if (!r.success) return { ok: false, error: z.prettifyError(r.error) };
     const c = r.data;
@@ -57,9 +62,16 @@ export class Challenges {
     }
     if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": ${mustBe.quantity}` };
     const challenged = t.delivered.find((d) => d.field === f.name)!;
-    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged, filedAt: this.now() };
-    this.list.push(challenge);
+    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, ...by, challenged, filedAt: this.now() };
     return { ok: true, challenge };
+  }
+
+  add(c: Challenge) {
+    this.list.push(c);
+  }
+
+  remove(id: string) {
+    this.list = this.list.filter((c) => c.id !== id);
   }
 
   /** Every Challenge, oldest first. */

@@ -42,6 +42,8 @@ test("config and Templates: terms per Pipeline with Sieve labels, the window len
     now: 0,
     baseUrl: "http://board.test",
     challengeWindowMs: 60_000,
+    challengeDeposit: "1",
+    arbiterFee: "0.1",
     brand: { name: "Voltaris", reviewer: "Inês Duarte" },
     operators: [
       { pipeline: "ours", label: "Origyn Pipeline", operator: "origyn", bond: "20", fee: "2",

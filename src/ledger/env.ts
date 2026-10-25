@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { Horizon, Keypair } from "@stellar/stellar-sdk";
 import { FakeLedger, type Ledger } from "../ledger.js";
 import { StellarPaymentsLedger } from "./stellar-payments.js";
-import { HORIZON_TESTNET } from "./stellar.js";
+import { DepositAccount, HORIZON_TESTNET } from "./stellar.js";
 import { TrustlessWorkLedger } from "./trustless-work.js";
 
 export function ledgerFromEnv(kind = process.env.LEDGER ?? "fake", onTx?: (action: string, hash: string) => void): Ledger {
@@ -16,13 +16,20 @@ export function ledgerFromEnv(kind = process.env.LEDGER ?? "fake", onTx?: (actio
     if (!s) throw new Error(`${name} missing from ${file}; run scripts/setup-wallets.ts`);
     return Keypair.fromSecret(s);
   };
-  const common = { brands: { brand: key("BRAND_SECRET") }, operators: { ours: key("OP_SECRET"), baseline: key("BASELINE_OP_SECRET") }, onTx };
+  const horizon = new Horizon.Server(HORIZON_TESTNET);
+  const common = {
+    brands: { brand: key("BRAND_SECRET") },
+    operators: { ours: key("OP_SECRET"), baseline: key("BASELINE_OP_SECRET") },
+    arbiter: key("ARBITER_SECRET"),
+    onTx,
+  };
   if (kind === "trustless-work") {
     const apiKey = process.env.TW_API_KEY;
     if (!apiKey) throw new Error(`TW_API_KEY missing from ${file} (dapp.trustlesswork.com > Settings > API Keys)`);
-    return new TrustlessWorkLedger({ ...common, apiKey, arbiter: key("ARBITER_SECRET") });
+    // The fallback's escrow account doubles as the deposit account for Challenge Deposits.
+    return new TrustlessWorkLedger({ ...common, apiKey, deposits: new DepositAccount({ horizon, account: key("ESCROW_SECRET"), ...(onTx && { onTx }) }) });
   }
   if (kind === "payments")
-    return new StellarPaymentsLedger({ ...common, escrow: key("ESCROW_SECRET"), horizon: new Horizon.Server(HORIZON_TESTNET) });
+    return new StellarPaymentsLedger({ ...common, escrow: key("ESCROW_SECRET"), horizon });
   throw new Error(`LEDGER must be fake, payments or trustless-work, not ${kind}`);
 }
