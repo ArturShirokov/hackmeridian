@@ -25,11 +25,11 @@ _Avoid_: Judge, reviewer, validator
 ### Data
 
 **Document**:
-One file a Supplier sent to a Brand, such as a battery spec sheet, a test report or a textile certificate, in whatever format it arrived.
+One file a Supplier sent to a Brand, or one the Brand wrote itself, such as a battery spec sheet, a test report, a textile certificate or a warranty statement, in whatever format it arrived.
 _Avoid_: File, upload, PDF
 
 **Template**:
-The fixed set of Fields a passport for one product category must have. There are two in scope: battery and textile.
+The fixed set of passport Fields for one product category that can be read from Supplier or Brand Documents. Registry-assigned and live in-use data are not part of it. There are two in scope: battery and textile.
 _Avoid_: Schema, form
 
 **Field**:
@@ -48,8 +48,11 @@ A Field value is correct when it matches what the Document states, read under th
 _Avoid_: True, accurate, verified
 
 **Not stated**:
-A legitimate Field value meaning the Document doesn't clearly give this Field. It is backed like any other value and becomes a Supplier Request.
+A legitimate Field value meaning the Document doesn't clearly give this Field. It is backed like any other value. It becomes a Supplier Request when the Field's Author is the Supplier, and "Brand to provide" when it is the Brand.
 _Avoid_: Null, missing, unverified
+
+**Author**:
+The side, Supplier or Brand, whose Documents normally state a Field. It decides where a Not stated Field is routed, not which Documents may be read for it.
 
 **Supplier Request**:
 A request to the Supplier to clarify or re-issue a Document for a Field marked Not stated.

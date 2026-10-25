@@ -47,7 +47,7 @@ Three kinds of user:
 
 - **Brand:** "Voltaris", an EU battery maker. Reviewer: Inês Duarte, Product Compliance.
 - **Supplier:** "Hunan Cellworks", which sent the spec sheet "NMC-800 Cell Datasheet rev C.pdf" (12 pages, with tables).
-- **Template:** Battery passport, 18 Fields. Examples: Chemistry `NMC 811`; Rated capacity `80.0 Ah` (nominal); Nominal voltage `3.65 V`; Mass `1.12 kg`; Recycled cobalt `16 %`; Carbon footprint `61.3 kg CO₂e/kWh`; Manufacturing site `Changsha, CN`.
+- **Template:** Battery passport, 60 Fields from the official list. Examples: Chemistry `NMC 811`; Rated capacity `80.0 Ah` (nominal); Nominal voltage `3.65 V`; Mass `1.12 kg`; Recycled cobalt `16 %`; Carbon footprint `61.3 kg CO₂e/kWh`; Manufacturing site `Changsha, CN`.
 - **Second Document (textile):** brand "Linho Norte", Supplier "Fiação do Ave" (northern Portugal), "Tech sheet SS27 shirting.docx exported as PDF". Fibre composition `55 % linen · 45 % organic cotton`, with GRS certificate number.
 - **Money:** Bond `50.00 USDC`, Fee `5.00 USDC`, Slash `5.00 USDC` (one tenth of the Bond per upheld Challenge). Challenge Window `48 h` (in the demo it counts down from `03:00`).
 - **Two Operators on the same Documents:**
@@ -129,6 +129,33 @@ Default only.
 - Upload failed.
 - Uploading, with a progress bar and "Stored on ICP" once done, plus a proof link.
 
+## 02b · Documents (Brand)
+
+**Who:** Inês, coming back the next day, or a Brand with a whole Supplier pack. **Goal:** see every Document ever uploaded and its state at a glance. This is the landing screen after sign-in, and what the sidebar's "Documents" item opens.
+
+### Content
+
+1. A table of all Documents, newest first. Columns:
+   - Document name;
+   - Supplier;
+   - Template;
+   - Operators, as small chips (Origyn Pipeline, Baseline, any outside Operator);
+   - status (Processing / Delivered / Settled);
+   - Fields Final, Not stated and Challenged, as three small counts;
+   - Bond state (locked / released / slashed);
+   - time left in the Challenge Window;
+   - upload date.
+2. Filters by Template, Supplier and status, plus a search box.
+3. A total strip at the top: Documents this month, Fields delivered, open Supplier Requests, USDC received from Slashes.
+4. Clicking a row opens the Document (screen 03 while it's processing, screen 04 after delivery).
+
+Seed it with about 8 Documents across both Templates and several Suppliers, in every status. Include the textile one from Linho Norte.
+
+### States
+
+- No Documents yet: "Upload your first Supplier Document."
+- Filter with no results.
+
 ## 03 · Live Pipeline (Brand)
 
 **Who:** Inês, just after uploading. **Goal:** watch the Document turn into Fields. This is the "wow" screen of the live demo, so give it the most motion design.
@@ -165,6 +192,14 @@ Full width. The tracks are a fixed band at the top; the Field rows scroll below.
 3. **Not stated Fields** grouped at the top in amber, each with its competing quotes and a "Copy Supplier Request" button, which opens a pre-written short message to Hunan Cellworks.
 4. A **money and status bar** across the top: the Bond chip (locked), the Fee chip, the Challenge Window countdown, and the output hash with a proof link.
 5. **Export:** "Export to passport", which shows a confirmation that the Fields were sent to the DPP platform.
+6. **View tabs** across the top of the right-hand side. The Document viewer stays on the left in every tab except Source Markdown:
+   - **Review:** the Field rows described above.
+   - **JSON:** the passport-shaped output keyed by Template Field (value, unit, qualifier, page, quote, status, Author), syntax-highlighted, with "Download .json".
+   - **Markdown:** the Fields as a readable table, grouped by Template section, with "Download .md".
+   - **Source Markdown:** the normalised Markdown our Pipeline read, shown beside the original page so the Brand can see what the Pipeline saw.
+   - **Trace:** the Operator's self-reported Spans as a nested timeline, with "self-reported; the Bond is the guarantee" underneath.
+7. **Every Field row is clickable,** whatever its status: Final, Not stated, Challenged or Upheld. A Not stated row scrolls to the competing quotes, or to the page area where the value would normally be.
+8. **Fields come from the official Templates** (battery: 60 Fields, textile: 37), grouped by their Template sections ("Performance and durability", "Recycled and renewable content"…). Each row shows its **Author** (Supplier or Brand) as a small tag. Not stated Fields whose Author is the Brand show "Brand to provide" instead of "Copy Supplier Request".
 
 ### States
 
