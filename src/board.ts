@@ -398,4 +398,9 @@ export class JobBoard {
   async file(id: string): Promise<Uint8Array | undefined> {
     return (await this.storage.get(id))?.bytes;
   }
+
+  /** The Field values a Pipeline delivered for a Document, before any Challenge; undefined until delivered. */
+  delivered(id: string, pipeline: string): FieldResult[] | undefined {
+    return this.docs.get(id)?.delivered.get(pipeline);
+  }
 }

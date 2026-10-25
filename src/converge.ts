@@ -76,7 +76,7 @@ export const compositionSum = (c: Record<string, number>) =>
 const round = (x: number) => Number(x.toPrecision(12)); // float noise from unit factors, not a tolerance
 
 /** The canonical value of one stated value, or undefined when it can't be normalised (counts as disagreement). */
-function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>): unknown {
+export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>): unknown {
   switch (f.type) {
     case "quantity": {
       const factor = units[spelling(f.unit!)]?.[spelling(v.unit ?? "")];
