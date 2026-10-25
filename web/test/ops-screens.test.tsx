@@ -68,11 +68,11 @@ test("the Leaderboard shows every column, a Slash on the chart and the one-Opera
 });
 
 test("the Operator sidebar lights Pipelines, not the Job Board, on /jobs#pipelines", async () => {
-  serve({ "/api/workers": [], "/api/jobs": [] });
-  localStorage.setItem("om-role", "operator");
+  serve({ "/api/workers": [], "/api/jobs": [], "/api/session": { user: { id: "origyn", name: "Origyn", role: "operator" } } });
   history.replaceState(null, "", "/jobs#pipelines");
+  Element.prototype.scrollIntoView = () => {};
   const { App } = await import("../src/Shell.tsx");
   const { container } = render(<App />);
+  await screen.findByText("Pipelines");
   expect([...container.querySelectorAll(".om-nav.active")].map((a) => a.textContent)).toEqual(["Pipelines"]);
-  localStorage.clear();
 });
