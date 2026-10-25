@@ -82,7 +82,7 @@ const station = (index: number, kind: ApiStation["kind"], label: string, state: 
 
 const escrow = (operator: string, upheld: number, hash: string) => ({
   operator, bond: "50", bondLeft: String(50 - upheld * 5), fee: "5", outputHash: hash, status: "delivered" as const,
-  openedAt: t0 - 2 * min, closesAt: t0 - 2 * min + windowMs, upheld, link: "https://stellar.expert/explorer/testnet",
+  openedAt: t0 - 2 * min, closesAt: t0 - 2 * min + windowMs, msLeft: windowMs - 2 * min, upheld, link: "https://stellar.expert/explorer/testnet",
 });
 
 const counts = (fs: ApiField[]) => ({
@@ -156,7 +156,7 @@ const challenge: ApiChallenge = {
   id: "ch-1", status: "filed", value: "220 Ah (rated)", page: 1, quote: "Rated capacity 220 Ah",
   documentId: "doc-1", documentName: doc1.name, supplier: doc1.supplier, brand: "Voltaris", pipeline: "baseline", operatorLabel: "Baseline",
   field: "rated_capacity_ah", fieldLabel: "Rated capacity", rule: "Quantity: same unit after conversion, same qualifier, no tolerance.",
-  filedAt: t0 - 1 * min, closesAt: t0 - 2 * min + windowMs,
+  filedAt: t0 - 1 * min, closesAt: t0 - 2 * min + windowMs, msLeft: windowMs - 2 * min,
   delivered: { display: "80 Ah", evidence: (baseline[4] as Extract<ApiField, { evidence: ApiQuote }>).evidence },
   claim: { display: "220 Ah (rated)", evidence: q(1, "Rated capacity 220 Ah", r(0.084, 0.319, 0.471), "220 Ah") },
   slash: "5", challenger: "brand", deposit: "1",

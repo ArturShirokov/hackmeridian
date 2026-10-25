@@ -64,7 +64,7 @@ export function Arbiter() {
                     <span style={{ font: "500 14px/1.2 var(--sans)" }}>{x.fieldLabel}</span>
                     <span style={{ font: "400 14px/1.2 var(--sans)" }}>{x.operatorLabel}</span>
                     <span style={{ font: "500 13px/1 var(--mono)", color: "#2A2723" }}>{ago(now - x.filedAt)}</span>
-                    <span style={{ font: "500 14px/1 var(--mono)" }}>{clock(x.closesAt - now)}</span>
+                    <span style={{ font: "500 14px/1 var(--mono)" }}>{clock(x.paused ? x.msLeft : x.closesAt - now)}{x.paused && <span style={{ font: "500 11px/1 var(--sans)", color: "#3D3A34" }}> paused</span>}</span>
                     <span style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".05em", textTransform: "uppercase", color: s === "upheld" ? RED : s === "rejected" ? "#5E594F" : INK }}>
                       {s === "filed" ? "Open" : s}
                     </span>

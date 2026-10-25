@@ -16,6 +16,8 @@ export interface ApiConfig {
   now: Ms;
   baseUrl: string;
   challengeWindowMs: number;
+  /** Demo: each Challenge Window starts when the Brand opens the Document and pauses while a Challenge is undecided. */
+  demoWindow?: boolean;
   /** What a challenger locks to file a Challenge. */
   challengeDeposit: Usdc;
   /** What the Arbiter earns for an upheld Challenge, out of the Slash (at most the Slash). */
@@ -45,6 +47,16 @@ export interface ApiTemplate {
   examples: string[];
 }
 
+/**
+ * Where a Challenge Window stands. closesAt is fixed while it runs; while paused, show msLeft frozen.
+ * paused: "until opened" (demo: the Brand has not opened the Document yet), "challenge open" (demo: a Challenge is undecided).
+ */
+export interface ApiWindow {
+  closesAt: Ms;
+  msLeft: Ms;
+  paused?: "until opened" | "challenge open";
+}
+
 /** processing: not delivered yet. delivered: Challenge Window open. awaiting arbiter: window shut, a Challenge undecided. */
 export type DocStatus = "processing" | "delivered" | "awaiting arbiter" | "settled";
 
@@ -57,9 +69,8 @@ export interface ApiDocumentSummary {
   template: string;
   pages: number;
   uploadedAt: Ms;
-  pipelines: Record<string, {
+  pipelines: Record<string, Partial<ApiWindow> & {
     status: DocStatus;
-    closesAt?: Ms;
     /** challenged: Fields with a Challenge filed or upheld. */
     counts: { final: number; converging: number; notStated: number; challenged: number };
     /** Once delivered: locked until settlement, then released, or slashed after an upheld Challenge. */
@@ -121,7 +132,7 @@ export interface ApiStation {
   meta: string;
 }
 
-export interface ApiEscrow {
+export interface ApiEscrow extends ApiWindow {
   operator: string;
   bond: Usdc;
   /** Bond minus the Slashes of upheld Challenges so far. */
@@ -130,7 +141,6 @@ export interface ApiEscrow {
   outputHash: string;
   status: DocStatus;
   openedAt: Ms;
-  closesAt: Ms;
   /** Upheld Challenges so far (Slashes are paid at settlement). */
   upheld: number;
   slashes?: Usdc[];
@@ -198,7 +208,7 @@ export interface ApiChallengeSummary {
   quote: string;
 }
 
-export interface ApiChallenge extends ApiChallengeSummary {
+export interface ApiChallenge extends ApiChallengeSummary, ApiWindow {
   documentId: string;
   documentName: string;
   supplier: string;
@@ -212,8 +222,6 @@ export interface ApiChallenge extends ApiChallengeSummary {
   filedAt: Ms;
   decidedAt?: Ms;
   note?: string;
-  /** When the Challenge Window of the escrow closes. */
-  closesAt: Ms;
   delivered: { display: string; evidence?: ApiQuote };
   claim: { display: string; evidence: ApiQuote };
   /** Paid to the Brand at settlement if upheld, less the Arbiter Fee. */
@@ -320,6 +328,7 @@ export interface ApiBalance {
  * GET  /api/documents → ApiDocumentSummary[]
  * POST /api/documents (multipart file, template, supplier) → 201 { id } | 400 { error }
  * GET  /api/documents/:id → ApiDocument    GET /documents/:id/file → the PDF
+ * POST /api/documents/:id/open → 204: the Brand opened the Review (demo window: its Challenge Windows start)
  * GET  /api/documents/:id/export?pipeline= → ApiExport as an attachment | 409 before delivery
  * POST /api/documents/:id/challenges { pipeline, field, page, quote, value, unit?, qualifier?, challenger?, depositXdr? } → 201 { id }
  *      | 400/404/409 { error } | 402 { error } when the Challenge Deposit is not locked. challenger defaults to the Brand

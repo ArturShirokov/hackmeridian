@@ -12,7 +12,7 @@ const PROCESSING: Record<string, [string, string]> = {
 export async function demoBoard(
   run: Run,
   readPdf: (file: string) => Promise<Uint8Array>,
-  live: { now: () => number; challengeWindowMs: number; baseUrl?: string },
+  live: { now: () => number; challengeWindowMs: number; demoWindow?: boolean; baseUrl?: string },
 ) {
   let skew = 0;
   const { board, documents } = await replay(run, readPdf, { ...live, now: () => live.now() + skew });
@@ -34,6 +34,7 @@ export async function demoBoard(
   const clean = documents.find((d) => !settle.has(d.id));
   if (clean) settle.add(clean.id);
   // Settle those two as if their Challenge Window had passed; the rest stay open on the wall clock.
+  for (const id of settle) board.open(id); // with the demo window, a window runs only once the Document is opened
   skew = 30 * 86_400_000;
   await board.tick((id) => settle.has(id));
   skew = 0;

@@ -146,6 +146,8 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
     return d ? c.json(d) : c.json({ error: "not found" }, 404);
   });
 
+  app.post("/api/documents/:id/open", (c) => (board.open(c.req.param("id")) ? c.body(null, 204) : c.json({ error: "not found" }, 404)));
+
   app.get("/documents/:id/file", async (c) => {
     const bytes = await board.documentBytes(c.req.param("id"));
     if (!bytes) return c.notFound();

@@ -47,6 +47,8 @@ export function makeApi(fetcher: typeof fetch, loadFixtures?: () => Promise<Fixt
     templates: () => send<ApiTemplate[]>("/api/templates"),
     documents: () => send<ApiDocumentSummary[]>("/api/documents"),
     document: (id: string) => send<ApiDocument>(`/api/documents/${id}`),
+    /** The Brand opened the Review: with the demo window, its Challenge Windows start. */
+    open: (id: string) => send<unknown>(`/api/documents/${id}/open`, { method: "POST" }).catch(() => undefined),
     arbiter: () => send<ApiArbiter>("/api/challenges"),
     leaderboard: () => send<ApiLeaderRow[]>("/api/leaderboard"),
     jobs: (limit = 50) => send<ApiJob[]>(`/api/jobs?limit=${limit}`),

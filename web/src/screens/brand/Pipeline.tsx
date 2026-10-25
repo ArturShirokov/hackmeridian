@@ -100,7 +100,7 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
             {e && <span style={{ font: "500 20px/1 var(--mono)", color: "var(--money)" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
             {e && windowMs !== undefined && (
               <span style={{ font: "500 20px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline" }}>
-                Challenge Window <Countdown bare closesAt={e.closesAt} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
+                Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
               </span>
             )}
             {e && <ProofLink href={e.link} hash={e.outputHash} />}

@@ -4,7 +4,7 @@ import { api, usePoll, type ApiFailure } from "../../api.ts";
 import { navigate } from "../../router.tsx";
 import { shortHash, usdc } from "../../format.ts";
 import { useServerClock } from "../../screens.tsx";
-import { suggestions, windowLength } from "./derive.ts";
+import { suggestions, windowLabel } from "./derive.ts";
 
 const INK = "#141414", RED = "#A3221B";
 type Phase = "idle" | "wrong" | "failed" | "uploading" | "stored";
@@ -185,7 +185,7 @@ export function BrandUpload() {
           </div>
           {terms && config && (
             <div style={{ padding: "16px 20px", borderTop: "1px solid var(--rule)", background: "var(--band)", font: "500 15px/1.6 var(--mono)", color: INK }}>
-              Fee <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.fee)} USDC</span> · backed by a <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.bond)} USDC</span> Bond · Challenge Window {windowLength(config.challengeWindowMs)}
+              Fee <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.fee)} USDC</span> · backed by a <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.bond)} USDC</span> Bond · Challenge Window {windowLabel(config)}
             </div>
           )}
           <div style={{ padding: 20 }}>

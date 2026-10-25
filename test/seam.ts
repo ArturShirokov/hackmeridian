@@ -27,6 +27,7 @@ export function startBoard(
     pipelines?: Pipeline[];
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
+    demoWindow?: boolean;
     challengeDeposit?: string;
     arbiterFee?: string;
     /** Have the fake Ledger give explorer links under this base URL; without it, it gives none. */
@@ -123,6 +124,8 @@ export function startBoard(
       return { ...doc, fields: doc.views[0]!.fields, escrow: doc.views[0]!.escrow, view };
     },
     documents: () => get<ApiDocumentSummary[]>("/api/documents"),
+    /** The Brand opens the Document's Review (in demo mode, that starts its Challenge Window). */
+    open: async (id: string) => (await web.request(`/api/documents/${id}/open`, { method: "POST" })).status,
     config: () => get<ApiConfig>("/api/config"),
     templates: () => get<ApiTemplate[]>("/api/templates"),
     jobs: () => get<ApiJob[]>("/api/jobs"),

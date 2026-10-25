@@ -10,7 +10,7 @@ import { spanTree } from "../../components/SieveTrack.tsx";
 import { Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, useDocument } from "./common.tsx";
-import { boxes, compare, parseClaim, reviewGroups, settledText, shown, withShown } from "./derive.ts";
+import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, shown, windowLabel, withShown } from "./derive.ts";
 import { JsonView, MarkdownView, SourceMarkdown, TraceView, VIEWS, type View } from "./views.tsx";
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
@@ -22,8 +22,12 @@ export function BrandReview({ id }: { id: string }) {
   const { data: d, error } = useDocument(id);
   const { config, offset } = useServerClock();
   const { data: templates } = usePoll(api.templates, 60_000);
+  // Opening the Review starts a demo Challenge Window (once every Operator has delivered).
+  const waiting = !!d && pipelineState(d).delivered && d.views.some((v) => v.escrow?.paused === "until opened");
+  useEffect(() => { if (waiting) void api.open(id); }, [waiting, id]);
   if (!d) return <Loading error={error} />;
   const tpl = templates?.find((t) => t.name === d.template);
+  const unopened = d.views.some((v) => v.escrow?.paused === "until opened");
   return (
     <>
       <ReviewView d={d} config={config} offset={offset} template={tpl} file={(body) => api.challenge(d.id, body)} />
@@ -32,7 +36,8 @@ export function BrandReview({ id }: { id: string }) {
   );
 }
 
-const windowOpen = (v: ApiPipelineView | undefined, offset: number) => !!v?.escrow && v.escrow.status === "delivered" && v.escrow.closesAt > Date.now() + offset;
+const windowOpen = (v: ApiPipelineView | undefined, offset: number) =>
+  !!v?.escrow && v.escrow.status === "delivered" && (v.escrow.paused ? v.escrow.msLeft > 0 : v.escrow.closesAt > Date.now() + offset);
 const challengeable = (f: ApiField) => f.status === "final" && "evidence" in f && !f.challenge;
 
 export function ReviewView({ d, config, offset, template, file }: {
@@ -144,7 +149,7 @@ export function ReviewView({ d, config, offset, template, file }: {
         </div>
         {(isCompare ? d.views : [view]).filter((v) => v.escrow).map(bond)}
         {e && <MoneyChip tone="fee" label="Fee" amount={e.fee} state={settled ? "paid" : "held"} />}
-        {e && config && <Countdown closesAt={e.closesAt} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} />}
+        {e && config && <Countdown closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} note={windowLabel(config)} />}
         {e && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <SectionLabel size={10.5}>Output hash</SectionLabel>
