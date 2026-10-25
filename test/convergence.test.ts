@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { ours } from "../src/pipelines.js";
-import { extraction, makePdf, startBoard } from "./seam.js";
+import { checkedMarkdown, extraction, makePdf, startBoard } from "./seam.js";
 
 const sheet = () => makePdf([["Cell C-32", "Capacity: 3200 mAh (nominal)", "Chemistry: LiFePO4"], ["Nominal voltage 3.2 V"]]);
 const capacityMah = { value: 3200, unit: "mAh", qualifier: "nominal", page: 1, quote: "Capacity: 3200 mAh (nominal)" };
@@ -15,6 +15,7 @@ async function twoExtractions(first: Record<string, object>, second: Record<stri
   const j1 = (await w1.nextJob())!;
   expect(await w1.submitJob(j1.id, extraction(j1, first))).toMatchObject({ ok: true });
   expect((await brand.document(docId)).fields.every((f) => f.status === "converging")).toBe(true);
+  await checkedMarkdown(w1);
   const j2 = (await w2.nextJob())!;
   expect(await w2.submitJob(j2.id, extraction(j2, second))).toMatchObject({ ok: true });
   const doc = await brand.document(docId);
@@ -70,9 +71,10 @@ test("next_job never includes another Sieve's Field values", async () => {
   const [w1, w2] = [await worker("w1"), await worker("w2")];
   const j1 = (await w1.nextJob())!;
   await w1.submitJob(j1.id, extraction(j1, { rated_capacity_ah: capacityMah }));
+  await checkedMarkdown(w1, "# Cell C-32");
   const j2 = (await w2.nextJob())!;
   expect(JSON.stringify(j2)).not.toMatch(/"(value|quote|notStated|result)":/);
-  expect({ ...j2, id: j1.id }).toEqual(j1);
+  expect(j2.document).toEqual({ ...j1.document, markdown: "# Cell C-32" });
 });
 
 test("a Worker that did one extraction Sieve on a Document is never offered a second on it", async () => {
@@ -82,6 +84,7 @@ test("a Worker that did one extraction Sieve on a Document is never offered a se
   const j1 = (await w1.nextJob())!;
   expect(j1.documentId).toBe(docA);
   await w1.submitJob(j1.id, extraction(j1));
+  await checkedMarkdown(w1);
   expect(await w1.nextJob()).toBeNull();
 
   const docB = await brand.upload(await sheet());
