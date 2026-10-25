@@ -71,12 +71,11 @@ export function webApp(board: JobBoard): Hono {
     const views = Object.entries(d.pipelines);
     const cell = (f: (typeof d.fields)[number]) =>
       "supplierRequest" in f
-        ? html`<td>${f.status}</td><td>Not stated. Competing quotes:
-            <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
+        ? html`<td>${f.status}</td><td>Not stated.${f.quotes.length
+              ? html` Competing quotes:<ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>`
+              : html`<br>`}
             Supplier Request:<br><textarea readonly rows="5" cols="50">${f.supplierRequest}</textarea>
             <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
-        : "notStated" in f
-        ? html`<td>${f.status}</td><td class="muted">Not stated</td>`
         : "value" in f
           ? html`<td>${f.status}</td><td>${formatValue(f)}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
               <br><span class="muted">p. ${f.page}: <q>${f.quote}</q></span></td>`
@@ -178,7 +177,7 @@ export function webApp(board: JobBoard): Hono {
       const label = templates[board.document(ch.documentId)!.template]!.fields.find((f) => f.name === ch.field)!.label;
       const d = ch.challenged;
       const challenged =
-        "notStated" in d ? "Not stated" : "value" in d ? `${formatValue(d)} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
+        d.status === "not stated" ? "Not stated" : "value" in d ? `${formatValue(d)} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
       return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${challenged}</td>
         <td>${formatValue(ch)}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
         <td><form method="post" action="/challenges/${ch.id}/decision">

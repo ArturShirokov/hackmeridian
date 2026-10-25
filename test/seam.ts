@@ -13,7 +13,7 @@ type PipelineView = {
   fields: {
     name: string;
     status: "converging" | "final" | "disagreeing" | "not stated";
-    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean;
+    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; corrected?: boolean;
     quotes?: { page: number; quote: string }[];
     supplierRequest?: string;
   }[];

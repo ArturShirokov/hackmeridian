@@ -29,7 +29,7 @@ test("two extraction Sieves agree on capacity 3200 mAh vs 3.2 Ah nominal, so the
   );
   expect(field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, unit: "Ah", qualifier: "nominal" });
   expect(field("battery_chemistry")).toMatchObject({ status: "final", value: "LFP" });
-  expect(field("name")).toMatchObject({ status: "final", notStated: true });
+  expect(field("name")).toMatchObject({ status: "not stated", quotes: [] }); // both said Not stated
   expect((await brand.page(`/documents/${docId}`)).text).toMatch(/final/);
 });
 

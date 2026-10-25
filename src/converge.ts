@@ -5,10 +5,14 @@ import type { Field, Template } from "./templates.js";
 export type FieldStatus = "converging" | "final" | "disagreeing" | "not stated";
 export type Quote = { page: number; quote: string };
 export type FieldResult =
-  | (FieldValue & { status: "final" })
+  | (Extract<FieldValue, { value: unknown }> & { status: "final" })
   | { field: string; status: "disagreeing" }
-  /** Still split after the tie-break: every competing quote, for the Supplier Request. */
-  | { field: string; status: "not stated"; notStated: true; quotes: Quote[] };
+  /** Agreed Not stated, or still split after the tie-break: every competing quote, for the Supplier Request. */
+  | { field: string; status: "not stated"; quotes: Quote[] };
+
+/** A value the Sieves settled on: final when stated, else Not stated with these quotes. */
+const settled = (v: FieldValue, quotes: Quote[] = []): FieldResult =>
+  "value" in v ? { ...v, status: "final" } : { field: v.field, status: "not stated", quotes };
 
 /** A stated value as people read it: `3.2 Ah (nominal)`, compositions as JSON. */
 export const formatValue = (v: { value: unknown; unit?: string; qualifier?: string | null }) =>
@@ -148,18 +152,18 @@ export function converge(template: Template, results: FieldValue[][], pages: str
   const text = fold(pages.join(" "));
   return template.fields.map((f): FieldResult => {
     const values = results.map((r) => r.find((v) => v.field === f.name));
-    if (values.length === 1) return { ...values[0]!, status: "final" };
+    if (values.length === 1) return settled(values[0]!);
     const [a, b, tie] = values as [FieldValue, FieldValue, FieldValue | undefined];
     const [ka, kb] = [key(f, a, text), key(f, b, text)];
-    if (ka !== undefined && ka === kb) return { ...shown(f, a), status: "final" };
+    if (ka !== undefined && ka === kb) return settled(shown(f, a));
     const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
-    const notStated = { field: f.name, status: "not stated", notStated: true, quotes } as const;
+    const notStated = { field: f.name, status: "not stated", quotes } as const;
     // A high-stake Field needs both values to agree; a tie-break may only stand in for a failed quote.
     const both = valueKey(f, a);
     if (f.highStake && (both === undefined || both !== valueKey(f, b))) return notStated;
     if (values.length === 2) return { field: f.name, status: "disagreeing" };
     const kt = tie && key(f, tie, text);
     const agreed = kt !== undefined && (f.highStake ? kt === both : kt === ka || kt === kb);
-    return agreed ? { ...shown(f, tie!), status: "final" } : notStated;
+    return agreed ? settled(shown(f, tie!), quotes) : notStated;
   });
 }

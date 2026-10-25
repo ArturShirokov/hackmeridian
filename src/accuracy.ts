@@ -118,9 +118,9 @@ export function score(
       for (const [name, want] of Object.entries(e.fields)) {
         const f = template.fields.find((f) => f.name === name)!;
         const got = byDoc[e.document]?.find((v) => v.field === name);
-        const gotStated = got?.status === "final" && "value" in got ? got : undefined;
+        const gotStated = got?.status === "final" ? got : undefined;
         r.fields++;
-        if (got?.status === "not stated" || (got?.status === "final" && !gotStated)) r.notStated++;
+        if (got?.status === "not stated") r.notStated++;
         const correct =
           want === "Not stated"
             ? got !== undefined && !gotStated && got.status !== "disagreeing"

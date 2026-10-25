@@ -282,7 +282,7 @@ export class JobBoard {
       const first = this.jobsOf(p.name, doc.meta.id).find((j) => extracts(j.job.sieve))?.result ?? [];
       const fields = doc.template.fields.map((f): FieldResult => {
         const v = first.find((v) => v.field === f.name);
-        return { field: f.name, status: "not stated", notStated: true, quotes: v && "quote" in v ? [{ page: v.page, quote: v.quote }] : [] };
+        return { field: f.name, status: "not stated", quotes: v && "quote" in v ? [{ page: v.page, quote: v.quote }] : [] };
       });
       return this.deliver(s, doc, p.name, fields);
     }

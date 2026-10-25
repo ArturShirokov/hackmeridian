@@ -56,7 +56,7 @@ test("a Field still split after the tie-break is Not stated with every competing
   const tie = (await b.w3.nextJob())!;
   await b.w3.submitJob(tie.id, extraction(tie));
   const f = await b.field("rated_capacity_ah");
-  expect(f).toMatchObject({ status: "not stated", notStated: true });
+  expect(f).toMatchObject({ status: "not stated" });
   expect(f.quotes).toEqual([
     { page: 1, quote: "Capacity: 3200 mAh (nominal)" },
     { page: 1, quote: "Capacity 3.3 Ah nominal" },
