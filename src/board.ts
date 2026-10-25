@@ -81,6 +81,7 @@ interface JobState {
   job: Job;
   pipeline: string;
   takenBy?: string;
+  takenAt?: number;
   done: boolean;
 }
 
@@ -93,8 +94,21 @@ export class JobBoard {
   private jobs: JobState[] = [];
   private seen = new Set<string>();
   private lastPoll = new Date(0);
+  private now: () => number;
+  private jobTimeoutMs: number;
 
-  constructor(opts: { storage: Storage; ledger: Ledger; baseUrl: string; pipelines?: Pipeline[] }) {
+  constructor(opts: {
+    storage: Storage;
+    ledger: Ledger;
+    baseUrl: string;
+    pipelines?: Pipeline[];
+    /** Milliseconds since the epoch; tests inject a fake one. */
+    now?: () => number;
+    /** How long a Worker may hold a Job before it goes back on the board. */
+    jobTimeoutMs?: number;
+  }) {
+    this.now = opts.now ?? Date.now;
+    this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
     this.storage = opts.storage;
     this.ledger = opts.ledger;
     this.baseUrl = opts.baseUrl;
@@ -152,9 +166,11 @@ export class JobBoard {
 
   /** The next open Job for this Worker, or null when there is nothing yet. */
   nextJob(worker: string): Job | null {
-    const s = this.jobs.find((j) => !j.done && !j.takenBy);
+    const now = this.now();
+    const s = this.jobs.find((j) => !j.done && (!j.takenBy || now - j.takenAt! >= this.jobTimeoutMs));
     if (!s) return null;
     s.takenBy = worker;
+    s.takenAt = now;
     return s.job;
   }
 
