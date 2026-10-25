@@ -47,6 +47,27 @@ function code(raw: string): string {
   return nmc ? `NMC${nmc[2] ?? ""}` : (codes[bare] ?? k);
 }
 
+/** Canonical fibre codes, looked up by the name lower-cased without spaces, hyphens or underscores. */
+const fibres: Record<string, string> = {
+  co: "cotton", cotton: "cotton",
+  pes: "polyester", pet: "polyester", polyester: "polyester",
+  el: "elastane", ea: "elastane", elastane: "elastane", spandex: "elastane", lycra: "elastane",
+  pa: "polyamide", nylon: "polyamide", polyamide: "polyamide",
+  cv: "viscose", viscose: "viscose", rayon: "viscose",
+  wo: "wool", wool: "wool",
+  cly: "lyocell", lyocell: "lyocell", tencel: "lyocell",
+};
+
+/** A fibre name in canonical form; an unknown fibre keeps its folded name. */
+export function fibreCode(raw: string): string {
+  const k = raw.toLowerCase().replace(/[\s_-]+/g, "");
+  return fibres[k] ?? k;
+}
+
+/** Sum of a composition's percentages, each rounded to 0.1 first so float noise can't break "exactly 100". */
+export const compositionSum = (c: Record<string, number>) =>
+  Math.round(Object.values(c).reduce((s, p) => s + Math.round(p * 10) / 10, 0) * 10) / 10;
+
 const round = (x: number) => Number(x.toPrecision(12)); // float noise from unit factors, not a tolerance
 
 /** The canonical value of one stated value, or undefined when it can't be normalised (counts as disagreement). */
@@ -59,10 +80,14 @@ function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>): unknow
     case "code":
       return code(v.value as string);
     case "composition": {
-      // ponytail: fibre names only case-folded; #11 adds the fibre alias map (PES -> polyester).
-      const entries = Object.entries(v.value as Record<string, number>).map(([k, p]) => [k.trim().toLowerCase(), Math.round(p * 10) / 10] as const);
-      const sum = Math.round(entries.reduce((s, [, p]) => s + p, 0) * 10) / 10;
-      return sum === 100 ? Object.fromEntries(entries.sort(([a], [b]) => a.localeCompare(b))) : undefined;
+      const out: Record<string, number> = {};
+      for (const [k, p] of Object.entries(v.value as Record<string, number>)) {
+        const fibre = fibreCode(k);
+        if (fibre in out) return undefined; // two names for one fibre (CO and cotton): ambiguous, not summed
+        out[fibre] = Math.round(p * 10) / 10;
+      }
+      const sorted = Object.fromEntries(Object.entries(out).sort(([a], [b]) => a.localeCompare(b)));
+      return compositionSum(sorted) === 100 ? sorted : undefined;
     }
     case "text":
       return (v.value as string).trim().toLowerCase();
@@ -87,6 +112,7 @@ function shown(f: Field, v: FieldValue): FieldValue {
   if (!("value" in v)) return v;
   if (f.type === "quantity") return { ...v, value: canonical(f, v) as number, unit: f.unit! };
   if (f.type === "code") return { ...v, value: canonical(f, v) as string };
+  if (f.type === "composition") return { ...v, value: canonical(f, v) as Record<string, number> };
   return v;
 }
 

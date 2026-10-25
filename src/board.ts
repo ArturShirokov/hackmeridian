@@ -2,7 +2,7 @@
 // the Brand through web.ts. It touches the outside world only through the Storage and Ledger adapters.
 import { createHash, randomUUID } from "node:crypto";
 import * as z from "zod";
-import { converge, type FieldResult } from "./converge.js";
+import { compositionSum, converge, type FieldResult } from "./converge.js";
 import type { EscrowRequest, Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
@@ -56,6 +56,10 @@ function checkAgainstTemplate(values: FieldValue[], template: Template, pages: n
     const isRecord = typeof v.value === "object";
     if (f.type === "quantity" && !isNumber) problems.push(`${at} a quantity value must be a number`);
     if (f.type === "composition" && !isRecord) problems.push(`${at} a composition value must be { fibre: percent }`);
+    if (f.type === "composition" && isRecord) {
+      const sum = compositionSum(v.value as Record<string, number>);
+      if (sum !== 100) problems.push(`${at} fibre percentages must add up to 100, these add up to ${sum}`);
+    }
     if (f.type !== "quantity" && f.type !== "composition" && typeof v.value !== "string")
       problems.push(`${at} a ${f.type} value must be a string`);
     if (f.type === "quantity" && !v.unit) problems.push(`${at} a quantity needs a unit`);
