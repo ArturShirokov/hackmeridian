@@ -2,6 +2,7 @@
 // the Brand through web.ts. It touches the outside world only through the Storage and Ledger adapters.
 import { randomUUID } from "node:crypto";
 import * as z from "zod";
+import { converge, type FieldResult } from "./converge.js";
 import type { Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
@@ -73,13 +74,16 @@ interface Doc {
   meta: DocumentMeta;
   template: Template;
   text: string[];
-  /** Delivered Field values by Pipeline name. */
-  delivered: Map<string, FieldValue[]>;
+  /** Delivered Field values by Pipeline name, set once the Pipeline's last Sieve is handed in. */
+  delivered: Map<string, FieldResult[]>;
 }
 
 interface JobState {
   job: Job;
   pipeline: string;
+  /** Index of the Job's Sieve in its Pipeline. */
+  sieve: number;
+  result?: FieldValue[];
   takenBy?: string;
   takenAt?: number;
   done: boolean;
@@ -146,28 +150,45 @@ export class JobBoard {
     this.seen.add(meta.id);
     const template = templates[meta.template]!;
     this.docs.set(meta.id, { meta, template, text, delivered: new Map() });
-    for (const p of this.pipelines) {
-      const sieve = p.sieves[0]!;
-      this.jobs.push({
-        pipeline: p.name,
-        done: false,
-        job: {
-          id: randomUUID(),
-          documentId: meta.id,
-          sieve: sieve.kind,
-          view: sieve.view,
-          instructions: sieve.instructions,
-          template,
-          document: { url: `${this.baseUrl}/documents/${meta.id}/file`, text },
-        },
-      });
-    }
+    for (const p of this.pipelines) this.post(p, 0, meta.id);
+  }
+
+  /** Put the Job for Sieve `index` of Pipeline `p` on the board for this Document. */
+  private post(p: Pipeline, index: number, documentId: string) {
+    const d = this.docs.get(documentId)!;
+    const sieve = p.sieves[index]!;
+    this.jobs.push({
+      pipeline: p.name,
+      sieve: index,
+      done: false,
+      job: {
+        id: randomUUID(),
+        documentId,
+        sieve: sieve.kind,
+        view: sieve.view,
+        instructions: sieve.instructions,
+        template: d.template,
+        document: { url: `${this.baseUrl}/documents/${documentId}/file`, text: d.text },
+      },
+    });
+  }
+
+  /** Sieves stay independent: a Worker does at most one extraction Sieve per Document and Pipeline. */
+  private didExtraction(worker: string, j: JobState): boolean {
+    return this.jobs.some(
+      (o) => o !== j && o.takenBy === worker && o.pipeline === j.pipeline && o.job.documentId === j.job.documentId && o.job.sieve === "extract",
+    );
   }
 
   /** The next open Job for this Worker, or null when there is nothing yet. */
   nextJob(worker: string): Job | null {
     const now = this.now();
-    const s = this.jobs.find((j) => !j.done && (!j.takenBy || now - j.takenAt! >= this.jobTimeoutMs));
+    const s = this.jobs.find(
+      (j) =>
+        !j.done &&
+        (!j.takenBy || now - j.takenAt! >= this.jobTimeoutMs) &&
+        !(j.job.sieve === "extract" && this.didExtraction(worker, j)),
+    );
     if (!s) return null;
     s.takenBy = worker;
     s.takenAt = now;
@@ -185,7 +206,13 @@ export class JobBoard {
     const problems = checkAgainstTemplate(parsed.data.fields, doc.template, doc.text.length);
     if (problems.length) return { ok: false, error: problems.join("\n") };
     s.done = true;
-    doc.delivered.set(s.pipeline, parsed.data.fields);
+    s.result = parsed.data.fields;
+    const p = this.pipelines.find((p) => p.name === s.pipeline)!;
+    if (s.sieve + 1 < p.sieves.length) this.post(p, s.sieve + 1, doc.meta.id);
+    else {
+      const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.job.sieve === "extract");
+      doc.delivered.set(p.name, converge(doc.template, ran.map((j) => j.result!), doc.text));
+    }
     return { ok: true };
   }
 
@@ -193,7 +220,7 @@ export class JobBoard {
     return [...this.docs.values()].map((d) => d.meta);
   }
 
-  /** What the Brand sees: every Template Field with its delivered value, if any. */
+  /** What the Brand sees: every Template Field with its status and, once final, its value. */
   document(id: string) {
     const d = this.docs.get(id);
     if (!d) return undefined;
@@ -203,7 +230,7 @@ export class JobBoard {
       template: d.template.name,
       uploadedAt: d.meta.uploadedAt,
       fields: d.template.fields.map((f) => {
-        const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name };
+        const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         return { name: f.name, label: f.label, ...v };
       }),
     };

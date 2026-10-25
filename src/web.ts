@@ -68,8 +68,8 @@ export function webApp(board: JobBoard): Hono {
           ? html`<td colspan="5" class="muted">Not stated</td>`
           : "value" in f
             ? html`<td>${typeof f.value === "object" ? JSON.stringify(f.value) : f.value}</td><td>${f.unit ?? ""}</td><td>${f.qualifier ?? ""}</td><td>${f.page}</td><td><q>${f.quote}</q></td>`
-            : html`<td colspan="5" class="muted">waiting</td>`;
-      return html`<tr><th>${f.label}</th>${cells}</tr>`;
+            : html`<td colspan="5" class="muted"></td>`;
+      return html`<tr><th>${f.label}</th><td>${f.status}</td>${cells}</tr>`;
     });
     return c.html(
       layout(
@@ -77,7 +77,7 @@ export function webApp(board: JobBoard): Hono {
         html`<meta http-equiv="refresh" content="3"><p><a href="/">All Documents</a></p>
           <h1>${d.template} Document</h1>
           <p><a href="/documents/${d.id}/file">Original file</a></p>
-          <table><tr><th>Field</th><th>Value</th><th>Unit</th><th>Qualifier</th><th>Page</th><th>Quote</th></tr>${rows}</table>`,
+          <table><tr><th>Field</th><th>Status</th><th>Value</th><th>Unit</th><th>Qualifier</th><th>Page</th><th>Quote</th></tr>${rows}</table>`,
       ),
     );
   });
