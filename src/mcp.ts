@@ -34,7 +34,7 @@ export function buildMcpServer(board: JobBoard): McpServer {
       }),
     },
     async ({ worker, jobId, result }) => {
-      const r = board.submitJob(worker, jobId, result);
+      const r = await board.submitJob(worker, jobId, result);
       return r.ok ? { content: text("accepted") } : { isError: true, content: text(`rejected: ${r.error}`) };
     },
   );

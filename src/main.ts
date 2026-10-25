@@ -10,8 +10,10 @@ const host = process.env.HOST ?? "127.0.0.1";
 const baseUrl = process.env.BASE_URL ?? `http://${host}:${port}`;
 
 // ponytail: fake adapters only; swap in ICP Storage and Trustless Work Ledger when they land.
-const board = new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl });
+const challengeWindowMs = Number(process.env.CHALLENGE_WINDOW_MIN ?? 5) * 60_000;
+const board = new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl, challengeWindowMs });
 setInterval(() => board.poll().catch((e) => console.error("poll failed:", e)), 5000);
+setInterval(() => board.tick().catch((e) => console.error("settlement failed:", e)), 5000);
 
 serve({ fetch: webApp(board).fetch, port, hostname: host }, () => {
   console.log(`Brand page: ${baseUrl}/  MCP endpoint: ${baseUrl}/mcp`);
