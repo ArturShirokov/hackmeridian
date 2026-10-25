@@ -1,7 +1,8 @@
 // What the Brand screens derive from the API: Pipeline status, counters, row order, Compare, Challenge values.
-import type { ApiDocument, ApiDocumentSummary, ApiEscrow, ApiField, ApiPipelineView } from "../../api.ts";
+import type { ApiDocument, ApiDocumentSummary, ApiEscrow, ApiField, ApiPipelineView, ApiTemplate } from "../../api.ts";
 import { usdc } from "../../format.ts";
-import type { BadgeStatus } from "../../components/ui.tsx";
+import { BADGE, type BadgeStatus } from "../../components/ui.tsx";
+import { badgeFor } from "../../components/FieldRow.tsx";
 import type { ViewerBox } from "../../components/DocumentViewer.tsx";
 
 export interface PipelineState {
@@ -144,8 +145,23 @@ export function settledText(e: Pick<ApiEscrow, "bond" | "bondLeft" | "fee" | "up
   return `${label} Bond ${usdc(e.bondLeft)} USDC released after a ${usdc(String(Number(e.bond) - Number(e.bondLeft)))} USDC Slash. Fee paid.`;
 }
 
-/** Viewer boxes for one Pipeline's Fields: selected = solid + tag, Challenged = red, Not stated = hatch, others dashed. */
+/** Viewer boxes for one Pipeline's Fields: selected = solid + tag, Challenged = red, Not stated = hatch, others dashed.
+ * Fields quoting the same words on a page share one box, which lists them (`fields`) so a click can pick one. */
 export function boxes(fields: ApiField[], selected?: string): ViewerBox[] {
+  const shared = new Map<string, ViewerBox>();
+  return fieldBoxes(fields, selected).filter((b) => {
+    const k = `${b.page}|${JSON.stringify(b.rects)}`;
+    const first = b.rects.length ? shared.get(k) : undefined;
+    if (!first) return shared.set(k, b), true;
+    first.fields ??= [{ id: first.id, label: first.title }];
+    first.fields.push({ id: b.id, label: b.title });
+    // The look of the most telling Field wins: selected, then Challenged.
+    if (b.kind === "selected" || (b.tag && first.kind !== "selected")) Object.assign(first, { id: b.id, kind: b.kind, tag: b.tag });
+    return false;
+  });
+}
+
+function fieldBoxes(fields: ApiField[], selected?: string): ViewerBox[] {
   return fields.flatMap((f): ViewerBox[] => {
     const tag = f.name === selected ? f.label : undefined;
     if ("evidence" in f) {
@@ -156,4 +172,42 @@ export function boxes(fields: ApiField[], selected?: string): ViewerBox[] {
     if ("quotes" in f) return f.quotes.map((q, i) => ({ id: f.name, page: q.page, rects: q.rects, kind: "notStated" as const, tag: i === 0 ? tag : undefined, title: f.label }));
     return [];
   });
+}
+
+/** What #20 adds per Template Field; read loosely so Templates without them still work. */
+type FieldMeta = { section?: string; author?: string };
+export const metaOf = (t: ApiTemplate | undefined, name: string) => t?.fields.find((f) => f.name === name) as FieldMeta | undefined;
+
+/** The JSON view and download: the passport-shaped output keyed by Template Field, Not stated explicit. */
+export function passport(d: ApiDocument, v: ApiPipelineView, template?: ApiTemplate) {
+  const fields = Object.fromEntries(
+    v.fields.map((f) => {
+      const author = metaOf(template, f.name)?.author;
+      const base = { status: badgeFor(f, f.challenge), ...(author && { author }) };
+      if ("evidence" in f) {
+        const { value, unit, qualifier, evidence } = f;
+        return [f.name, { ...base, value, ...(unit && { unit }), ...(qualifier && { qualifier }), page: evidence.page, quote: evidence.quote }];
+      }
+      return [f.name, "quotes" in f ? { ...base, value: "Not stated" } : base];
+    }),
+  );
+  return { template: d.template, documentId: d.id, pipeline: v.pipeline, operator: v.operator, ...(v.escrow && { outputHash: v.escrow.outputHash }), fields };
+}
+
+const cell = (s: string | number | undefined) => String(s ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ");
+
+/** The Markdown view and download: one table per Template section, in Template order. */
+export function passportMarkdown(d: ApiDocument, v: ApiPipelineView, template?: ApiTemplate) {
+  const groups = new Map<string, ApiField[]>();
+  for (const f of v.fields) {
+    const s = metaOf(template, f.name)?.section ?? "Fields";
+    groups.set(s, [...(groups.get(s) ?? []), f]);
+  }
+  const head = "| Field | Value | Status | Page | Quote |\n|---|---|---|---|---|";
+  const row = (f: ApiField) => {
+    const e = "evidence" in f ? f.evidence : undefined;
+    return `| ${[f.label, shown(f), BADGE[badgeFor(f, f.challenge)].label, e?.page, e?.quote].map(cell).join(" | ")} |`;
+  };
+  const tables = [...groups].map(([s, fs]) => `## ${s}\n\n${head}\n${fs.map(row).join("\n")}\n`);
+  return [`# ${d.name.replace(/\.pdf$/i, "")} · ${v.label}\n`, ...tables].join("\n");
 }

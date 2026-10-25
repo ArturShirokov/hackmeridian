@@ -1,15 +1,17 @@
 // Brand: the Document review. Money and status bar, the Document viewer (left), Operator tabs with Fields,
 // Not stated cards and Compare (right), the Challenge side panel, Supplier Request and Export modals.
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, usePoll, ApiFailure, type ApiConfig, type ApiDocument, type ApiField, type ApiPipelineView, type ApiTemplate, type ChallengeBody } from "../../api.ts";
 import { navigate } from "../../router.tsx";
 import { shortHash, splitMark, usdc } from "../../format.ts";
 import { FieldRow, pageOf } from "../../components/FieldRow.tsx";
 import { DocumentViewer } from "../../components/DocumentViewer.tsx";
+import { spanTree } from "../../components/SieveTrack.tsx";
 import { Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, useDocument } from "./common.tsx";
-import { boxes, compare, parseClaim, reviewGroups, settledText, shown, withShown } from "./derive.ts";
+import { boxes, compare, metaOf, parseClaim, reviewGroups, settledText, shown, withShown } from "./derive.ts";
+import { JsonView, MarkdownView, SourceMarkdown, TraceView, VIEWS, type View } from "./views.tsx";
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
 type Final = Extract<ApiField, { evidence: unknown }>;
@@ -38,6 +40,7 @@ export function ReviewView({ d, config, offset, template, file }: {
 }) {
   const q = new URLSearchParams(location.search);
   const [tab, setTab] = useState(() => q.get("pipeline") ?? d.views[0]!.pipeline);
+  const [viewTab, setViewTab] = useState<View>("Review");
   const [sel, setSel] = useState<string | undefined>(() => q.get("field") ?? undefined);
   const [exp, setExp] = useState<string | undefined>(sel);
   const [page, setPage] = useState(1);
@@ -60,6 +63,14 @@ export function ReviewView({ d, config, offset, template, file }: {
     const p = pageOf(fields.find((f) => f.name === name)!);
     if (p) setPage(p);
   };
+  // A Field picked on the Document, or by keys, scrolls its row (or its Not stated card and quotes) into view;
+  // the page's default first selection doesn't (a ?field= deep link does).
+  const prevSel = useRef(sel);
+  useEffect(() => {
+    const was = prevSel.current;
+    prevSel.current = sel;
+    if (sel && (was !== undefined || q.get("field"))) document.querySelector(`[data-review] [data-field="${sel}"]`)?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+  }, [sel, tab]);
   const openPanel = (name: string) => {
     if (isCompare) return;
     select(name, true);
@@ -158,9 +169,17 @@ export function ReviewView({ d, config, offset, template, file }: {
             pick={picking ? { onPick: (p) => setPanel({ ...panel!, pick: p }) } : undefined} />
         </div>
         <div style={{ minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-          <div role="tablist" style={{ flex: "none", display: "flex", borderBottom: `1px solid ${INK}`, padding: "0 20px", gap: 4 }}>
+          <div role="tablist" aria-label="View" style={{ flex: "none", display: "flex", borderBottom: "1px solid var(--rule)", padding: "0 20px", gap: 2, background: "var(--surface)" }}>
+            {VIEWS.map((k) => (
+              <button key={k} role="tab" aria-selected={k === viewTab} onClick={() => { setViewTab(k); setPanel(undefined); if (k !== "Review" && isCompare) setTab(d.views[0]!.pipeline); }}
+                style={{ height: 38, padding: "0 10px", background: "transparent", border: 0, borderBottom: `2px solid ${k === viewTab ? INK : "transparent"}`, marginBottom: -1, font: `${k === viewTab ? 600 : 500} 13px/1 var(--sans)`, color: INK, cursor: "pointer", whiteSpace: "nowrap", flex: "none" }}>
+                {k}
+              </button>
+            ))}
+          </div>
+          <div role="tablist" aria-label="Operator" style={{ flex: "none", display: "flex", borderBottom: `1px solid ${INK}`, padding: "0 20px", gap: 4 }}>
             {[...d.views.map((v) => ({ k: v.pipeline, label: v.label, meta: `${v.stations.length} Sieve${v.stations.length === 1 ? "" : "s"}` })),
-              ...(d.views.length > 1 ? [{ k: "compare", label: "Compare", meta: `${d.differs.length} differ` }] : [])].map((t) => (
+              ...(d.views.length > 1 && viewTab === "Review" ? [{ k: "compare", label: "Compare", meta: `${d.differs.length} differ` }] : [])].map((t) => (
               <button key={t.k} role="tab" aria-selected={t.k === (isCompare ? "compare" : view.pipeline)} onClick={() => { setTab(t.k); setPanel(undefined); }}
                 style={{ height: 50, padding: "0 14px", background: "transparent", border: 0, borderBottom: `3px solid ${t.k === (isCompare ? "compare" : view.pipeline) ? INK : "transparent"}`, marginBottom: -1, font: `${t.k === (isCompare ? "compare" : view.pipeline) ? 600 : 500} 15px/1 var(--sans)`, color: INK, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", flex: "none" }}>
                 {t.label}<span style={{ font: "500 12px/1 var(--mono)", color: "#3D3A34" }}>{t.meta}</span>
@@ -168,14 +187,18 @@ export function ReviewView({ d, config, offset, template, file }: {
             ))}
             <span style={{ marginLeft: "auto", alignSelf: "center", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingLeft: 8, font: "400 12px/1.3 var(--mono)", color: "#3D3A34" }}>↑ ↓ move · Enter quote · C Challenge</span>
           </div>
-          <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
-            {isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} /> : (
+          <div data-review key={viewTab} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+            {viewTab === "JSON" ? <JsonView d={d} v={view} template={template} />
+            : viewTab === "Markdown" ? <MarkdownView d={d} v={view} template={template} />
+            : viewTab === "Source Markdown" ? <SourceMarkdown v={view} />
+            : viewTab === "Trace" ? <TraceView spans={view.trace && spanTree(view.trace)} />
+            : isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} /> : (
               <>
                 {groups.notStated.length > 0 && (
                   <>
                     <div style={{ padding: "14px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: AMBER }}>Not stated · {groups.notStated.length}</div>
                     {groups.notStated.map((f) => (
-                      <NotStatedCard key={f.name} field={f as NotStated} selected={sel === f.name} onSelect={() => select(f.name)}
+                      <NotStatedCard key={f.name} field={f as NotStated} brandProvides={metaOf(template, f.name)?.author === "Brand"} selected={sel === f.name} onSelect={() => select(f.name, true)}
                         onQuote={(p) => { setSel(f.name); setPage(p); }} onRequest={() => setModal({ kind: "sr", field: f as NotStated })} />
                     ))}
                   </>
@@ -246,8 +269,8 @@ function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSele
   );
 }
 
-export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }: {
-  field: NotStated; selected: boolean; onSelect(): void; onQuote(page: number): void; onRequest(): void;
+export function NotStatedCard({ field, brandProvides, selected, onSelect, onQuote, onRequest }: {
+  field: NotStated; brandProvides?: boolean; selected: boolean; onSelect(): void; onQuote(page: number): void; onRequest(): void;
 }) {
   return (
     <div onClick={onSelect} data-field={field.name} style={{ margin: "6px 20px 14px", border: "1px solid var(--amber-bd)", background: "var(--amber-card)", cursor: "pointer", outline: selected ? `2px solid ${AMBER}` : "none" }}>
@@ -259,7 +282,7 @@ export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }:
       </div>
       <div style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
         <span style={{ font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>
-          {field.quotes.length ? "The Sieves found competing statements and no single value:" : "The Document does not state this Field."}
+          {field.quotes.length ? "The Sieves found competing statements and no single value:" : "Not stated in this Document."}
         </span>
         {field.quotes.map((q, i) => (
           <div key={i} onClick={(e) => { e.stopPropagation(); onQuote(q.page); }}
@@ -268,7 +291,9 @@ export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }:
           </div>
         ))}
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-          <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>
+          {brandProvides
+            ? <span style={{ font: "600 13px/1 var(--sans)", color: AMBER }}>Brand to provide</span>
+            : <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>}
         </div>
       </div>
     </div>

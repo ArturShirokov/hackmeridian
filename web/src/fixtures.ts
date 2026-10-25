@@ -99,6 +99,7 @@ const doc1: ApiDocument = {
   views: [
     {
       pipeline: "ours", label: "Origyn Pipeline", operator: "Origyn", deliveredAt: t0 - 2 * min, fields: ours,
+      markdown: "<!-- page 1 -->\n# Voltaris NMC-800 EV Battery Pack\n\n| Property | Value |\n|---|---|\n| Battery identifier | BAT-EU-2027-000214 |\n| Rated capacity | 220 Ah |\n| Nominal voltage | 360 V |\n\n<!-- page 2 -->\n## Chemistry\n\nLithium nickel manganese cobalt oxide (NMC 811), graphite anode\n",
       escrow: escrow("Origyn", 0, "e4b1c0ffee00000000000000000000000000000000000000000000000090af"),
       stations: [
         station(0, "extract", "Original", "done", "12 values stated", "Claude Code"),

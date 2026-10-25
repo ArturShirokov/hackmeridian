@@ -15,6 +15,8 @@ export interface ViewerBox {
   kind: "selected" | "quoted" | "notStated" | "challenged" | "pick" | "delivered" | "challenger";
   tag?: string;
   title: string;
+  /** Several Fields quote these words: a click opens a picker listing them. */
+  fields?: { id: string; label: string }[];
 }
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
@@ -103,6 +105,9 @@ function PageView({ pdf, page, boxes, onBoxClick, pick }: {
   const textLayer = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [size, setSize] = useState<{ w: number; h: number; scale: number }>();
+  /** The open picker: a box several Fields share, and where it was clicked. */
+  const [picker, setPicker] = useState<{ box: ViewerBox; x: number; y: number }>();
+  useEffect(() => setPicker(undefined), [page, boxes.length]);
 
   useEffect(() => {
     const el = scroller.current!;
@@ -159,7 +164,26 @@ function PageView({ pdf, page, boxes, onBoxClick, pick }: {
         } as CSSProperties}
       >
         <div ref={host} style={{ width: size?.w, height: size?.h, lineHeight: 0 }} />
-        {size && boxes.map((b) => <Box key={b.id} box={b} w={size.w} h={size.h} picking={!!pick} onClick={() => onBoxClick(b.id)} />)}
+        {size && boxes.map((b, i) => (
+          <Box key={`${b.id}:${i}`} box={b} w={size.w} h={size.h} picking={!!pick}
+            onClick={() => {
+              const r = b.rects[0]!;
+              if (b.fields) setPicker({ box: b, x: r.x * size.w - PAD_X, y: (r.y + r.h) * size.h + PAD_Y + 4 });
+              else onBoxClick(b.id);
+            }} />
+        ))}
+        {picker && (
+          <div role="menu" aria-label="Fields quoting these words"
+            style={{ position: "absolute", left: picker.x, top: picker.y, zIndex: 3, background: "#FFFFFF", border: `1px solid ${INK}`, boxShadow: "0 4px 14px rgba(20,20,20,.18)", display: "flex", flexDirection: "column", minWidth: 180 }}>
+            <span style={{ padding: "8px 12px 4px", font: "600 10.5px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#3D3A34" }}>{picker.box.fields!.length} Fields quote this</span>
+            {picker.box.fields!.map((f) => (
+              <button key={f.id} role="menuitem" onClick={() => { setPicker(undefined); onBoxClick(f.id); }}
+                style={{ textAlign: "left", border: 0, borderTop: "1px solid var(--rule-row)", background: "transparent", padding: "9px 12px", font: "500 14px/1.2 var(--sans)", color: INK, cursor: "pointer" }}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
         {pick && <div ref={textLayer} className="textLayer" />}
       </div>
     </div>
@@ -179,7 +203,7 @@ function Box({ box, w, h, picking, onClick }: { box: ViewerBox; w: number; h: nu
   return (
     <>
       {box.rects.map((r, i) => (
-        <div key={i} title={box.title} onClick={picking ? undefined : onClick} data-box={box.kind}
+        <div key={i} title={box.fields ? box.fields.map((f) => f.label).join(" · ") : box.title} onClick={picking ? undefined : onClick} data-box={box.kind}
           style={{
             position: "absolute", left: r.x * w - PAD_X, top: r.y * h - PAD_Y, width: r.w * w + 2 * PAD_X, height: r.h * h + 2 * PAD_Y,
             outline: ol, outlineOffset: -1, cursor: picking ? "inherit" : "pointer", pointerEvents: picking ? "none" : "auto",
