@@ -6,6 +6,7 @@ vi.mock("../src/components/DocumentViewer.tsx", () => ({ DocumentViewer: () => n
 import { Arbiter } from "../src/screens/ops/Arbiter.tsx";
 import { Jobs } from "../src/screens/ops/Jobs.tsx";
 import { Leaderboard } from "../src/screens/ops/Leaderboard.tsx";
+import { Pipelines } from "../src/screens/ops/Pipelines.tsx";
 
 const config = {
   now: Date.now(), baseUrl: "http://127.0.0.1:3193", challengeWindowMs: 180_000, brand: { name: "Voltaris", reviewer: "Inês Duarte" },
@@ -80,18 +81,53 @@ test("the Leaderboard shows every column, a Slash on the chart and the one-Opera
   render(<Leaderboard />);
   expect(await screen.findByText("37")).toBeTruthy();
   expect(screen.getByText("75.0 %")).toBeTruthy();
+  expect(screen.getByText("1", { selector: "[data-rank]" })).toBeTruthy();
   expect(screen.getAllByText("5.00").length).toBeGreaterThan(0);
   expect(screen.getByText(/Only one Operator so far/)).toBeTruthy();
   expect(screen.getByText("−5.00")).toBeTruthy();
   expect(screen.getByText("Hunan")).toBeTruthy();
 });
 
-test("the Operator sidebar lights Pipelines, not the Job Board, on /jobs#pipelines", async () => {
+test("the Operator sidebar lights Pipelines on /pipelines", async () => {
   serve({ "/api/workers": [], "/api/jobs": [], "/api/session": { user: { id: "origyn", name: "Origyn", role: "operator" } } });
-  history.replaceState(null, "", "/jobs#pipelines");
-  Element.prototype.scrollIntoView = () => {};
+  history.replaceState(null, "", "/pipelines");
   const { App } = await import("../src/Shell.tsx");
   const { container } = render(<App />);
-  await screen.findByText("Pipelines");
+  await screen.findByRole("heading", { name: "Pipelines" });
   expect([...container.querySelectorAll(".om-nav.active")].map((a) => a.textContent)).toEqual(["Pipelines"]);
+  history.replaceState(null, "", "/");
+});
+
+test("Pipelines: each Sieve says what it reads and which Worker took its last Job; the Baseline has no cross-check", async () => {
+  const five = [["extract", "Original", "original"], ["markdown", "Markdown", "original"], ["faithfulness", "Faithfulness check", "mix"],
+    ["extract", "Markdown extraction", "markdown"], ["tiebreak", "Tie-break", "original"]].map(([kind, label, view]) => ({ kind, label, view }));
+  const job = { documentId: "d", documentName: "Cell spec.pdf", pipeline: "ours", postedAt: 0, status: "done" };
+  serve({
+    "/api/config": { ...config, operators: [{ ...config.operators[0], sieves: five }, config.operators[1]] },
+    "/api/workers": [{ name: "w1", harness: "Claude Code", lastSeen: Date.now(), live: true, doneToday: 2 }],
+    "/api/jobs": [{ ...job, id: "j2", sieve: "Original", worker: "w1" }, { ...job, id: "j1", sieve: "Original", worker: "w9" }],
+  });
+  render(<Pipelines />);
+  expect(await screen.findByText("reads original PDF · first independent read of every Field")).toBeTruthy();
+  expect(screen.getByText("reads Markdown vs PDF · on failure the Markdown is redone once")).toBeTruthy();
+  expect(screen.getByText("reads PDF, Fields still apart · never for ★ High-stake Fields")).toBeTruthy();
+  expect(screen.getByRole("listitem", { name: "01 Original" }).textContent).toContain("Claude Code");
+  expect(screen.getByRole("listitem", { name: "02 Markdown" }).textContent).toContain("No Worker yet");
+  expect(screen.getByText(/High-stake Fields need Original and Markdown extraction to agree/)).toBeTruthy();
+  expect(screen.getByText("reads original PDF · every Field in one pass")).toBeTruthy();
+  expect(screen.getByText(/No cross-check and no Tie-break/)).toBeTruthy();
+});
+
+test("clicking a Worker on the Job Board highlights its Jobs", async () => {
+  const job = { documentId: "d", documentName: "Cell spec.pdf", pipeline: "ours", sieve: "Original", postedAt: 0, status: "done" };
+  serve({
+    "/api/workers": [{ name: "w1", harness: "Pi", lastSeen: Date.now(), live: true, doneToday: 2 }],
+    "/api/jobs": [{ ...job, id: "j1", worker: "w1" }, { ...job, id: "j2", worker: "w2" }],
+  });
+  const { container } = render(<Jobs />);
+  const card = await screen.findByRole("button", { name: /Pi/ });
+  expect(card.textContent).toContain("Click to show its Jobs");
+  fireEvent.click(card);
+  expect(card.getAttribute("aria-pressed")).toBe("true");
+  expect([...container.querySelectorAll("[data-mine]")].map((r) => r.getAttribute("data-job"))).toEqual(["j1"]);
 });

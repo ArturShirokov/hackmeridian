@@ -1,12 +1,12 @@
 // 08 · Job Board (Operator): connected Workers, the Jobs list (a timed-out take is its own red row), the Pipelines panel
-// and "Connect an agent" (the modal takes the real MCP URL from /api/config).
-import { useEffect } from "react";
+// and "Connect an agent" (the modal takes the real MCP URL from /api/config). Click a Worker to highlight its Jobs.
+import { useState } from "react";
 import { api, usePoll, type ApiConfig } from "../../api.ts";
 import { ConnectAgent, workerName } from "../../components/ConnectAgent.tsx";
-import { useLocation } from "../../router.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, th, useNow } from "./common.tsx";
 import { jobView } from "./logic.ts";
+import { Link } from "../../router.tsx";
 
 const INK = "#141414", RED = "#A3221B";
 const cols = "minmax(0,1.7fr) minmax(0,1.2fr) minmax(0,0.9fr) 150px 70px";
@@ -23,10 +23,7 @@ export function Jobs() {
   const { data: jobs, error } = usePoll(() => api.jobs(), 1000);
   const { config, offset } = useServerClock();
   const now = useNow(offset);
-  const url = useLocation();
-  useEffect(() => {
-    if (url.hash === "#pipelines") document.getElementById("pipelines")?.scrollIntoView({ behavior: "smooth" });
-  }, [url.hash, !!config]);
+  const [mine, setMine] = useState<string>();
   const live = workers?.filter((w) => w.live) ?? [];
 
   return (
@@ -37,6 +34,7 @@ export function Jobs() {
           <h1 style={{ margin: "8px 0 0", font: "600 30px/1.1 var(--sans)" }}>Job Board</h1>
         </div>
         {config && <span style={{ marginLeft: "auto", font: "500 13px/1 var(--mono)", color: "#2A2723" }}>board {config.baseUrl.replace(/\/$/, "")}/mcp</span>}
+        <ConnectAgent />
       </div>
       <div style={{ padding: "24px 40px 40px", display: "flex", flexDirection: "column", gap: 28 }}>
         <div>
@@ -48,7 +46,9 @@ export function Jobs() {
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 16 }}>
             {live.map((w) => (
-              <div key={w.name} style={{ ...card, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <button key={w.name} aria-pressed={mine === w.name} onClick={() => setMine(mine === w.name ? undefined : w.name)}
+                title={w.current ? `Current Job: ${w.current.sieve} · ${w.current.documentName}` : "No Job right now"}
+                style={{ ...card, border: `${mine === w.name ? 2 : 1}px solid ${INK}`, padding: mine === w.name ? "13px 15px" : "14px 16px", display: "flex", flexDirection: "column", gap: 10, textAlign: "left", color: INK, cursor: "pointer" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span className="om-motion" style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--live)", animation: "om-pulse 1.4s ease-in-out infinite" }} />
                   <span style={{ font: "600 18px/1 var(--sans)" }}>{workerName(w)}</span>
@@ -58,7 +58,8 @@ export function Jobs() {
                 <div style={{ font: "400 13px/1 var(--sans)", color: "#2A2723" }}>
                   <span style={{ font: "600 15px/1 var(--mono)", color: INK }}>{w.doneToday}</span> Job{w.doneToday === 1 ? "" : "s"} done today
                 </div>
-              </div>
+                <span style={{ font: "500 12px/1 var(--sans)", color: "#2A2723" }}>{mine === w.name ? "Its Jobs are highlighted below" : "Click to show its Jobs"}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -70,9 +71,9 @@ export function Jobs() {
             {!jobs ? <Loading error={error} pad="18px" /> : jobs.length === 0 ? (
               <div style={{ padding: 18, font: "400 15px/1.4 var(--sans)", color: "#2A2723" }}>No Jobs yet. Uploading a Document posts its first Jobs here.</div>
             ) : jobs.map((j) => {
-              const v = jobView(j, now), t = TONE[v.tone];
+              const v = jobView(j, now), t = TONE[v.tone], hit = !!mine && j.worker === mine;
               return (
-                <div key={j.id} data-status={j.status} style={{ display: "grid", gridTemplateColumns: cols, gap: 12, alignItems: "center", padding: "0 18px", minHeight: 44, borderBottom: "1px solid var(--rule-row)", background: t.row }}>
+                <div key={j.id} data-job={j.id} data-status={j.status} data-mine={hit || undefined} style={{ display: "grid", gridTemplateColumns: cols, gap: 12, alignItems: "center", padding: "0 18px", minHeight: 44, borderBottom: "1px solid var(--rule-row)", background: hit ? "var(--quote-bg)" : t.row }}>
                   <span style={{ font: "400 14px/1.25 var(--sans)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{j.documentName}</span>
                   <span style={{ font: "500 14px/1.25 var(--sans)" }}>{j.sieve}</span>
                   <span style={{ font: "400 14px/1.25 var(--sans)" }}>{j.worker ?? "—"}</span>
@@ -84,7 +85,6 @@ export function Jobs() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {config && <Pipelines operators={config.operators} />}
-            <Connect />
           </div>
         </div>
       </div>
@@ -95,8 +95,8 @@ export function Jobs() {
 function Pipelines({ operators }: { operators: ApiConfig["operators"] }) {
   const sieve = { border: `1px solid ${INK}`, padding: "7px 9px", font: "500 12.5px/1.2 var(--sans)", display: "flex", gap: 6 } as const;
   return (
-    <div id="pipelines" style={{ ...card, padding: "16px 18px", scrollMarginTop: 24 }}>
-      <div style={{ font: "600 15px/1 var(--sans)", marginBottom: 16 }}>Pipelines</div>
+    <div style={{ ...card, padding: "16px 18px" }}>
+      <Link to="/pipelines" style={{ display: "block", font: "600 15px/1 var(--sans)", marginBottom: 16, color: INK }}>Pipelines</Link>
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${operators.length},minmax(0,1fr))`, gap: 18 }}>
         {operators.map((o) => (
           <div key={o.pipeline} style={{ display: "flex", flexDirection: "column" }}>
@@ -111,16 +111,6 @@ function Pipelines({ operators }: { operators: ApiConfig["operators"] }) {
           </div>
         ))}
       </div>
-    </div>
-  );
-}
-
-function Connect() {
-  return (
-    <div style={{ ...card, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
-      <span style={{ font: "600 15px/1 var(--sans)" }}>Connect an agent</span>
-      <span style={{ font: "400 13.5px/1.45 var(--sans)", color: "#2A2723" }}>Claude Code, OpenCode, Pi or any MCP client: as a Worker that takes Jobs here, or as an outside Operator with its own Bond.</span>
-      <ConnectAgent />
     </div>
   );
 }
