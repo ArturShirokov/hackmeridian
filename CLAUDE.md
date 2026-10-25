@@ -6,7 +6,7 @@ Supplier PDFs in, structured passport fields out, with a per-field USDC warranty
 
 ### Issue tracker
 
-Issues and specs are GitHub issues on AhegaoBurger/hackmeridian, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues and specs are GitHub issues on ArturShirokov/hackmeridian, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
