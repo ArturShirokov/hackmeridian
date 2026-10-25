@@ -65,6 +65,18 @@ test("the Compare tab counts the differences and marks them", () => {
   expect(screen.getAllByText("≠ Differs")).toHaveLength(2);
 });
 
+test("the Compare tab shows any number of Operators side by side, an outside Operator's column included", () => {
+  const d = doc();
+  const third = structuredClone(d.views[1]!);
+  Object.assign(third, { pipeline: "GOUTSIDE", label: "Claude solo", operator: "GOUTSIDE" });
+  third.fields = third.fields.map((f) => (f.name === "rated_capacity_ah" && "display" in f ? { ...f, value: 230, display: "230 Ah" } : f));
+  d.views.push(third);
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
+  for (const v of d.views) expect(screen.getAllByText(v.label).length).toBeGreaterThan(0);
+  expect(screen.getByText("230 Ah")).toBeTruthy();
+});
+
 test("arrow keys move between rows and C opens a Challenge on the selected Field", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.keyDown(window, { key: "ArrowDown" });

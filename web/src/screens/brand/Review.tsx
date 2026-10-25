@@ -225,19 +225,20 @@ export function ReviewView({ d, config, offset, template, file }: {
 
 function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSelect(name: string): void }) {
   const c = compare(d);
-  const cols = "minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.1fr) 84px";
+  const cols = `minmax(0,1fr) ${d.views.map(() => "minmax(0,1.1fr)").join(" ")} 84px`;
   return (
     <>
       <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--rule)", font: "500 14px/1.3 var(--sans)" }}>{c.summary}</div>
       <div style={{ display: "grid", gridTemplateColumns: cols, gap: 10, padding: "10px 20px", borderBottom: "1px solid var(--rule)", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#2A2723" }}>
-        <span>Field</span><span>{d.views[0]!.label}</span><span>{d.views[1]?.label}</span><span></span>
+        <span>Field</span>{d.views.map((v) => <span key={v.pipeline}>{v.label}</span>)}<span></span>
       </div>
       {c.rows.map((r) => (
         <div key={r.name} onClick={() => onSelect(r.name)} data-field={r.name}
           style={{ display: "grid", gridTemplateColumns: cols, gap: 10, alignItems: "center", padding: "0 20px", minHeight: 48, borderBottom: "1px solid var(--rule-row)", background: sel === r.name ? "var(--row-selected)" : "transparent", cursor: "pointer" }}>
           <span style={{ font: "500 14px/1.25 var(--sans)" }}>{r.label}</span>
-          <span style={{ font: "500 14px/1.3 var(--mono)", color: r.values[0] === "Not stated" ? AMBER : INK }}>{r.values[0]}</span>
-          <span style={{ font: `${r.diff ? 700 : 500} 14px/1.3 var(--mono)`, color: r.values[1] === "Not stated" ? AMBER : INK }}>{r.values[1]}</span>
+          {r.values.map((v, i) => (
+            <span key={i} style={{ font: `${r.diff && i > 0 ? 700 : 500} 14px/1.3 var(--mono)`, color: v === "Not stated" ? AMBER : INK }}>{v}</span>
+          ))}
           <span>{r.diff && <span style={{ border: `1.5px solid ${INK}`, padding: "3px 6px", font: "700 11px/1 var(--sans)", letterSpacing: ".05em", textTransform: "uppercase" }}>≠ Differs</span>}</span>
         </div>
       ))}
