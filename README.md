@@ -168,6 +168,63 @@ Use a different id for every session. The Job Board uses it to keep Sieves indep
 extraction Sieve (or tie-break) per Document, across both Pipelines. A live run with our Pipeline and the Baseline
 needs at least four distinct Workers: two for our extraction Sieves, one for our tie-break, one for the Baseline.
 
+## Shift runner
+
+One command keeps four Workers on shift, each a headless harness on its own model. The runner is the MCP client, so
+the harnesses need no MCP config and no Worker ids are set by hand:
+
+```bash
+npx tsx scripts/shift.ts                      # Job Board at $DOC2DPP_URL, default http://127.0.0.1:3100
+npx tsx scripts/shift.ts --url http://127.0.0.1:3000
+```
+
+Each Worker calls `register_worker` (the Job Board gives it its id), then long-polls `next_job` with `wait: 25`; no
+model runs while it waits. On a Job it downloads the Document, writes the Job to `job.json` and the PDF to
+`document.pdf` in a temp directory, and runs its harness there once, headless, asking for the JSON result on stdout.
+It hands that in with `submit_job`. Output that is not one JSON object, a failed run, or a rejection goes back to the
+harness once with the message appended; after a second failure the Worker gives the Job up and it goes back on the
+board at the Job timeout (10 minutes). Each Worker does one Job at a time; all four run at once. If the Job Board
+restarts or the network drops, each Worker reconnects every 2 s and registers again under the id it had. Ctrl-C ends
+the shift (twice quits at once). One line per Job:
+
+```
+w3 · opencode/kimi-k3 · took Markdown extraction for battery-02-kestrel-18650-cell-datasheet · 41 s · submitted
+```
+
+The Workers and their models are `defaultWorkers` at the top of [`scripts/shift.ts`](scripts/shift.ts); edit them
+there. A Worker with a `command` runs that instead, with the prompt as its last argument (the tests use this for fake
+harnesses). The headless commands, verified on this Mac on 25 Oct 2026 (claude 2.1.310, opencode 1.19.4, pi 0.84.4),
+each with a one-line prompt printing `{"ok":true}`:
+
+| Worker | Command |
+|---|---|
+| claude/sonnet | `claude -p "<prompt>" --model sonnet --output-format json --allowedTools Read --no-session-persistence` (the text is in `.result`) |
+| opencode/kimi-k3 | `opencode run --model opencode-go/kimi-k3 "<prompt>"` (the banner goes to stderr) |
+| opencode/deepseek-v4-pro | `opencode run --model opencode-go/deepseek-v4-pro "<prompt>"` |
+| pi/qwen3.8-max | `pi -p --model opencode-go/qwen3.8-max --no-session --tools read "<prompt>"` |
+
+Claude Code gets only the Read tool and never bypasses permissions. The model names come from `opencode models` and
+`pi --list-models`; the OpenCode Go provider is the one logged in here (`opencode auth list`). Stdin is closed, so
+`claude -p` does not wait on it. When a Worker gives up, its last stdout and stderr are in
+`$TMPDIR/shift-<id>-last-output.txt`.
+
+Smoke run on 25 Oct 2026, battery-02 on a local Job Board (both Pipelines): claude/sonnet took the Baseline's One-pass
+extraction (19 s) and our Markdown (12 s), pi/qwen3.8-max our Original extraction (67 s), all accepted first try.
+opencode/kimi-k3 printed nothing on stdout for the Faithfulness check, twice in a row on two takes (88 s and 297 s),
+so the Job went back on the board each time. Killing and restarting the Job Board mid-shift: all four Workers came
+back under their ids within 2 s of the restart.
+
+### Demo runbook: four Workers live
+
+1. Start the Job Board: `PORT=3100 npm start` (or point `--url` at the one you demo on).
+2. Start the shift a few minutes before your slot: `npx tsx scripts/shift.ts`. Four lines say `w1`...`w4` are on
+   shift, and the Job Board's Workers list shows them with harness and model ("w3 · OpenCode · kimi-k3").
+3. On stage, upload a Supplier PDF on `/` and pick its Template.
+4. Watch the terminal and the Document page: the Workers take the Original extraction, the Markdown, the
+   faithfulness check, the Markdown extraction and the Baseline within a second of each other's hand-ins, one line per
+   Job.
+5. Ctrl-C ends the shift.
+
 ## Testnet transactions
 
 Every link opens on stellar.expert (Stellar testnet).
