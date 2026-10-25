@@ -104,3 +104,12 @@ export const textile: Template = {
 };
 
 export const templates: Record<string, Template> = { battery, textile };
+
+/** How values of each Field type are compared, for the Arbiter. */
+export const rules: Record<FieldType, string> = {
+  quantity: "Quantity: same unit after conversion, same qualifier, no tolerance.",
+  composition: "Composition: same fibres, same shares, same qualifiers. No tolerance.",
+  code: "Code: same code after normalising case, spaces and known synonyms (LiFePO4 = LFP).",
+  text: "Text: same words, ignoring case and surrounding spaces.",
+  date: "Date: the same date, at the precision the Document gives.",
+};

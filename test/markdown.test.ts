@@ -72,10 +72,10 @@ test("a second failed faithfulness check delivers every Field as Not stated, wit
   const doc = await brand.document(docId);
   expect(doc.fields.every((f) => f.status === "not stated" && f.supplierRequest)).toBe(true);
   const cap = doc.fields.find((f) => f.name === "rated_capacity_ah")!;
-  expect(cap.quotes).toEqual([{ page: 1, quote: "Capacity: 3200 mAh (nominal)" }]);
+  expect(cap.quotes).toMatchObject([{ page: 1, quote: "Capacity: 3200 mAh (nominal)" }]);
   expect(cap.supplierRequest).toContain("Capacity: 3200 mAh (nominal)");
   expect(ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(1);
-  expect(doc.escrow).toMatchObject({ status: "open" });
+  expect(doc.escrow).toMatchObject({ status: "delivered" });
 });
 
 test("malformed Markdown and faithfulness results are rejected with what is wrong", async () => {
@@ -109,6 +109,12 @@ test("on a scan with no text layer, quotes are checked against the checked Markd
   await w2.submitJob(e2.id, extraction(e2, { rated_capacity_ah: inMarkdown, name }));
 
   const fields = (await brand.document(docId)).fields;
-  expect(fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2 });
-  expect(fields.find((f) => f.name === "name")).toMatchObject({ status: "disagreeing" });
+  expect(fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ status: "final", withheld: true }); // until the tie-break is in
+  expect(fields.find((f) => f.name === "name")).toMatchObject({ status: "converging", tieBreak: true });
+  const w3 = await worker("w3");
+  const tie = (await w3.nextJob())!;
+  await w3.submitJob(tie.id, extraction(tie));
+  const delivered = (await brand.document(docId)).fields;
+  expect(delivered.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, evidence: { rects: [] } }); // a scan: no boxes
+  expect(delivered.find((f) => f.name === "name")).toMatchObject({ status: "not stated" });
 });

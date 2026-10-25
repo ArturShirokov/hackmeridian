@@ -7,6 +7,7 @@ import { formatValue } from "./converge.js";
 import { buildMcpServer } from "./mcp.js";
 import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
+import type { ApiTemplate } from "./api.js";
 
 const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
 const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
@@ -20,10 +21,50 @@ const layout = (title: string, body: unknown) => html`<!doctype html>
   .muted { color: #888; } q { font-style: italic; }
 </style></head><body>${body}</body></html>`;
 
-export function webApp(board: JobBoard): Hono {
+export interface WebOptions {
+  /** Per Operator, scored against testdata/expected at startup (DEMO_REPLAY only). */
+  accuracy?: Record<string, { correct: number; fields: number }>;
+}
+
+const apiTemplates: ApiTemplate[] = Object.values(templates).map((t) => ({
+  name: t.name,
+  label: t.label,
+  fields: t.fields,
+  examples: t.fields.filter((f) => f.highStake).slice(0, 3).map((f) => f.label),
+}));
+
+export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
   const app = new Hono();
   const mcp = createMcpHandler(() => buildMcpServer(board));
   app.all("/mcp", (c) => mcp.fetch(c.req.raw));
+
+  app.get("/api/config", (c) => c.json(board.config()));
+  app.get("/api/templates", (c) => c.json(apiTemplates));
+  app.get("/api/documents", (c) => c.json(board.documentList()));
+  app.post("/api/documents", async (c) => {
+    const body = await c.req.parseBody().catch(() => ({}) as Record<string, unknown>);
+    const file = body["file"];
+    if (!(file instanceof File)) return c.json({ error: "missing file" }, 400);
+    try {
+      const meta = await board.upload(new Uint8Array(await file.arrayBuffer()), String(body["template"]), {
+        name: file.name,
+        supplier: String(body["supplier"] ?? "").trim(),
+      });
+      return c.json({ id: meta.id }, 201);
+    } catch (e) {
+      return c.json({ error: `upload rejected: ${(e as Error).message}` }, 400);
+    }
+  });
+  app.get("/api/documents/:id/export", (c) => {
+    const id = c.req.param("id");
+    if (!board.apiDocument(id)) return c.json({ error: "not found" }, 404);
+    const out = board.exportOf(id, c.req.query("pipeline") || undefined);
+    if (!out) return c.json({ error: "not delivered yet" }, 409);
+    const name = board.apiDocument(id)!.name.replace(/\.pdf$/i, "").replace(/["\\\r\n]/g, "");
+    return c.json(out, 200, { "content-disposition": `attachment; filename="${name}.passport.json"` });
+  });
+  app.get("/api/jobs", (c) => c.json(board.jobList(Number(c.req.query("limit")) || 50)));
+  app.get("/api/workers", (c) => c.json(board.workerList()));
 
   app.get("/", (c) =>
     c.html(
@@ -47,7 +88,7 @@ export function webApp(board: JobBoard): Hono {
     const file = body["file"];
     if (!(file instanceof File)) return c.text("missing file", 400);
     try {
-      const meta = await board.upload(new Uint8Array(await file.arrayBuffer()), String(body["template"]));
+      const meta = await board.upload(new Uint8Array(await file.arrayBuffer()), String(body["template"]), { name: file.name });
       return c.redirect(`/documents/${meta.id}`, 303);
     } catch (e) {
       return c.text(`upload rejected: ${(e as Error).message}`, 400);
@@ -55,7 +96,7 @@ export function webApp(board: JobBoard): Hono {
   });
 
   app.get("/api/documents/:id", (c) => {
-    const d = board.document(c.req.param("id"));
+    const d = board.apiDocument(c.req.param("id"));
     return d ? c.json(d) : c.json({ error: "not found" }, 404);
   });
 
@@ -110,7 +151,9 @@ export function webApp(board: JobBoard): Hono {
     return r.ok ? c.json(r.challenge, 201) : c.json({ error: r.error }, statusOf[r.reason]);
   });
 
-  app.get("/api/leaderboard", async (c) => c.json(await board.leaderboard()));
+  app.get("/api/leaderboard", async (c) =>
+    c.json((await board.leaderboard()).map((r) => ({ ...r, ...(opts.accuracy?.[r.operator] && { accuracy: opts.accuracy[r.operator] }) }))),
+  );
 
   app.get("/leaderboard", async (c) => {
     const rows = (await board.leaderboard()).map(
@@ -156,14 +199,17 @@ export function webApp(board: JobBoard): Hono {
     return r.ok ? c.redirect(`/documents/${id}`, 303) : c.text(`Challenge rejected: ${r.error}`, statusOf[r.reason]);
   });
 
-  app.get("/api/challenges", (c) => c.json(board.challenges.open()));
+  app.get("/api/challenges", (c) => c.json(board.arbiter()));
 
-  const decide = (id: string, decision: unknown) =>
-    decision === "upheld" || decision === "rejected" ? board.challenges.decide(id, decision) : "bad decision";
+  const decide = (id: string, decision: unknown, note?: unknown) =>
+    decision === "upheld" || decision === "rejected"
+      ? board.challenges.decide(id, decision, typeof note === "string" && note.trim() ? note.trim() : undefined)
+      : "bad decision";
   const decisionStatus = { ok: 200, unknown: 404, "already decided": 409, "bad decision": 400 } as const;
 
   app.post("/api/challenges/:id", async (c) => {
-    const r = decide(c.req.param("id"), ((await c.req.json().catch(() => ({}))) as { decision?: unknown }).decision);
+    const body = (await c.req.json().catch(() => ({}))) as { decision?: unknown; note?: unknown };
+    const r = decide(c.req.param("id"), body.decision, body.note);
     return c.json(r === "ok" ? { ok: true } : { error: r }, decisionStatus[r]);
   });
 

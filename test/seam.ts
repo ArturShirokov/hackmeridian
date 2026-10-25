@@ -2,26 +2,21 @@
 // and its web API (as the Brand and the Arbiter), all in process.
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { PDFDocument, StandardFonts } from "pdf-lib";
+import type {
+  ApiArbiter, ApiChallenge, ApiConfig, ApiDocument, ApiDocumentSummary, ApiField, ApiJob, ApiLeaderRow, ApiPipelineView, ApiTemplate, ApiWorker,
+} from "../src/api.js";
 import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
 import type { Pipeline } from "../src/pipelines.js";
 import { InMemoryStorage } from "../src/storage.js";
-import { FakeLedger, type OperatorRecord } from "../src/ledger.js";
+import { FakeLedger } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
-import { webApp } from "../src/web.js";
+import { webApp, type WebOptions } from "../src/web.js";
 
-type PipelineView = {
-  fields: {
-    name: string;
-    status: "converging" | "final" | "disagreeing" | "not stated";
-    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; corrected?: boolean;
-    quotes?: { page: number; quote: string }[];
-    supplierRequest?: string;
-  }[];
-  escrow?: {
-    operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[];
-    link?: string; settlementLink?: string;
-  };
-};
+type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
+/** An ApiField with every variant's keys optional, so tests read them without narrowing. */
+export type Field = Pick<ApiField, "name" | "label" | "tieBreak" | "status"> &
+  Partial<Omit<UnionToIntersection<ApiField>, "name" | "label" | "tieBreak" | "status">>;
+type PipelineView = Omit<ApiPipelineView, "fields"> & { fields: Field[] };
 
 export function startBoard(
   opts: {
@@ -31,15 +26,16 @@ export function startBoard(
     challengeWindowMs?: number;
     /** Have the fake Ledger give explorer links under this base URL; without it, it gives none. */
     explorer?: string;
+    web?: WebOptions;
   } = {},
 ) {
-  const { explorer, ...boardOpts } = opts;
+  const { explorer, web: webOpts, ...boardOpts } = opts;
   const storage = new InMemoryStorage();
   const ledger = new FakeLedger(explorer);
   let time = 0;
   const clock = { advance: (ms: number) => void (time += ms) };
   const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, ...boardOpts });
-  const web = webApp(board);
+  const web = webApp(board, webOpts);
 
   async function worker(name: string) {
     const [clientT, serverT] = InMemoryTransport.createLinkedPair();
@@ -60,28 +56,39 @@ export function startBoard(
     };
   }
 
+  const get = async <T>(path: string) => (await (await web.request(path)).json()) as T;
+
   const brand = {
-    async upload(pdf: Uint8Array, template = "battery"): Promise<string> {
+    /** Upload through the JSON API; returns the Document id. */
+    async upload(pdf: Uint8Array, template = "battery", meta: { name?: string; supplier?: string } = {}): Promise<string> {
+      const r = await brand.uploadRaw(pdf, template, meta);
+      if (r.status !== 201) throw new Error(`upload failed: ${r.status} ${JSON.stringify(r.body)}`);
+      return r.body.id!;
+    },
+    async uploadRaw(bytes: Uint8Array, template = "battery", { name = "sheet.pdf", supplier = "Voltaris" }: { name?: string; supplier?: string } = {}) {
       const form = new FormData();
-      form.set("file", new File([pdf as Uint8Array<ArrayBuffer>], "sheet.pdf", { type: "application/pdf" }));
+      form.set("file", new File([bytes as Uint8Array<ArrayBuffer>], name, { type: "application/pdf" }));
       form.set("template", template);
-      const res = await web.request("/upload", { method: "POST", body: form });
-      if (res.status !== 303) throw new Error(`upload failed: ${res.status} ${await res.text()}`);
-      return res.headers.get("location")!.split("/").pop()!;
+      form.set("supplier", supplier);
+      const res = await web.request("/api/documents", { method: "POST", body: form });
+      return { status: res.status, body: (await res.json()) as { id?: string; error?: string } };
     },
-    /** Top-level fields and escrow are the first Pipeline's; `pipelines` has every Pipeline's, by name. */
+    /** The ApiDocument, plus `fields` and `escrow` of the first Pipeline and `view(name)` for any Pipeline. */
     async document(id: string) {
-      const res = await web.request(`/api/documents/${id}`);
-      return (await res.json()) as {
-        id: string;
-        template: string;
-        pipelines: Record<string, PipelineView>;
-      } & PipelineView;
+      const doc = await get<Omit<ApiDocument, "views"> & { views: PipelineView[] }>(`/api/documents/${id}`);
+      const view = (p: string) => doc.views.find((v) => v.pipeline === p)!;
+      return { ...doc, fields: doc.views[0]!.fields, escrow: doc.views[0]!.escrow, view };
     },
-    async leaderboard() {
-      const res = await web.request("/api/leaderboard");
-      return (await res.json()) as ({ operator: string } & OperatorRecord)[];
+    documents: () => get<ApiDocumentSummary[]>("/api/documents"),
+    config: () => get<ApiConfig>("/api/config"),
+    templates: () => get<ApiTemplate[]>("/api/templates"),
+    jobs: () => get<ApiJob[]>("/api/jobs"),
+    workers: () => get<ApiWorker[]>("/api/workers"),
+    async export(id: string, pipeline?: string) {
+      const res = await web.request(`/api/documents/${id}/export${pipeline ? `?pipeline=${pipeline}` : ""}`);
+      return { status: res.status, disposition: res.headers.get("content-disposition"), body: (await res.json()) as Record<string, unknown> };
     },
+    leaderboard: () => get<ApiLeaderRow[]>("/api/leaderboard"),
     async page(path: string) {
       const res = await web.request(path);
       return { status: res.status, text: await res.text() };
@@ -97,25 +104,15 @@ export function startBoard(
   };
 
   const arbiter = {
-    async challenges() {
-      const res = await web.request("/api/challenges");
-      return (await res.json()) as {
-        id: string;
-        documentId: string;
-        field: string;
-        challenged: Record<string, unknown>;
-        page: number;
-        quote: string;
-        value: unknown;
-        unit?: string;
-      }[];
-    },
+    /** The open Challenges, oldest first. */
+    challenges: async (): Promise<ApiChallenge[]> => (await arbiter.desk()).open,
+    desk: () => get<ApiArbiter>("/api/challenges"),
     page: () => brand.page("/arbiter"),
-    async decide(id: string, decision: "upheld" | "rejected") {
+    async decide(id: string, decision: "upheld" | "rejected", note?: string) {
       const res = await web.request(`/api/challenges/${id}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ decision }),
+        body: JSON.stringify({ decision, note }),
       });
       return { status: res.status };
     },

@@ -7,11 +7,16 @@ export interface DocumentMeta {
   hash: string;
   template: string;
   uploader: string;
+  /** The uploaded file name. */
+  name: string;
+  supplier: string;
   uploadedAt: Date;
 }
 
+export type NewDocument = Pick<DocumentMeta, "template" | "uploader" | "name" | "supplier">;
+
 export interface Storage {
-  put(bytes: Uint8Array, meta: { template: string; uploader: string }): Promise<DocumentMeta>;
+  put(bytes: Uint8Array, meta: NewDocument): Promise<DocumentMeta>;
   get(id: string): Promise<{ meta: DocumentMeta; bytes: Uint8Array } | undefined>;
   /** Documents uploaded at or after `since`, oldest first. */
   listSince(since: Date): Promise<DocumentMeta[]>;
@@ -20,16 +25,10 @@ export interface Storage {
 export class InMemoryStorage implements Storage {
   private docs = new Map<string, { meta: DocumentMeta; bytes: Uint8Array }>();
 
-  async put(bytes: Uint8Array, { template, uploader }: { template: string; uploader: string }) {
-    const meta: DocumentMeta = {
-      id: randomUUID(),
-      hash: createHash("sha256").update(bytes).digest("hex"),
-      template,
-      uploader,
-      uploadedAt: new Date(),
-    };
-    this.docs.set(meta.id, { meta, bytes });
-    return meta;
+  async put(bytes: Uint8Array, meta: NewDocument) {
+    const m: DocumentMeta = { id: randomUUID(), hash: createHash("sha256").update(bytes).digest("hex"), ...meta, uploadedAt: new Date() };
+    this.docs.set(m.id, { meta: m, bytes });
+    return m;
   }
 
   async get(id: string) {

@@ -58,7 +58,10 @@ export async function replay(
     ? accuracyBoard(() => (replaying ? t + shift : live.now()), live.baseUrl, live.challengeWindowMs + last - first)
     : accuracyBoard(() => t);
   const documents = [];
-  for (const d of run.documents) documents.push({ ...d, id: (await board.upload(await readPdf(d.file), d.template)).id });
+  // ponytail: the Supplier is read from the testdata file name (battery-01-voltaris-…); store it in the run if real names diverge.
+  const supplier = (file: string) => (file.split("-")[2] ?? "").replace(/^./, (c) => c.toUpperCase());
+  for (const d of run.documents)
+    documents.push({ ...d, id: (await board.upload(await readPdf(d.file), d.template, { name: d.file, supplier: supplier(d.file) })).id });
   const ids = new Map<string, string>();
   for (const [i, e] of run.events.entries()) {
     t = e.t;

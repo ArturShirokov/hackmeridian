@@ -23,7 +23,7 @@ test("delivery opens one escrow per (Document, Operator) with the Operator's Bon
   expect(req.outputHash).toMatch(/^[0-9a-f]{64}$/);
 
   const doc = await board.brand.document(docId);
-  expect(doc.escrow).toMatchObject({ operator: "op-baseline", bond: "25", fee: "2.5", outputHash: req.outputHash, status: "open" });
+  expect(doc.escrow).toMatchObject({ operator: "op-baseline", bond: "25", fee: "2.5", outputHash: req.outputHash, status: "delivered", closesAt: 5 * 60_000 });
   const page = (await board.brand.page(`/documents/${docId}`)).text;
   expect(page).toContain("Bond locked: 25 USDC");
   expect(page).toContain(req.outputHash);
