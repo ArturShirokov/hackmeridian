@@ -14,6 +14,8 @@ import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, s
 import { JsonView, MarkdownView, SourceMarkdown, TraceView, VIEWS, type View } from "./views.tsx";
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
+/** At most two lines, then an ellipsis (the full value is in the title). */
+const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" } as const;
 type Final = Extract<ApiField, { evidence: unknown }>;
 type NotStated = Extract<ApiField, { quotes: unknown }>;
 type TemplateField = ApiTemplate["fields"][number];
@@ -38,7 +40,8 @@ export function BrandReview({ id }: { id: string }) {
 
 const windowOpen = (v: ApiPipelineView | undefined, offset: number) =>
   !!v?.escrow && v.escrow.status === "delivered" && (v.escrow.paused ? v.escrow.msLeft > 0 : v.escrow.closesAt > Date.now() + offset);
-const challengeable = (f: ApiField) => f.status === "final" && "evidence" in f && !f.challenge;
+/** A delivered Field with no Challenge yet: Final, or Not stated ("the Document does state it, on page X"). One Challenge per Field. */
+const challengeable = (f: ApiField) => ("evidence" in f || "quotes" in f) && !f.challenge;
 
 export function ReviewView({ d, config, offset, template, file }: {
   d: ApiDocument; config?: ApiConfig; offset: number; template?: ApiTemplate; file(body: ChallengeBody): Promise<unknown>;
@@ -76,10 +79,16 @@ export function ReviewView({ d, config, offset, template, file }: {
     prevSel.current = sel;
     if (sel && (was !== undefined || q.get("field"))) document.querySelector(`[data-review] [data-field="${sel}"]`)?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
   }, [sel, tab]);
-  const openPanel = (name: string) => {
-    if (isCompare) return;
-    select(name, true);
-    setPanel({ pipeline: view.pipeline, field: name });
+  /** Open the Challenge panel on a Field of any Operator, only while its Challenge Window is open; jump to its page. */
+  const openPanel = (name: string, pipeline = view.pipeline) => {
+    const v = d.views.find((x) => x.pipeline === pipeline)!;
+    const f = v.fields.find((x) => x.name === name);
+    if (!f || !windowOpen(v, offset) || !challengeable(f)) return;
+    setSel(name);
+    setExp(name);
+    const p = pageOf(f);
+    if (p) setPage(p);
+    setPanel({ pipeline, field: name });
   };
 
   // The prototype's page starts on the selected Field (or a ?field= deep link); the dock's 05 opens a Challenge.
@@ -119,8 +128,10 @@ export function ReviewView({ d, config, offset, template, file }: {
   const caption = onPage
     ? `Highlighted: ${selF.label} — “${"evidence" in selF ? (selF.evidence.mark ?? selF.evidence.quote) : "competing statements"}”`
     : `${quotedHere} Field${quotedHere === 1 ? "" : "s"} quoted on this page`;
-  const panelField = panel && d.views.find((v) => v.pipeline === panel.pipeline)?.fields.find((f) => f.name === panel.field);
-  const picking = !!panel && !panel.filed && open;
+  const panelView = panel && d.views.find((v) => v.pipeline === panel.pipeline);
+  const panelField = panelView?.fields.find((f) => f.name === panel!.field);
+  const panelOpen = windowOpen(panelView, offset);
+  const picking = !!panel && !panel.filed && panelOpen;
 
   const bond = (v: ApiPipelineView) => {
     const x = v.escrow!;
@@ -197,7 +208,7 @@ export function ReviewView({ d, config, offset, template, file }: {
             : viewTab === "Markdown" ? <MarkdownView d={d} v={view} template={template} />
             : viewTab === "Source Markdown" ? <SourceMarkdown v={view} />
             : viewTab === "Trace" ? <TraceView spans={view.trace && spanTree(view.trace)} />
-            : isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} /> : (
+            : isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} canChallenge={(v, f) => windowOpen(v, offset) && challengeable(f)} onChallenge={openPanel} /> : (
               <>
                 {/* Supplier-authored Not stated Fields share one Supplier Request; the Brand's are "Brand to provide". */}
                 {([["Not stated", groups.supplier], ["Brand to provide", groups.brand]] as const).map(([title, list]) => list.length > 0 && (
@@ -207,6 +218,7 @@ export function ReviewView({ d, config, offset, template, file }: {
                       const text = view.supplierRequest ?? (f as NotStated).supplierRequest;
                       return (
                         <NotStatedCard key={f.name} field={f as NotStated} selected={sel === f.name} onSelect={() => select(f.name, true)}
+                          onChallenge={open && challengeable(f) ? () => openPanel(f.name) : undefined} operator={view.label}
                           onQuote={(p) => { setSel(f.name); setPage(p); }} onRequest={f.author === "Brand" || !text ? undefined : () => setModal({ kind: "sr", text })} />
                       );
                     })}
@@ -226,10 +238,10 @@ export function ReviewView({ d, config, offset, template, file }: {
             )}
           </div>
           <SidePanel open={!!panel} onClose={() => setPanel(undefined)} title="Challenge a Field">
-            {panel && panelField && "evidence" in panelField && (
-              <ChallengePanel key={`${panel.pipeline}/${panel.field}`} operator={d.views.find((v) => v.pipeline === panel.pipeline)!.label} field={panelField}
-                templateField={template?.fields.find((f) => f.name === panel.field)} closed={settled ? "settled" : open ? undefined : "closed"}
-                slash={e ? usdc(String(Number(e.bond) / 10)) : undefined} deposit={config?.challengeDeposit} pick={panel.pick} onClearPick={() => setPanel({ ...panel, pick: undefined })}
+            {panel && panelView && panelField && ("evidence" in panelField || "quotes" in panelField) && (
+              <ChallengePanel key={`${panel.pipeline}/${panel.field}`} operator={panelView.label} field={panelField}
+                templateField={template?.fields.find((f) => f.name === panel.field)} closed={panelView.escrow?.status === "settled" ? "settled" : panelOpen ? undefined : "closed"}
+                slash={panelView.escrow ? usdc(String(Number(panelView.escrow.bond) / 10)) : undefined} deposit={config?.challengeDeposit} pick={panel.pick} onClearPick={() => setPanel({ ...panel, pick: undefined })}
                 file={(b) => file({ pipeline: panel.pipeline, field: panel.field, ...b }).then(() => setPanel((p) => p && { ...p, filed: true }))} onClose={() => setPanel(undefined)} />
             )}
           </SidePanel>
@@ -259,7 +271,10 @@ export function ReviewView({ d, config, offset, template, file }: {
   );
 }
 
-function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSelect(name: string): void }) {
+function CompareTab({ d, sel, onSelect, canChallenge, onChallenge }: {
+  d: ApiDocument; sel?: string; onSelect(name: string): void;
+  canChallenge(v: ApiPipelineView, f: ApiField): boolean; onChallenge(name: string, pipeline: string): void;
+}) {
   const c = compare(d);
   const cols = `minmax(0,1fr) ${d.views.map(() => "minmax(0,1.1fr)").join(" ")} 84px`;
   return (
@@ -272,9 +287,17 @@ function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSele
         <div key={r.name} onClick={() => onSelect(r.name)} data-field={r.name}
           style={{ display: "grid", gridTemplateColumns: cols, gap: 10, alignItems: "center", padding: "0 20px", minHeight: 48, borderBottom: "1px solid var(--rule-row)", background: sel === r.name ? "var(--row-selected)" : "transparent", cursor: "pointer" }}>
           <span style={{ font: "500 14px/1.25 var(--sans)" }}>{r.label}</span>
-          {r.values.map((v, i) => (
-            <span key={i} style={{ font: `${r.diff && i > 0 ? 700 : 500} 14px/1.3 var(--mono)`, color: v === "Not stated" ? AMBER : INK }}>{v}</span>
-          ))}
+          {r.values.map((v, i) => {
+            const view = d.views[i]!, f = view.fields.find((x) => x.name === r.name)!;
+            return (
+              <span key={i} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, minWidth: 0, padding: "6px 0" }}>
+                <span style={{ font: `${r.diff && i > 0 ? 700 : 500} 14px/1.3 var(--mono)`, color: v === "Not stated" ? AMBER : INK, ...clamp2 }} title={v}>{v}</span>
+                {r.diff && canChallenge(view, f) && (
+                  <button className="om-btn ghost row" aria-label={`Challenge ${view.label}: ${r.label}`} onClick={(e) => { e.stopPropagation(); onChallenge(r.name, view.pipeline); }}>Challenge</button>
+                )}
+              </span>
+            );
+          })}
           <span>{r.diff && <span style={{ border: `1.5px solid ${INK}`, padding: "3px 6px", font: "700 11px/1 var(--sans)", letterSpacing: ".05em", textTransform: "uppercase" }}>≠ Differs</span>}</span>
         </div>
       ))}
@@ -282,10 +305,13 @@ function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSele
   );
 }
 
-export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }: {
+export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest, onChallenge, operator }: {
   field: NotStated; selected: boolean; onSelect(): void; onQuote(page: number): void;
   /** Absent for a Brand-authored Field: the Brand provides it itself. */
   onRequest?(): void;
+  /** Present while it can be Challenged ("the Document does state it"). */
+  onChallenge?(): void;
+  operator?: string;
 }) {
   return (
     <div onClick={onSelect} data-field={field.name} style={{ margin: "6px 20px 14px", border: "1px solid var(--amber-bd)", background: "var(--amber-card)", cursor: "pointer", outline: selected ? `2px solid ${AMBER}` : "none" }}>
@@ -307,6 +333,7 @@ export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }:
         ))}
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 4 }}>
           <span style={{ marginRight: "auto", font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>Author: {field.author}</span>
+          {onChallenge && <button className="om-btn ghost" aria-label={`Challenge ${operator}: ${field.label}`} style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onChallenge(); }}>Challenge</button>}
           {onRequest
             ? <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>
             : <span style={{ font: "600 13px/1 var(--sans)", color: AMBER }}>Brand to provide</span>}
@@ -335,7 +362,7 @@ function SupplierRequest({ text, onClose }: { text: string; onClose(): void }) {
 
 /** The Challenge form: value, the quote picked on the Document viewer, and the server's answer inline. */
 export function ChallengePanel({ operator, field, templateField, closed, slash, deposit, pick, onClearPick, file, onClose }: {
-  operator: string; field: Final; templateField?: TemplateField; closed?: "settled" | "closed"; slash?: string; deposit?: string;
+  operator: string; field: Final | NotStated; templateField?: TemplateField; closed?: "settled" | "closed"; slash?: string; deposit?: string;
   pick?: { page: number; quote: string }; onClearPick(): void;
   file(b: Omit<ChallengeBody, "pipeline" | "field">): Promise<unknown>; onClose(): void;
 }) {
@@ -344,8 +371,9 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
   const [err, setErr] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [filed, setFiled] = useState<{ value: string; page: number }>();
-  const q = splitMark(field.evidence.quote, field.evidence.mark);
-  const tf = templateField ?? { type: typeof field.value === "number" ? "quantity" : typeof field.value === "object" ? "composition" : "text", unit: field.unit, label: field.label };
+  const final = "evidence" in field ? field : undefined;
+  const q = final && splitMark(final.evidence.quote, final.evidence.mark);
+  const tf = templateField ?? (final ? { type: typeof final.value === "number" ? "quantity" : typeof final.value === "object" ? "composition" : "text", unit: final.unit, label: field.label } : { type: "text", label: field.label });
 
   const submit = async () => {
     if (!pick) return setErr("Pick the line on the Document that states the value first.");
@@ -373,11 +401,15 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <SectionLabel>{operator} delivered</SectionLabel>
           <span style={{ font: "600 17px/1.2 var(--sans)" }}>{field.label}</span>
-          <span style={{ font: "500 26px/1.1 var(--mono)", overflowWrap: "anywhere" }}>{shown(field)}</span>
-          <div style={{ background: "var(--band)", padding: "10px 12px", font: "400 14px/1.5 var(--doc)", display: "grid", gridTemplateColumns: "40px minmax(0,1fr)", gap: 8 }}>
-            <span style={{ font: "500 12px/1.6 var(--mono)" }}>p. {field.evidence.page}</span>
-            <span>“{q.pre}{q.m && <mark style={{ background: "var(--mark)", fontWeight: 700, padding: "0 2px" }}>{q.m}</mark>}{q.post}”</span>
-          </div>
+          <span style={{ font: "500 26px/1.1 var(--mono)", overflowWrap: "anywhere", color: final ? INK : AMBER }}>{shown(field)}</span>
+          {final && q ? (
+            <div style={{ background: "var(--band)", padding: "10px 12px", font: "400 14px/1.5 var(--doc)", display: "grid", gridTemplateColumns: "40px minmax(0,1fr)", gap: 8 }}>
+              <span style={{ font: "500 12px/1.6 var(--mono)" }}>p. {final.evidence.page}</span>
+              <span>“{q.pre}{q.m && <mark style={{ background: "var(--mark)", fontWeight: 700, padding: "0 2px" }}>{q.m}</mark>}{q.post}”</span>
+            </div>
+          ) : (
+            <span style={{ font: "400 14px/1.5 var(--sans)", color: "#2A2723" }}>If the Document does state it, pick the line that says so and give the value.</span>
+          )}
         </div>
         {filed ? (
           <div className="om-motion" style={{ border: `1.5px solid ${RED}`, padding: 16, display: "flex", flexDirection: "column", gap: 10, animation: "om-in .3s ease-out" }}>
@@ -402,7 +434,7 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <span style={{ font: "600 17px/1.2 var(--sans)" }}>What does the Document say?</span>
               <label htmlFor="cv" style={{ font: "500 13px/1 var(--sans)", color: "#2A2723" }}>Value</label>
-              <input id="cv" value={value} onChange={(e) => setValue(e.target.value)} placeholder={`e.g. ${shown({ ...field, qualifier: undefined })}`}
+              <input id="cv" value={value} onChange={(e) => setValue(e.target.value)} placeholder={final ? `e.g. ${shown({ ...final, qualifier: undefined })}` : `e.g. the value on the page${tf.unit ? `, in ${tf.unit}` : ""}`}
                 style={{ height: 48, padding: "0 14px", border: `1px solid ${INK}`, background: "#FFFFFF", font: "500 18px/1 var(--mono)", color: INK, outline: "none" }} />
               {templateField?.qualifiers && (
                 <>

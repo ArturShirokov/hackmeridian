@@ -171,3 +171,46 @@ test("arrow keys move between rows and C opens a Challenge on the selected Field
   fireEvent.keyDown(window, { key: "c" });
   expect(screen.getByText("Origyn delivered")).toBeTruthy();
 });
+
+test("Compare: every differing cell without a Challenge has a Challenge button, which files against that Operator", async () => {
+  const file = vi.fn().mockResolvedValue({ id: "c9" });
+  render(<ReviewView d={doc()} config={config} offset={0} file={file} />);
+  fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
+  // Rated capacity differs (the Baseline's is already Challenged); internal resistance differs (ours is Not stated).
+  expect(screen.getAllByRole("button", { name: /^Challenge / }).map((b) => b.getAttribute("aria-label"))).toEqual([
+    "Challenge Origyn: Rated capacity", "Challenge Origyn: Initial internal resistance (pack)", "Challenge Baseline: Initial internal resistance (pack)",
+  ]);
+  fireEvent.click(screen.getByRole("button", { name: "Challenge Baseline: Initial internal resistance (pack)" }));
+  expect(screen.getByText("Baseline delivered")).toBeTruthy();
+  fireEvent.click(screen.getByText("pick a line"));
+  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "0.135 ohm" } });
+  fireEvent.click(screen.getByText("File Challenge"));
+  await screen.findByText("Challenge filed");
+  expect(file).toHaveBeenCalledWith(expect.objectContaining({ pipeline: "baseline", field: "initial_internal_resistance_ohm", value: 0.135, unit: "ohm" }));
+});
+
+test("a Not stated Field can be Challenged: the Document does state it after all", async () => {
+  const file = vi.fn().mockResolvedValue({ id: "c9" });
+  const tpl = (respond("/api/templates") as { name: string }[]).find((t) => t.name === "battery");
+  render(<ReviewView d={doc()} config={config} offset={0} template={tpl as never} file={file} />);
+  fireEvent.click(screen.getByRole("button", { name: "Challenge Origyn: Initial internal resistance (pack)" }));
+  expect(screen.getByText("Origyn delivered")).toBeTruthy();
+  expect(screen.getByText(/the Document does state it/i)).toBeTruthy();
+  fireEvent.click(screen.getByText("pick a line"));
+  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "0.135 ohm" } });
+  fireEvent.click(screen.getByText("File Challenge"));
+  await screen.findByText("Challenge filed");
+  expect(file).toHaveBeenCalledWith(expect.objectContaining({ pipeline: "ours", field: "initial_internal_resistance_ohm", value: 0.135 }));
+});
+
+test("a closed Challenge Window offers no Challenge, from any route", () => {
+  const d = doc();
+  for (const v of d.views) Object.assign(v.escrow!, { closesAt: Date.now() - 1000, msLeft: 0 });
+  window.history.replaceState(null, "", "/documents/doc-1?challenge=1");
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  window.history.replaceState(null, "", "/");
+  expect(screen.queryByText("File Challenge")).toBeNull();
+  expect(screen.queryAllByRole("button", { name: /^Challenge/ })).toHaveLength(0);
+  fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
+  expect(screen.queryAllByRole("button", { name: /^Challenge/ })).toHaveLength(0);
+});
