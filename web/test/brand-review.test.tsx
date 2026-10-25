@@ -90,9 +90,17 @@ test("all four view tabs render for a delivered Document, for each Operator", ()
     fireEvent.click(screen.getByRole("tab", { name: new RegExp(op) }));
     fireEvent.click(screen.getByRole("tab", { name: "JSON" }));
     expect(screen.getByTestId("json").textContent).toContain('"rated_capacity_ah"');
-    expect(screen.getByText("Download .json").getAttribute("download")).toBe(`battery-01-voltaris-pack-spec.${op === "Baseline" ? "baseline" : "ours"}.passport.json`);
+    expect(screen.getByText("Download .json").getAttribute("download")).toBe(`battery-01-voltaris-pack-spec.${op.toLowerCase()}.passport.json`);
     fireEvent.click(screen.getByRole("tab", { name: "Markdown" }));
+    // Rendered tables by default; Raw shows the Markdown source.
+    expect(screen.getAllByRole("table").length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("columnheader").map((th) => th.textContent).slice(0, 5)).toEqual(["Field", "Value", "Status", "Page", "Quote"]);
+    expect(screen.getByRole("cell", { name: "Rated capacity" })).toBeTruthy();
+    expect(screen.queryByTestId("markdown")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Raw" }));
     expect(screen.getByTestId("markdown").textContent).toContain("| Rated capacity |");
+    fireEvent.click(screen.getByRole("button", { name: "Rendered" }));
+    expect(screen.queryByTestId("markdown")).toBeNull();
     expect(screen.getByText("Download .md").getAttribute("href")).toMatch(/^data:text\/markdown/);
     fireEvent.click(screen.getByRole("tab", { name: "Source Markdown" }));
     if (op === "Baseline") expect(screen.getByText(/Source Markdown is not available for Baseline/)).toBeTruthy();

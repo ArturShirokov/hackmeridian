@@ -71,3 +71,14 @@ test("other roles see no balance, and Switch user goes back to the list", async 
   fireEvent.click(screen.getByRole("button", { name: "Switch user" }));
   expect(await screen.findByRole("list", { name: "Sign in as" })).toBeTruthy();
 });
+
+test.each(["Sign out", "doc2dpp"])("%s ends the session and leads to Landing", async (name) => {
+  serve("ines");
+  history.replaceState(null, "", "/documents");
+  render(<App />);
+  await waitFor(() => expect(nav()).toEqual(["Documents", "Upload", "Leaderboard"]));
+  fireEvent.click(name === "doc2dpp" ? screen.getByRole("link", { name }) : screen.getByRole("button", { name }));
+  expect(await screen.findByRole("list", { name: "Sign in as" })).toBeTruthy();
+  expect(location.pathname).toBe("/");
+  expect((await fetch("/api/session").then((r) => r.json())).user).toBeNull();
+});

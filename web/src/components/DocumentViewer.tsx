@@ -74,7 +74,7 @@ export function DocumentViewer({ pdfUrl, page, onPage, boxes, onBoxClick, pick, 
   const pages = pdf?.numPages ?? 0;
   const selectedPage = boxes.find((b) => b.kind === "selected" || (b.kind === "notStated" && b.tag))?.page;
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", background: "var(--viewer-bg)" }}>
+    <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflow: "hidden", display: "flex", background: "var(--viewer-bg)" }}>
       {thumbnails && (
         <Thumbnails pdf={pdf} pages={pages} current={page} marked={new Set(boxes.map((b) => b.page))} selectedPage={selectedPage} onPage={onPage} />
       )}

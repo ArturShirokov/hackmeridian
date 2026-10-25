@@ -206,7 +206,9 @@ export function passport(d: ApiDocument, v: ApiPipelineView, template?: ApiTempl
       return [f.name, "quotes" in f ? { ...base, value: "Not stated" } : base];
     }),
   );
-  return { template: d.template, documentId: d.id, pipeline: v.pipeline, operator: v.operator, ...(v.escrow && { outputHash: v.escrow.outputHash }), fields };
+  // The Operator by its display name; ours is a party id ("ours"), an outside Operator's id is its Stellar address.
+  const stellarAddress = /^G[A-Z2-7]{55}$/.test(v.operator) ? v.operator : undefined;
+  return { template: d.template, documentId: d.id, operator: v.label, ...(stellarAddress && { stellarAddress }), ...(v.escrow && { outputHash: v.escrow.outputHash }), fields };
 }
 
 const cell = (s: string | number | undefined) => String(s ?? "").replace(/\|/g, "\\|").replace(/\s+/g, " ");
