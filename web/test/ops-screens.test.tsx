@@ -66,3 +66,13 @@ test("the Leaderboard shows every column, a Slash on the chart and the one-Opera
   expect(screen.getByText("−5.00")).toBeTruthy();
   expect(screen.getByText("Hunan")).toBeTruthy();
 });
+
+test("the Operator sidebar lights Pipelines, not the Job Board, on /jobs#pipelines", async () => {
+  serve({ "/api/workers": [], "/api/jobs": [] });
+  localStorage.setItem("om-role", "operator");
+  history.replaceState(null, "", "/jobs#pipelines");
+  const { App } = await import("../src/Shell.tsx");
+  const { container } = render(<App />);
+  expect([...container.querySelectorAll(".om-nav.active")].map((a) => a.textContent)).toEqual(["Pipelines"]);
+  localStorage.clear();
+});

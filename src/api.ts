@@ -168,6 +168,8 @@ export interface ApiPipelineView {
   trace?: ApiSpan[];
   deliveredAt?: Ms;
   escrow?: ApiEscrow;
+  /** Source Markdown: the checked Markdown this Pipeline read; absent for Pipelines without one, and while withheld. */
+  markdown?: string;
   fields: ApiField[];
   /** Once values are shown: one combined Supplier Request for every Supplier-authored Not stated Field, if any. */
   supplierRequest?: string;

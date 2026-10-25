@@ -326,6 +326,13 @@ export class JobBoard {
     });
   }
 
+  /** The Markdown a passing faithfulness check approved, if any (the Brand's Source Markdown). */
+  private checkedMarkdown(pipeline: string, documentId: string): string | undefined {
+    const jobs = this.jobsOf(pipeline, documentId);
+    const passed = jobs.findLastIndex((j) => j.pass === true);
+    return passed < 0 ? undefined : jobs.slice(0, passed).findLast((j) => j.markdown !== undefined)?.markdown;
+  }
+
   /** The last Markdown handed in for this Document and Pipeline; checked once a faithfulness Sieve after it passed. */
   private latestMarkdown(pipeline: string, documentId: string): string | undefined {
     return this.jobs.findLast((j) => j.pipeline === pipeline && j.job.documentId === documentId && j.markdown !== undefined)?.markdown;
@@ -906,6 +913,7 @@ export class JobBoard {
         stations: this.stations(d, p),
         ...this.trace(d, p, withheld),
         ...(e && { deliveredAt: e.openedAt, escrow: this.escrowView(e) }),
+        ...(!withheld && { markdown: this.checkedMarkdown(p.name, id) }),
         fields: entries.map((x) => this.apiField(d, p.name, x, withheld)),
         ...(request && { supplierRequest: request }),
         brandToProvide: notStated.filter(({ f }) => f.author === "Brand").map(({ f }) => f.name),
