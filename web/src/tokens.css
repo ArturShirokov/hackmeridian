@@ -1,0 +1,70 @@
+/* Design tokens, copied from docs/design/prototype/Origyn Prototype.dc.html. Radius 0 everywhere. */
+:root {
+  --ink: #141414; --paper: #F7F5F0; --surface: #FFFDF9; --sidebar: #F3F0E8; --band: #F1EDE4; --viewer-bg: #ECE8DE; --thumb-bg: #FFFFFF;
+  --rule: #D6CFBF; --rule-row: #E2DCCE; --rule-menu: #EEE9DE; --track: #DDD6C7; --page-border: #CFC8B8;
+  --text-2: #3D3A34; --text-3: #2A2723; --text-4: #5E594F; --grey: #8E877A; --grey-2: #B5AE9F; --grey-3: #BDB6A7; --grey-4: #C9C1B0; --grey-5: #6E685D; --dock-bd: #4A463F;
+  --btn-hover: #36332E; --hover: #ECE7DB; --nav-hover: #E9E4D8; --nav-active: #E4DED0; --row-selected: #EFEADD;
+  --quote-bg: #ECE5D3; --mark: #E6DCC2; --pick-bg: #EFE9DA;
+  --money: #0B4A57; --money-soft: #8FB0B6;
+  --red: #A3221B; --red-hover: #861A14; --timeout-row: #FBEDEA;
+  --amber-ink: #6B4400; --amber-bd: #B9862A; --amber-bg: #FBF3E0; --amber-card: #FFFBF1;
+  --hatch: repeating-linear-gradient(135deg, #F1DDAE 0 3px, #FBF3E0 3px 7px);
+  --settled-ink: #1D5A36; --settled-bg: #EEF3EC; --live: #2F7D4F; --overlay: rgba(20, 20, 20, .35);
+  --sans: 'Inter Tight', sans-serif; --mono: 'JetBrains Mono', monospace; --serif: 'Newsreader', serif; --doc: Helvetica, Arial, sans-serif;
+}
+
+html, body, #root { margin: 0; height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+a { color: var(--money); text-underline-offset: 3px; }
+a:hover { color: var(--ink); }
+button, input, textarea, select { font-family: inherit; }
+
+@keyframes om-dots { from { background-position: 0 100%; } to { background-position: 10px 100%; } }
+@keyframes om-spin { to { transform: rotate(360deg); } }
+@keyframes om-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes om-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .om-motion { animation: none !important; transition: none !important; }
+}
+
+/* Buttons (sizes from the prototype: lg 54/17, md 44/14, sm 36/13, row 32/12.5) */
+.om-btn { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 18px; font-weight: 600; }
+.om-btn:disabled { cursor: not-allowed; }
+.om-btn.lg { height: 54px; font-size: 17px; padding: 0 26px; }
+.om-btn.md { height: 44px; font-size: 14px; }
+.om-btn.sm { height: 36px; font-size: 13px; padding: 0 14px; font-weight: 500; }
+.om-btn.row { height: 32px; font-size: 12.5px; padding: 0 10px; }
+.om-btn.primary { background: var(--ink); color: var(--paper); }
+.om-btn.primary:hover:not(:disabled) { background: var(--btn-hover); }
+.om-btn.primary:disabled { background: var(--grey); }
+.om-btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+.om-btn.ghost:hover:not(:disabled) { background: var(--hover); }
+.om-btn.row.ghost:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
+.om-btn.danger { background: var(--red); color: #FFFFFF; }
+.om-btn.danger:hover:not(:disabled) { background: var(--red-hover); }
+
+.om-nav { display: flex; align-items: center; gap: 10px; text-align: left; height: 46px; padding: 0 22px; border: 0; border-bottom: 1px solid var(--rule-row);
+  background: transparent; color: var(--ink); font: 500 15px/1 var(--sans); cursor: pointer; text-decoration: none; }
+.om-nav:hover { background: var(--nav-hover); color: var(--ink); }
+.om-nav.active { background: var(--nav-active); font-weight: 600; }
+
+/* pdf.js text layer (pick mode), trimmed from pdfjs-dist/web/pdf_viewer.css */
+.textLayer { position: absolute; inset: 0; overflow: clip; line-height: 1; text-align: initial; transform-origin: 0 0; z-index: 3;
+  --min-font-size: 1; --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size)); --min-font-size-inv: calc(1 / var(--min-font-size)); }
+.textLayer :is(span, br) { color: transparent; position: absolute; white-space: pre; cursor: pointer; transform-origin: 0% 0%; }
+.textLayer > :not(.markedContent), .textLayer .markedContent span:not(.markedContent) { z-index: 1; --font-height: 0; font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1; --rotate: 0deg; transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv)); }
+.textLayer .markedContent { display: contents; }
+.textLayer span:hover { background: rgba(20, 20, 20, .08); }
+.textLayer ::selection { background: rgba(11, 74, 87, .25); color: transparent; }
+
+/* Mobile read-only breakpoint (Review/Pipeline use it; the shell hides the sidebar). */
+@media (max-width: 759px) {
+  .om-desktop-only { display: none !important; }
+}
+@media (min-width: 760px) {
+  .om-mobile-only { display: none !important; }
+  .om-app { min-width: 1180px; }
+}

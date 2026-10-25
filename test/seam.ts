@@ -90,8 +90,9 @@ export function startBoard(
       return { status: res.status, disposition: res.headers.get("content-disposition"), body: (await res.json()) as Record<string, unknown> };
     },
     leaderboard: () => get<ApiLeaderRow[]>("/api/leaderboard"),
+    /** An old HTML page (now under /legacy), or the original file. */
     async page(path: string) {
-      const res = await web.request(path);
+      const res = await web.request(path.endsWith("/file") ? path : `/legacy${path}`);
       return { status: res.status, text: await res.text() };
     },
     async challenge(docId: string, body: object) {
