@@ -2,7 +2,10 @@
 import { useEffect, useState } from "react";
 import { api, usePoll } from "./api.ts";
 import { Link, match, navigate, useLocation } from "./router.tsx";
-import { Arbiter, DocumentsList, Jobs, Leaderboard, NotFound, Pipeline, Review, Upload } from "./screens.tsx";
+import { DocumentsList, NotFound, Pipeline, Review, Upload } from "./screens.tsx";
+import { Arbiter } from "./screens/ops/Arbiter.tsx";
+import { Jobs } from "./screens/ops/Jobs.tsx";
+import { Leaderboard } from "./screens/ops/Leaderboard.tsx";
 
 export type Role = "brand" | "arbiter" | "operator";
 
