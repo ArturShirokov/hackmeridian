@@ -1,5 +1,5 @@
 // A 30-line history router: the server sends index.html for every client route.
-import { useEffect, useState, type AnchorHTMLAttributes, type MouseEvent } from "react";
+import { useLayoutEffect, useState, type AnchorHTMLAttributes, type MouseEvent } from "react";
 
 const listeners = new Set<() => void>();
 
@@ -12,7 +12,8 @@ export function navigate(to: string, replace = false) {
 /** Re-renders on navigation; returns the current URL. */
 export function useLocation(): URL {
   const [, tick] = useState(0);
-  useEffect(() => {
+  // A layout effect, so the listener is in before a child's effect navigates (the "/" redirect).
+  useLayoutEffect(() => {
     const l = () => tick((n) => n + 1);
     listeners.add(l);
     addEventListener("popstate", l);

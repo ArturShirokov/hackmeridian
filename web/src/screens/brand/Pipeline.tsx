@@ -66,7 +66,9 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
             <span style={{ font: "700 13px/1 var(--mono)" }}>{state.banner.kind === "rerun" ? "×" : "…"}</span>{state.banner.text}
           </div>
         )}
-        {d.views.map((v) => <SieveTrack key={v.pipeline} label={v.label} sub={`${v.stations.length} Sieve${v.stations.length === 1 ? "" : "s"}`} stations={v.stations.map((s) => ({ ...s, meta: s.meta || (s.state === "run" ? "working…" : "—"), ...(s.meta === "skipped" && { worker: "Not needed" }) }))} />)}
+        {d.views.map((v) => <SieveTrack key={v.pipeline} label={v.label} sub={`${v.stations.length} Sieve${v.stations.length === 1 ? "" : "s"}`} trace={v.trace}
+          stations={v.stations.map((s) => ({ ...s, meta: s.meta || (s.state === "run" ? "working…" : "—"), ...(s.meta === "skipped" && { worker: "Not needed" }) }))} />)}
+        <div style={{ font: "500 12.5px/1.3 var(--mono)", color: "#3D3A34" }}>Trace is self-reported; the Bond is the guarantee.</div>
       </div>
       <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: cols, gap: 16, padding: "10px 32px", borderBottom: "1px solid var(--rule)", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#3D3A34", position: "sticky", top: 0, background: "var(--paper)", zIndex: 1 }}>

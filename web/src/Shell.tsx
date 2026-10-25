@@ -41,9 +41,9 @@ function useSession() {
 }
 
 /** Which screen a path shows; `nav` is the sidebar entry it lights up. */
-function route(path: string) {
+function route(path: string, role: Role) {
   let m;
-  if (path === "/") return { nav: "/documents", el: <Redirect to="/documents" /> };
+  if (path === "/") return { nav: HOME[role], el: <Redirect to={HOME[role]} /> };
   if (match("/documents", path)) return { nav: "/documents", el: <BrandDocuments /> };
   if (match("/upload", path)) return { nav: "/upload", el: <BrandUpload /> };
   if ((m = match("/documents/:id/pipeline", path))) return { nav: "/documents", el: <BrandPipeline key={m.id} id={m.id!} /> };
@@ -66,7 +66,7 @@ export function App() {
   if (user === undefined) return null;
   if (!user) return <SignIn onPick={(id) => signIn(id)} />;
   const role = user.role;
-  const { nav, el } = allows(role, url.pathname) ? route(url.pathname) : { nav: "", el: <Redirect to={HOME[role]} /> };
+  const { nav, el } = allows(role, url.pathname) ? route(url.pathname, role) : { nav: "", el: <Redirect to={HOME[role]} /> };
   const asRole = (r: Role, to: string) => signIn(SEATS[r], to);
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>

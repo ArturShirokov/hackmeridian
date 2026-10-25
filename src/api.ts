@@ -45,7 +45,16 @@ export interface ApiDocumentSummary {
   template: string;
   pages: number;
   uploadedAt: Ms;
-  pipelines: Record<string, { status: DocStatus; closesAt?: Ms; counts: { final: number; converging: number; notStated: number } }>;
+  pipelines: Record<string, {
+    status: DocStatus;
+    closesAt?: Ms;
+    /** challenged: Fields with a Challenge filed or upheld. */
+    counts: { final: number; converging: number; notStated: number; challenged: number };
+    /** Once delivered: locked until settlement, then released, or slashed after an upheld Challenge. */
+    bond?: "locked" | "released" | "slashed";
+    /** What the Brand received from this Pipeline's Slashes at settlement (less the Arbiter Fee). */
+    received?: Usdc;
+  }>;
 }
 
 /** Fractions of page width/height, top-left origin. */
@@ -115,11 +124,34 @@ export interface ApiEscrow {
   settlementLink?: string;
 }
 
+/**
+ * One unit of work in a Trace (a Sieve, a script run, a sub-agent). The Trace is a flat list in which a Span's
+ * parent always comes before it. Self-reported, never a guarantee: the Bond is. Never carries Field values:
+ * an outside Operator's own `result` text is held back while the Document's values are.
+ */
+export interface ApiSpan {
+  id: string;
+  /** The id of the Span this one sits inside, as a sub-agent sits inside its agent. */
+  parent?: string;
+  label: string;
+  /** What it looked at: "original", "markdown", "pdftotext output"… */
+  view: string;
+  /** The model or tool used; for our Sieves, the Worker. */
+  model: string;
+  /** One line. Absent while held back. */
+  result?: string;
+  start: Ms;
+  /** Absent while it is still running. */
+  end?: Ms;
+}
+
 export interface ApiPipelineView {
   pipeline: string;
   label: string;
   operator: string;
   stations: ApiStation[];
+  /** How the Operator says it produced this delivery, so far. Absent when it reports none: show a "Black box". */
+  trace?: ApiSpan[];
   deliveredAt?: Ms;
   escrow?: ApiEscrow;
   fields: ApiField[];

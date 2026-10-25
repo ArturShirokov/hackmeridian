@@ -6,11 +6,11 @@ import * as z from "zod";
 import { Challenges } from "./challenges.js";
 import type {
   ApiChallenge, ApiConfig, ApiDocument, ApiDocumentSummary, ApiEscrow, ApiExport, ApiField, ApiJob, ApiLeaderRow, ApiPipelineView, ApiQuote,
-  ApiStation, ApiWorker, DocStatus,
+  ApiSpan, ApiStation, ApiWorker, DocStatus,
 } from "./api.js";
 import type { Challenge } from "./challenges.js";
 import { compositionSum, converge, fold, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
-import { addUsdc, minUsdc, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
+import { addUsdc, minUsdc, settlement, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
 import { quoteRects, readPdf, type TextItem } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
@@ -48,6 +48,34 @@ const faithfulnessResult = z.discriminatedUnion(
   [z.strictObject({ pass: z.literal(true) }), z.strictObject({ pass: z.literal(false), problems: z.array(z.string().min(1)).min(1) })],
   { error: 'result must be { pass: true } or { pass: false, problems: ["..."] }' },
 );
+
+const short = z.string().trim().min(1).max(120);
+const span = z
+  .strictObject({
+    id: short,
+    parent: short.optional(),
+    label: short,
+    view: short,
+    model: short,
+    result: z.string().max(200).regex(/^[^\r\n]*$/, "result must be one line"),
+    start: z.number().int().nonnegative(),
+    end: z.number().int().nonnegative().optional(),
+  })
+  .refine((s) => s.end === undefined || s.end >= s.start, "end must not be before start");
+type Span = z.infer<typeof span>;
+const trace = z.array(span).max(200);
+
+/** A Span's parent must come before it, so a Trace is always a tree. Returns one line per problem. */
+function checkTrace(spans: Span[], done: boolean): string[] {
+  const problems: string[] = [];
+  spans.forEach((s, i) => {
+    if (spans.findIndex((o) => o.id === s.id) !== i) problems.push(`Span "${s.id}" given more than once`);
+    if (s.parent !== undefined && !spans.slice(0, i).some((o) => o.id === s.parent))
+      problems.push(`Span "${s.id}": parent "${s.parent}" must be a Span reported before it`);
+    if (done && s.end === undefined) problems.push(`Span "${s.id}": a delivered Trace needs an end on every Span`);
+  });
+  return problems;
+}
 
 /** Every Template Field exactly once, each value shaped for its Field type. Returns one line per problem. */
 function checkAgainstTemplate(values: FieldValue[], template: Template, pages: number): string[] {
@@ -116,6 +144,8 @@ interface Claim {
   /** The validated Fields waiting for the Operator to sign their output hash. */
   fields?: FieldResult[];
   link?: string;
+  /** Its self-reported Trace: Spans from report_span, replaced by the one it delivers with. */
+  trace?: Span[];
 }
 
 /** The one station shown for an outside Operator's Pipeline: how it works inside is its own business. */
@@ -504,17 +534,18 @@ export class JobBoard {
   }
 
   /** Validate the Fields like an extraction Sieve's, plus every quote must be in the text; returns the transaction recording their hash. */
-  async deliverOutside(operator: string, documentId: string, result: unknown): Promise<{ ok: true; xdr: string } | { ok: false; error: string }> {
-    const err = this.outsideError(operator, documentId);
-    if (err) return { ok: false, error: err };
+  async deliverOutside(
+    operator: string, documentId: string, result: unknown, rawTrace?: unknown,
+  ): Promise<{ ok: true; xdr: string } | { ok: false; error: string }> {
+    const c = this.workingClaim(operator, documentId);
+    if (typeof c === "string") return { ok: false, error: c };
     const d = this.docs.get(documentId)!;
-    const c = d.claims.get(operator);
-    if (!c || c.step === "bond") return { ok: false, error: `claim Document "${documentId}" first (claim_document, then submit_signed)` };
-    if (c.step === "delivered") return { ok: false, error: `you already delivered Document "${documentId}"` };
-    if (!this.active(c)) return { ok: false, error: `your claim on Document "${documentId}" expired before you delivered` };
     const parsed = extractionResult.safeParse(result);
     if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+    const spans = rawTrace === undefined ? undefined : trace.safeParse(rawTrace);
+    if (spans && !spans.success) return { ok: false, error: `trace: ${z.prettifyError(spans.error)}` };
     const problems = checkAgainstTemplate(parsed.data.fields, d.template, d.text.length);
+    if (spans) problems.push(...checkTrace(spans.data, true).map((p) => `trace: ${p}`));
     const text = fold(d.text.join(" "));
     // ponytail: a scan has no text layer, so its quotes go unchecked here; check them against Markdown if outside Operators take scans.
     if (text)
@@ -524,11 +555,39 @@ export class JobBoard {
     const fields = converge(d.template, [parsed.data.fields], d.text);
     try {
       const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(fields));
-      Object.assign(c, { step: "delivery", xdr, fields });
+      Object.assign(c, { step: "delivery", xdr, fields, ...(spans && { trace: spans.data }) });
       return { ok: true, xdr };
     } catch (e) {
       return { ok: false, error: `could not prepare the delivery, try again: ${(e as Error).message}` };
     }
+  }
+
+  /** The claim an outside Operator is still working on, or why there is none. */
+  private workingClaim(operator: string, documentId: string): Claim | string {
+    const err = this.outsideError(operator, documentId);
+    if (err) return err;
+    const c = this.docs.get(documentId)!.claims.get(operator);
+    if (!c || c.step === "bond") return `claim Document "${documentId}" first (claim_document, then submit_signed)`;
+    if (c.step === "delivered") return `you already delivered Document "${documentId}"`;
+    if (!this.active(c)) return `your claim on Document "${documentId}" expired before you delivered`;
+    return c;
+  }
+
+  /** report_span: add a Span to the claim's Trace while working, or replace the one with the same id (to end it). */
+  reportSpan(operator: string, documentId: string, raw: unknown): SubmitOutcome {
+    const c = this.workingClaim(operator, documentId);
+    if (typeof c === "string") return { ok: false, error: c };
+    const parsed = span.safeParse(raw);
+    if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+    const spans = [...(c.trace ?? [])];
+    const at = spans.findIndex((s) => s.id === parsed.data.id);
+    if (at >= 0) spans[at] = parsed.data;
+    else spans.push(parsed.data);
+    const problems = checkTrace(spans, false);
+    if (spans.length > 200) problems.push("a Trace holds at most 200 Spans");
+    if (problems.length) return { ok: false, error: problems.join("\n") };
+    c.trace = spans;
+    return { ok: true };
   }
 
   /** Hand in the transaction claim or deliver returned, signed by the Operator's key. */
@@ -566,10 +625,10 @@ export class JobBoard {
     return { ok: true, done: `delivered: the Challenge Window is open for ${Math.round(this.challengeWindowMs / 60_000)} min, then the escrow settles` };
   }
 
-  /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
-  async tick(): Promise<void> {
+  /** Settle every escrow whose Challenge Window has closed (only those of Documents `only` picks). main.ts calls this every 5 s. */
+  async tick(only: (documentId: string) => boolean = () => true): Promise<void> {
     for (const e of this.escrows.values()) {
-      if (e.status !== "open" || this.now() < e.closesAt) continue;
+      if (e.status !== "open" || this.now() < e.closesAt || !only(e.documentId)) continue;
       const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
@@ -716,9 +775,13 @@ export class JobBoard {
         const e = this.escrows.get(escrowKey(d.meta.id, p.name));
         const es = this.entries(d, p.name);
         const n = (s: string) => es.filter(({ v }) => v.status === s).length;
-        const counts = { final: n("final"), notStated: n("not stated"), converging: es.length - n("final") - n("not stated") };
+        const challenged = new Set(this.challenges.of(d.meta.id, p.name).filter((c) => c.decision !== "rejected").map((c) => c.field)).size;
+        const counts = { final: n("final"), notStated: n("not stated"), converging: es.length - n("final") - n("not stated"), challenged };
         const status = d.delivered.has(p.name) && e ? this.escrowView(e).status : "processing";
-        return [p.name, { status, ...(e && { closesAt: e.closesAt }), counts }];
+        const settled = e?.status === "settled";
+        const brandShare = settled && e.slashes ? settlement(e, e.slashes, [], this.arbiterFee).escrow.filter((x) => x.to === "brand") : [];
+        const bond = e && (settled ? (e.slashes ? "slashed" : "released") : "locked") as "slashed" | "released" | "locked";
+        return [p.name, { status, ...(e && { closesAt: e.closesAt }), counts, ...(bond && { bond }), ...(brandShare.length && { received: addUsdc(...brandShare.map((x) => x.amount)) }) }];
       }),
     );
     const { id, name, supplier, template, uploadedAt } = d.meta;
@@ -765,6 +828,23 @@ export class JobBoard {
       }
       return { ...base, state, ...worker, ...times, meta };
     });
+  }
+
+  /**
+   * The Pipeline's Trace. Ours: one Span per Sieve whose Job a Worker has taken, its result the station's counts.
+   * An outside Operator's: what it reported, its result text held back while the values are (it could quote them).
+   */
+  private trace(d: Doc, p: Pipeline, withheld: boolean): { trace?: ApiSpan[] } {
+    const claim = d.claims.get(p.name);
+    if (claim) return claim.trace ? { trace: claim.trace.map(({ result, ...s }) => (withheld ? s : { ...s, result })) } : {};
+    const stations = this.stations(d, p);
+    return {
+      trace: p.sieves.flatMap((s, i) => {
+        const st = stations[i]!;
+        if (st.takenAt === undefined || !st.worker) return [];
+        return [{ id: `sieve-${i}`, label: s.label, view: s.view, model: st.worker, ...(st.meta && { result: st.meta }), start: st.takenAt, ...(st.doneAt !== undefined && { end: st.doneAt }) }];
+      }),
+    };
   }
 
   private challengeSummary(c: Challenge) {
@@ -816,6 +896,7 @@ export class JobBoard {
         label: p.label ?? p.name,
         operator: this.terms(p.name).operator,
         stations: this.stations(d, p),
+        ...this.trace(d, p, withheld),
         ...(e && { deliveredAt: e.openedAt, escrow: this.escrowView(e) }),
         fields: this.entries(d, p.name).map((x) => this.apiField(d, p.name, x, withheld)),
       };
