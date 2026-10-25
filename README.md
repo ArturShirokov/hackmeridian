@@ -13,6 +13,7 @@ npm run typecheck
 ```
 
 Set `HOST=0.0.0.0` and `BASE_URL=http://<your-ip>:3000` to let Workers on other machines connect.
+`CHALLENGE_WINDOW_MIN` sets the Challenge Window length (default 5 minutes).
 
 ## Connect a Worker
 

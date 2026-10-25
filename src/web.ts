@@ -77,6 +77,13 @@ export function webApp(board: JobBoard): Hono {
         html`<meta http-equiv="refresh" content="3"><p><a href="/">All Documents</a></p>
           <h1>${d.template} Document</h1>
           <p><a href="/documents/${d.id}/file">Original file</a></p>
+          ${d.escrow
+            ? html`<p>Bond locked: ${d.escrow.bond} USDC by ${d.escrow.operator} (Fee ${d.escrow.fee} USDC).
+                Output hash: <code>${d.escrow.outputHash}</code></p>
+                <p>${d.escrow.status === "settled"
+                  ? "Settled: Bond and Fee paid to the Operator."
+                  : `${Math.ceil(d.escrow.msLeft / 60_000)} min left in the Challenge Window.`}</p>`
+            : ""}
           <table><tr><th>Field</th><th>Value</th><th>Unit</th><th>Qualifier</th><th>Page</th><th>Quote</th></tr>${rows}</table>`,
       ),
     );
