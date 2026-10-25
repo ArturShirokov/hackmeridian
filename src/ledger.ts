@@ -37,11 +37,20 @@ const toStroops = (usdc: string) => {
   if (!m) throw new Error(`bad USDC amount "${usdc}"`);
   return BigInt(m[1]!) * STROOPS + BigInt((m[2] ?? "").padEnd(7, "0"));
 };
-/** Exact sum of USDC decimal strings. */
-export function addUsdc(...amounts: string[]): string {
-  const s = amounts.reduce((a, b) => a + toStroops(b), 0n);
+const fromStroops = (s: bigint) => {
   const frac = (s % STROOPS).toString().padStart(7, "0").replace(/0+$/, "");
   return `${s / STROOPS}${frac ? `.${frac}` : ""}`;
+};
+/** Exact sum of USDC decimal strings. */
+export function addUsdc(...amounts: string[]): string {
+  return fromStroops(amounts.reduce((a, b) => a + toStroops(b), 0n));
+}
+
+/** One Slash per upheld Challenge: a tenth of the Bond each (rounded down to a stroop), never more than the Bond in all. */
+export function slashes(bond: string, upheld: number): string[] {
+  const tenth = fromStroops(toStroops(bond) / 10n);
+  // ponytail: Slashes past the cap are "0" so the record still counts each upheld Challenge; the real Ledger may need to skip them.
+  return Array.from({ length: upheld }, (_, i) => (i < 10 ? tenth : "0"));
 }
 
 export type LedgerCall =
