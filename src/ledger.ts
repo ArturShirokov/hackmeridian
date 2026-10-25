@@ -67,6 +67,8 @@ export interface Ledger extends Partial<OutsideLedger> {
   operatorRecord(operator: string): Promise<OperatorRecord>;
   /** Where to see the Operator's account or contract on an explorer, when the Ledger has one. */
   operatorLink?(operator: string): string | undefined;
+  /** The USDC the Job Board holds for a Brand (it pays the Fees and Deposits, receives the Slashes), and where to see it. */
+  brandBalance?(brand: string): Promise<{ usdc: string; link?: string }>;
 }
 
 const STROOPS = 10_000_000n;
@@ -154,6 +156,19 @@ export class FakeLedger implements Ledger, OutsideLedger {
   /** explorer: give placeholder links under this base URL; without it, no links (nothing is on a chain). */
   constructor(private readonly explorer?: string) {}
 
+  /** A Brand starts with this much modelled USDC; Fees and its Deposits come out of it, Slashes and Deposits back go in. */
+  static readonly BRAND_START = "100";
+
+  async brandBalance(brand: string) {
+    if (!this.balances.has(brand)) this.balances.set(brand, FakeLedger.BRAND_START);
+    return { usdc: this.balances.get(brand)!, ...(this.explorer && { link: `${this.explorer}/account/${brand}` }) };
+  }
+
+  /** Takes a Brand's Fee or Deposit out of its modelled balance (never below 0: the fake doesn't refuse). */
+  private charge(brand: string, usdc: string) {
+    this.balances.set(brand, subUsdc(this.balances.get(brand) ?? FakeLedger.BRAND_START, usdc));
+  }
+
   private link = (path: string) => (this.explorer ? { link: `${this.explorer}/${path}` } : {});
 
   operatorLink(operator: string) {
@@ -174,6 +189,7 @@ export class FakeLedger implements Ledger, OutsideLedger {
     const escrowId = `escrow-${this.calls.length + 1}`;
     this.calls.push({ call: "openEscrow", escrowId, req });
     this.escrows.set(escrowId, req);
+    this.charge(req.brand, req.fee);
     return { escrowId, ...this.link(escrowId) };
   }
 
@@ -189,6 +205,7 @@ export class FakeLedger implements Ledger, OutsideLedger {
         if (toStroops(have) < toStroops(req.bond)) throw new Error(`${req.operator} holds ${have} USDC, less than the Bond of ${req.bond}`);
         this.balances.set(req.operator, subUsdc(have, req.bond));
         this.escrows.set(escrowId, { ...req, outputHash: "" });
+        this.charge(req.brand, req.fee);
         this.calls.push({ call: "lockBond", escrowId, req });
       },
     });
@@ -255,6 +272,7 @@ export class FakeLedger implements Ledger, OutsideLedger {
     if (!ok)
       throw new Error(`${challenger} must sign the Deposit from prepareDeposit`);
     if (signedXdr) this.prepared.delete(signedXdr);
+    else this.charge(challenger, amount);
     this.calls.push({ call: "lockDeposit", escrowId, challenger, amount });
     return this.link(`${escrowId}/deposit`);
   }

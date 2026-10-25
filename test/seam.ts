@@ -4,7 +4,7 @@ import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type {
-  ApiArbiter, ApiChallenge, ApiConfig, ApiDocument, ApiDocumentSummary, ApiField, ApiJob, ApiLeaderRow, ApiPipelineView, ApiTemplate, ApiWorker,
+  ApiArbiter, ApiBalance, ApiChallenge, ApiConfig, ApiSession, ApiUser, ApiDocument, ApiDocumentSummary, ApiField, ApiJob, ApiLeaderRow, ApiPipelineView, ApiTemplate, ApiWorker,
 } from "../src/api.js";
 import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
 import type { Pipeline } from "../src/pipelines.js";
@@ -169,10 +169,27 @@ export function startBoard(
     },
   };
 
+  /** Who can sign in, and what each signed-in user (by session cookie) sees. */
+  const users = {
+    list: () => get<ApiUser[]>("/api/users"),
+    /** Signs in as a seeded user; returns the session cookie ("name=value") to send back. */
+    async signIn(user: string) {
+      const res = await web.request("/api/session", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user }) });
+      return { status: res.status, cookie: res.headers.get("set-cookie")?.split(";")[0] };
+    },
+    as(cookie?: string) {
+      const read = async <T>(path: string) => {
+        const res = await web.request(path, { headers: cookie ? { cookie } : {} });
+        return { status: res.status, body: (await res.json()) as T };
+      };
+      return { session: async () => (await read<ApiSession>("/api/session")).body, balance: () => read<ApiBalance>("/api/balance") };
+    },
+  };
+
   /** Run what main.ts runs every 5 s: settle escrows whose Challenge Window has closed. */
   const tick = () => board.tick();
 
-  return { web, worker, outsideOperator, brand, arbiter, ledger, clock, tick };
+  return { web, worker, outsideOperator, brand, arbiter, users, ledger, clock, tick };
 }
 
 /** A fixture PDF: one array of text lines per page. */

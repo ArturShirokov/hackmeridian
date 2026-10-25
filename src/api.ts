@@ -266,7 +266,35 @@ export interface ApiExport {
   fields: Record<string, { value: number | string | Record<string, number>; unit?: string; qualifier?: string; page: number; quote: string } | "Not stated">;
 }
 
+export type Role = "brand" | "arbiter" | "operator";
+
+/** GET /api/users: the seeded demo users. brand / operator: the Ledger's Brand id or the Pipeline the user stands for. */
+export interface ApiUser {
+  id: string;
+  name: string;
+  role: Role;
+  org: string;
+  /** One line under the name, e.g. "Product Compliance, Voltaris". */
+  sub: string;
+  brand?: string;
+  operator?: string;
+}
+
+/** GET /api/session */
+export interface ApiSession {
+  user: ApiUser | null;
+}
+
+/** GET /api/balance (Brand users only): the USDC the Job Board holds for the signed-in Brand. */
+export interface ApiBalance {
+  usdc: Usdc;
+  /** "View on Stellar ↗"; absent when the Ledger has no chain behind it. */
+  link?: string;
+}
+
 /** Routes:
+ * GET  /api/users → ApiUser[]   GET /api/session → ApiSession   POST /api/session { user } → ApiSession, sets the signed
+ *      session cookie | 404 unknown user   DELETE /api/session → signs out   GET /api/balance → ApiBalance | 401 | 403
  * GET  /api/config → ApiConfig            GET /api/templates → ApiTemplate[]
  * GET  /api/documents → ApiDocumentSummary[]
  * POST /api/documents (multipart file, template, supplier) → 201 { id } | 400 { error }

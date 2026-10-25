@@ -1,6 +1,8 @@
-// The app shell: sidebar per role (Brand / Arbiter / Operator, fixed demo identities), routes, and the ?demo story dock.
+// The app shell: "Sign in as" a seeded user, the sidebar and routes of that user's role, and the ?demo story dock.
 import { useEffect, useState } from "react";
-import { api, usePoll } from "./api.ts";
+import { api, usePoll, type ApiUser, type Role } from "./api.ts";
+import { ProofLink } from "./components/ui.tsx";
+import { usdc } from "./format.ts";
 import { Link, match, navigate, useLocation } from "./router.tsx";
 import { NotFound } from "./screens.tsx";
 import { BrandDocuments } from "./screens/brand/Documents.tsx";
@@ -11,28 +13,31 @@ import { Arbiter } from "./screens/ops/Arbiter.tsx";
 import { Jobs } from "./screens/ops/Jobs.tsx";
 import { Leaderboard } from "./screens/ops/Leaderboard.tsx";
 
-export type Role = "brand" | "arbiter" | "operator";
-
 const NAV: Record<Role, [string, string][]> = {
   brand: [["Documents", "/documents"], ["Upload", "/upload"], ["Leaderboard", "/leaderboard"]],
   arbiter: [["Challenges", "/arbiter"]],
   operator: [["Job Board", "/jobs"], ["Pipelines", "/jobs#pipelines"], ["Leaderboard", "/leaderboard"]],
 };
 const HOME: Record<Role, string> = { brand: "/documents", arbiter: "/arbiter", operator: "/jobs" };
-const WHO: Record<Role, { label: string; name: string; sub: string }> = {
-  brand: { label: "Voltaris", name: "Inês Duarte", sub: "Product Compliance, Voltaris" },
-  arbiter: { label: "Arbiter", name: "Arbiter desk", sub: "Neutral third party" },
-  operator: { label: "Operator", name: "Origyn", sub: "Operator console" },
-};
+/** A role sees the screens its sidebar lists (matched on the first path segment); anything else sends it home. */
+const allows = (role: Role, path: string) => NAV[role].some(([, to]) => to.split(/[/#]/)[1] === path.split("/")[1]);
 
-const store = {
-  get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
-  set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
-};
-
-export function useRole(): [Role, (r: Role) => void] {
-  const [role, set] = useState<Role>(() => (store.get("om-role") as Role) ?? "brand");
-  return [role, (r) => { store.set("om-role", r); set(r); }];
+/** The signed-in user (undefined while loading), from the signed session cookie. */
+function useSession() {
+  const [user, setUser] = useState<ApiUser | null>();
+  useEffect(() => { api.session().then((s) => setUser(s.user), () => setUser(null)); }, []);
+  return {
+    user,
+    async signIn(id: string, to?: string) {
+      const { user } = await api.signIn(id);
+      setUser(user);
+      if (user) navigate(to ?? HOME[user.role]);
+    },
+    async signOut() {
+      await api.signOut();
+      setUser(null);
+    },
+  };
 }
 
 /** Which screen a path shows; `nav` is the sidebar entry it lights up. */
@@ -56,28 +61,71 @@ function Redirect({ to }: { to: string }) {
 
 export function App() {
   const url = useLocation();
-  const [role, setRole] = useRole();
-  const { nav, el } = route(url.pathname, role);
+  const { user, signIn, signOut } = useSession();
   const demo = useDemoFlag(url);
-  const switchRole = (r: Role) => { setRole(r); navigate(HOME[r]); };
+  if (user === undefined) return null;
+  if (!user) return <SignIn onPick={(id) => signIn(id)} />;
+  const role = user.role;
+  const { nav, el } = allows(role, url.pathname) ? route(url.pathname, role) : { nav: "", el: <Redirect to={HOME[role]} /> };
+  const asRole = (r: Role, to: string) => signIn(SEATS[r], to);
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative" }}>
-        <Sidebar role={role} active={nav} onRole={switchRole} />
+        <Sidebar user={user} active={nav} onSwitch={signOut} />
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative" }}>{el}</main>
       </div>
-      {demo && <StoryDock path={url.pathname} onRole={setRole} />}
+      {demo && <StoryDock path={url.pathname} role={role} onRole={asRole} />}
     </div>
   );
 }
 
-function Sidebar({ role, active, onRole }: { role: Role; active: string; onRole(r: Role): void }) {
-  const who = WHO[role];
+/** Who the demo dock signs in as for each role. */
+const SEATS: Record<Role, string> = { brand: "ines", arbiter: "arbiter", operator: "origyn" };
+
+function SignIn({ onPick }: { onPick(id: string): void }) {
+  const { data: users } = usePoll(api.users, 60_000);
+  if (!users) return null;
+  return (
+    <main className="om-app" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
+        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 28 }}>Origyn</div>
+        <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as</div>
+        <ul aria-label="Sign in as" style={{ listStyle: "none", margin: 0, padding: 0, borderTop: "1px solid var(--rule)" }}>
+          {users.map((u) => (
+            <li key={u.id}>
+              <button onClick={() => onPick(u.id)}
+                style={{ width: "100%", border: 0, borderBottom: "1px solid var(--rule)", background: "transparent", textAlign: "left", padding: "14px 4px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                <span style={{ font: "600 15px/1.2 var(--sans)", color: "var(--ink)" }}>{u.name}</span>
+                <span style={{ font: "400 13px/1.3 var(--sans)", color: "#3D3A34" }}>{u.sub}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </main>
+  );
+}
+
+/** The USDC the Job Board holds for the Brand; Fees and Deposits come out of it, Slashes go in. */
+function Balance() {
+  const { data } = usePoll(api.balance, 5000);
+  if (!data) return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--rule)" }}>
+      <span style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>Balance</span>
+      <span style={{ font: "600 16px/1 var(--mono)", color: "var(--money)" }}>{usdc(data.usdc)} USDC</span>
+      <ProofLink href={data.link} hash="" />
+    </div>
+  );
+}
+
+function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; onSwitch(): void }) {
+  const role = user.role;
   const lit = NAV[role].find(([, to]) => to === active)?.[1];
   return (
     <aside className="om-desktop-only" style={{ width: 228, flex: "none", borderRight: "1px solid var(--rule)", display: "flex", flexDirection: "column", background: "var(--sidebar)" }}>
       <Link to="/" style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>Origyn</Link>
-      <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{who.label}</div>
+      <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{user.org}</div>
       <nav style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--rule)" }}>
         {NAV[role].map(([label, to]) => (
           <Link key={label} to={to} className={`om-nav ${to === lit ? "active" : ""}`}>
@@ -87,16 +135,13 @@ function Sidebar({ role, active, onRole }: { role: Role; active: string; onRole(
         ))}
       </nav>
       <div style={{ marginTop: "auto", padding: "18px 22px", borderTop: "1px solid var(--rule)", display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ font: "600 14px/1.3 var(--sans)" }}>{who.name}</span>
-        <span style={{ font: "400 13px/1.3 var(--sans)", color: "#3D3A34" }}>{who.sub}</span>
-        <div role="group" aria-label="Role" style={{ display: "flex", border: "1px solid var(--ink)", marginTop: 12 }}>
-          {(["brand", "arbiter", "operator"] as Role[]).map((r) => (
-            <button key={r} onClick={() => onRole(r)} aria-pressed={r === role}
-              style={{ flex: 1, height: 28, border: 0, background: r === role ? "var(--ink)" : "transparent", color: r === role ? "var(--paper)" : "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer", textTransform: "capitalize" }}>
-              {r}
-            </button>
-          ))}
-        </div>
+        <span style={{ font: "600 14px/1.3 var(--sans)" }}>{user.name}</span>
+        <span style={{ font: "400 13px/1.3 var(--sans)", color: "#3D3A34" }}>{user.sub}</span>
+        {role === "brand" && <Balance />}
+        <button onClick={onSwitch}
+          style={{ marginTop: 12, height: 28, border: "1px solid var(--ink)", background: "transparent", color: "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer" }}>
+          Switch user
+        </button>
       </div>
     </aside>
   );
@@ -110,7 +155,7 @@ function useDemoFlag(url: URL) {
 }
 
 /** The projector's story: links to the real routes of the newest Document. */
-function StoryDock({ path, onRole }: { path: string; onRole(r: Role): void }) {
+function StoryDock({ path, role: current, onRole }: { path: string; role: Role; onRole(r: Role, to: string): void }) {
   const { data: docs } = usePoll(api.documents, 5000);
   const id = docs?.[0]?.id;
   const doc = id ? `/documents/${id}` : "/documents";
@@ -130,7 +175,7 @@ function StoryDock({ path, onRole }: { path: string; onRole(r: Role): void }) {
       {story.map(([n, label, to, role]) => {
         const on = to === path + (new URLSearchParams(location.search).has("challenge") ? "?challenge=1" : "");
         return (
-          <Link key={n} to={to} onClick={() => onRole(role)}
+          <Link key={n} to={to} onClick={(e) => { if (role !== current) { e.preventDefault(); onRole(role, to); } }}
             style={{ height: 30, padding: "0 10px", border: `1px solid ${on ? "var(--paper)" : "var(--dock-bd)"}`, background: on ? "var(--paper)" : "transparent",
               color: on ? "var(--ink)" : "var(--paper)", font: "500 12px/1 var(--sans)", display: "flex", gap: 6, alignItems: "center", textDecoration: "none" }}>
             <span style={{ font: "500 11px/1 var(--mono)" }}>{n}</span>{label}

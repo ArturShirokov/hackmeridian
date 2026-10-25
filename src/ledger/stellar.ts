@@ -10,6 +10,16 @@ export const HORIZON_TESTNET = "https://horizon-testnet.stellar.org";
 export const explorer = (kind: "tx" | "account" | "contract", id: string) =>
   `https://stellar.expert/explorer/testnet/${kind}/${id}`;
 
+/** An address's Circle testnet USDC balance on Horizon, "0" when it has no account or no USDC trustline. */
+export async function horizonUsdc(address: string, horizonUrl = HORIZON_TESTNET, fetcher: typeof fetch = fetch) {
+  const res = await fetcher(`${horizonUrl}/accounts/${address}`);
+  if (res.status === 404) return "0";
+  if (!res.ok) throw new Error(`Horizon accounts ${res.status}: ${await res.text()}`);
+  const { balances } = (await res.json()) as { balances: { asset_code?: string; asset_issuer?: string; balance: string }[] };
+  const usdc = balances.find((b) => b.asset_code === "USDC" && b.asset_issuer === USDC_ISSUER);
+  return usdc ? addUsdc(usdc.balance) : "0";
+}
+
 // ponytail: in-memory, lost on restart, so an escrow opened before a restart can't be settled by this process.
 export class Escrows {
   private open = new Map<string, EscrowRequest>();

@@ -5,7 +5,7 @@
 import { Keypair, Networks, StrKey, TransactionBuilder } from "@stellar/stellar-sdk";
 import { addUsdc, settlement, type BondRequest, type Deposit, type EscrowRequest, type Ledger, type OutsideLedger, type Payee } from "../ledger.js";
 import { checkSigned } from "./signed.js";
-import { DepositAccount, Escrows, explorer, HORIZON_TESTNET, keyFor, USDC_ISSUER } from "./stellar.js";
+import { DepositAccount, Escrows, explorer, horizonUsdc, keyFor, USDC_ISSUER } from "./stellar.js";
 
 export interface TrustlessWorkOptions {
   apiKey: string;
@@ -81,13 +81,13 @@ export class TrustlessWorkLedger implements Ledger, OutsideLedger {
   // change the escrow), the Operator signs its Bond and, at delivery, the milestone's "Completed" with the output hash.
   // Settlement then needs only the Brand and the Arbiter.
 
-  async usdcBalance(address: string) {
-    const res = await this.fetch(`${this.o.horizonUrl ?? HORIZON_TESTNET}/accounts/${address}`);
-    if (res.status === 404) return "0";
-    if (!res.ok) throw new Error(`Horizon accounts ${res.status}: ${await res.text()}`);
-    const { balances } = (await res.json()) as { balances: { asset_code?: string; asset_issuer?: string; balance: string }[] };
-    const usdc = balances.find((b) => b.asset_code === "USDC" && b.asset_issuer === USDC_ISSUER);
-    return usdc ? addUsdc(usdc.balance) : "0";
+  usdcBalance(address: string) {
+    return horizonUsdc(address, this.o.horizonUrl, this.fetch);
+  }
+
+  async brandBalance(id: string) {
+    const address = this.brand(id).publicKey();
+    return { usdc: await this.usdcBalance(address), link: explorer("account", address) };
   }
 
   async prepareBond(req: BondRequest) {
