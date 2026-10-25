@@ -3,13 +3,13 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import type { JobBoard } from "./board.js";
+import { formatValue } from "./converge.js";
 import { buildMcpServer } from "./mcp.js";
 import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
 
-const show = (v: unknown) => (typeof v === "object" ? JSON.stringify(v) : String(v));
 const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
-const statusOf ={ "not found": 404, closed: 409, invalid: 400 } as const;
+const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
 
 const layout = (title: string, body: unknown) => html`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -78,7 +78,7 @@ export function webApp(board: JobBoard): Hono {
         : "notStated" in f
         ? html`<td>${f.status}</td><td class="muted">Not stated</td>`
         : "value" in f
-          ? html`<td>${f.status}</td><td>${show(f.value)} ${f.unit ?? ""} ${f.qualifier ?? ""}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
+          ? html`<td>${f.status}</td><td>${formatValue(f)}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
               <br><span class="muted">p. ${f.page}: <q>${f.quote}</q></span></td>`
           : html`<td>${f.status}</td><td></td>`;
     const rows = d.fields.map((f, i) => html`<tr><th>${f.label}</th>${views.map(([, v]) => cell(v.fields[i]!))}</tr>`);
@@ -178,9 +178,9 @@ export function webApp(board: JobBoard): Hono {
       const label = templates[board.document(ch.documentId)!.template]!.fields.find((f) => f.name === ch.field)!.label;
       const d = ch.challenged;
       const challenged =
-        "notStated" in d ? "Not stated" : "value" in d ? `${show(d.value)} ${d.unit ?? ""} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
+        "notStated" in d ? "Not stated" : "value" in d ? `${formatValue(d)} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
       return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${challenged}</td>
-        <td>${show(ch.value)} ${ch.unit ?? ""} ${ch.qualifier ?? ""}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
+        <td>${formatValue(ch)}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
         <td><form method="post" action="/challenges/${ch.id}/decision">
           <button name="decision" value="upheld">Uphold</button> <button name="decision" value="rejected">Reject</button>
         </form></td></tr>`;

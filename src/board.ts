@@ -3,12 +3,12 @@
 import { createHash, randomUUID } from "node:crypto";
 import * as z from "zod";
 import { Challenges } from "./challenges.js";
-import { compositionSum, converge, type FieldResult } from "./converge.js";
+import { compositionSum, converge, supplierRequest, type FieldResult } from "./converge.js";
 import { slashes, type EscrowRequest, type Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
-import { templates, type Template } from "./templates.js";
+import { mustBe, statedValue, templates, type Template } from "./templates.js";
 
 /** A self-contained unit of work for one Sieve pass over one Document. Never carries other Sieves' values. */
 export interface Job {
@@ -22,14 +22,7 @@ export interface Job {
   document: { url: string; text: string[]; markdown?: string };
 }
 
-const stated = z.strictObject({
-  field: z.string(),
-  value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
-  unit: z.string().min(1).optional(),
-  qualifier: z.string().min(1).optional(),
-  page: z.number().int().positive(),
-  quote: z.string().min(1),
-});
+const stated = z.strictObject({ field: z.string(), ...statedValue, page: z.number().int().positive() });
 const notStated = z.strictObject({ field: z.string(), notStated: z.literal(true) });
 export type FieldValue = z.infer<typeof stated> | z.infer<typeof notStated>;
 // Pick the entry shape by `notStated` so errors name the bad key instead of "Invalid input" from a union.
@@ -63,8 +56,8 @@ function checkAgainstTemplate(values: FieldValue[], template: Template, pages: n
     const at = `Field "${f.name}":`;
     const isNumber = typeof v.value === "number";
     const isRecord = typeof v.value === "object";
-    if (f.type === "quantity" && !isNumber) problems.push(`${at} a quantity value must be a number`);
-    if (f.type === "composition" && !isRecord) problems.push(`${at} a composition value must be { fibre: percent }`);
+    if (f.type === "quantity" && !isNumber) problems.push(`${at} ${mustBe.quantity}`);
+    if (f.type === "composition" && !isRecord) problems.push(`${at} ${mustBe.composition}`);
     if (f.type === "composition" && isRecord) {
       const sum = compositionSum(v.value as Record<string, number>);
       if (sum !== 100) problems.push(`${at} fibre percentages must add up to 100, these add up to ${sum}`);
@@ -103,7 +96,11 @@ export interface OperatorTerms {
   fee: string;
 }
 
+/** One escrow per (Document, Pipeline). */
+const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([documentId, pipeline]);
+
 interface Escrow extends EscrowRequest {
+  pipeline: string;
   escrowId: string;
   /** When the Challenge Window closes, in ms since the epoch. */
   closesAt: number;
@@ -144,7 +141,7 @@ export class JobBoard {
   private jobTimeoutMs: number;
   private operators: Record<string, OperatorTerms>;
   private challengeWindowMs: number;
-  /** Keyed by `${documentId} ${pipeline}`. */
+  /** Keyed by escrowKey(documentId, pipeline). */
   private escrows = new Map<string, Escrow>();
   readonly challenges = new Challenges();
 
@@ -341,8 +338,9 @@ export class JobBoard {
       outputHash: createHash("sha256").update(JSON.stringify(fields)).digest("hex"),
     };
     const { escrowId, link } = await this.ledger.openEscrow(req);
-    this.escrows.set(`${doc.meta.id} ${pipeline}`, {
+    this.escrows.set(escrowKey(doc.meta.id, pipeline), {
       ...req,
+      pipeline,
       escrowId,
       ...(link && { link }),
       closesAt: this.now() + this.challengeWindowMs,
@@ -352,9 +350,9 @@ export class JobBoard {
 
   /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
   async tick(): Promise<void> {
-    for (const [key, e] of this.escrows) {
+    for (const e of this.escrows.values()) {
       if (e.status !== "open" || this.now() < e.closesAt) continue;
-      const [documentId, pipeline] = key.split(" ") as [string, string];
+      const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
       e.status = "settling";
@@ -373,7 +371,7 @@ export class JobBoard {
   /** File a Challenge against a delivered Field, only while its Challenge Window is open. */
   challenge(documentId: string, raw: unknown, pipeline = this.pipelines[0]!.name) {
     const d = this.docs.get(documentId);
-    const e = this.escrows.get(`${documentId} ${pipeline}`);
+    const e = this.escrows.get(escrowKey(documentId, pipeline));
     const delivered = d?.delivered.get(pipeline);
     if (!d || !e || !delivered) return { ok: false as const, reason: "not found" as const, error: "no delivered Document with that id" };
     if (e.status !== "open" || this.now() >= e.closesAt)
@@ -412,7 +410,7 @@ export class JobBoard {
   private view(d: Doc, pipeline: string) {
     const id = d.meta.id;
     const values = d.delivered.get(pipeline) ?? d.progress.get(pipeline) ?? [];
-    const e = this.escrows.get(`${id} ${pipeline}`);
+    const e = this.escrows.get(escrowKey(id, pipeline));
     return {
       operator: this.terms(pipeline).operator,
       escrow: e && {
@@ -431,11 +429,7 @@ export class JobBoard {
         if (corrected) return { name: f.name, label: f.label, status: "final" as const, ...corrected };
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         if (v.status !== "not stated") return { name: f.name, label: f.label, ...v };
-        const quoted = v.quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
-        const supplierRequest =
-          `Please confirm "${f.label}" for Document ${id} (${d.meta.template}).` +
-          ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`;
-        return { name: f.name, label: f.label, ...v, supplierRequest };
+        return { name: f.name, label: f.label, ...v, supplierRequest: supplierRequest(f, id, d.meta.template, v.quotes) };
       }),
     };
   }

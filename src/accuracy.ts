@@ -1,7 +1,7 @@
 // Accuracy report: compare delivered Field values with the hand-checked ones in testdata/expected,
 // and record a live run's Worker calls so the run can be replayed through a fresh Job Board.
 import { JobBoard, type FieldValue } from "./board.js";
-import { canonical, type FieldResult } from "./converge.js";
+import { canonical, formatValue, type FieldResult } from "./converge.js";
 import { FakeLedger } from "./ledger.js";
 import { baseline, ours } from "./pipelines.js";
 import { InMemoryStorage } from "./storage.js";
@@ -105,10 +105,6 @@ export interface Report {
   incorrect: { document: string; field: string; expected: string; delivered: string }[];
 }
 
-const show = (v: Omit<Stated, "field"> | undefined | "Not stated" | "not delivered") =>
-  typeof v === "string" ? v : v === undefined ? "not delivered"
-  : `${typeof v.value === "object" ? JSON.stringify(v.value) : v.value}${v.unit ? ` ${v.unit}` : ""}${v.qualifier ? ` (${v.qualifier})` : ""}`;
-
 /** `delivered`: per Pipeline name, its Field values by Document file name, undefined when not delivered. */
 export function score(
   expected: Expected[],
@@ -135,8 +131,8 @@ export function score(
         else r.incorrect.push({
           document: e.document,
           field: name,
-          expected: show(want === "Not stated" ? want : (want as Stated)),
-          delivered: got === undefined || got.status === "disagreeing" ? "not delivered" : gotStated ? show(gotStated) : "Not stated",
+          expected: want === "Not stated" ? want : formatValue(want),
+          delivered: got === undefined || got.status === "disagreeing" ? "not delivered" : gotStated ? formatValue(gotStated) : "Not stated",
         });
       }
     }

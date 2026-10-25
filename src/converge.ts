@@ -10,6 +10,19 @@ export type FieldResult =
   /** Still split after the tie-break: every competing quote, for the Supplier Request. */
   | { field: string; status: "not stated"; notStated: true; quotes: Quote[] };
 
+/** A stated value as people read it: `3.2 Ah (nominal)`, compositions as JSON. */
+export const formatValue = (v: { value: unknown; unit?: string; qualifier?: string | null }) =>
+  `${typeof v.value === "object" ? JSON.stringify(v.value) : v.value}${v.unit ? ` ${v.unit}` : ""}${v.qualifier ? ` (${v.qualifier})` : ""}`;
+
+/** The Supplier Request for a Not stated Field: what to confirm and what the Document says instead. */
+export function supplierRequest(f: Field, documentId: string, template: string, quotes: Quote[]): string {
+  const quoted = quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
+  return (
+    `Please confirm "${f.label}" for Document ${documentId} (${template}).` +
+    ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`
+  );
+}
+
 /** Factor from each accepted unit to the canonical one, keyed by spelling() of the canonical unit. */
 const units: Record<string, Record<string, number>> = {
   Ah: { Ah: 1, mAh: 0.001 },

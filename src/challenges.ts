@@ -3,16 +3,9 @@
 import { randomUUID } from "node:crypto";
 import * as z from "zod";
 import type { FieldResult } from "./converge.js";
-import type { Template } from "./templates.js";
+import { mustBe, statedValue, type Template } from "./templates.js";
 
-const input = z.strictObject({
-  field: z.string(),
-  page: z.coerce.number().int().positive(),
-  quote: z.string().min(1),
-  value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
-  unit: z.string().min(1).optional(),
-  qualifier: z.string().min(1).optional(),
-});
+const input = z.strictObject({ field: z.string(), ...statedValue, page: z.coerce.number().int().positive() });
 
 export type Challenge = z.infer<typeof input> & {
   id: string;
@@ -48,10 +41,10 @@ export class Challenges {
       try {
         c.value = z.record(z.string(), z.number()).parse(JSON.parse(c.value));
       } catch {
-        return { ok: false, error: `Field "${f.name}": a composition value must be { fibre: percent }` };
+        return { ok: false, error: `Field "${f.name}": ${mustBe.composition}` };
       }
     }
-    if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": a quantity value must be a number` };
+    if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": ${mustBe.quantity}` };
     const challenged = t.delivered.find((d) => d.field === f.name)!;
     const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged };
     this.all.push(challenge);
