@@ -7,6 +7,12 @@ import { formatValue } from "./converge.js";
 import { buildMcpServer } from "./mcp.js";
 import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { serveStatic } from "@hono/node-server/serve-static";
+
+const spaRoot = fileURLToPath(new URL("../web/dist", import.meta.url));
 
 const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
 const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
@@ -25,7 +31,7 @@ export function webApp(board: JobBoard): Hono {
   const mcp = createMcpHandler(() => buildMcpServer(board));
   app.all("/mcp", (c) => mcp.fetch(c.req.raw));
 
-  app.get("/", (c) =>
+  app.get("/legacy", (c) =>
     c.html(
       layout(
         "Documents",
@@ -35,9 +41,9 @@ export function webApp(board: JobBoard): Hono {
             <select name="template">${Object.values(templates).map((t) => html`<option value="${t.name}">${t.label}</option>`)}</select>
             <button>Upload</button>
           </form>
-          <p><a href="/arbiter">Arbiter: open Challenges</a> · <a href="/leaderboard">Leaderboard</a></p>
+          <p><a href="/legacy/arbiter">Arbiter: open Challenges</a> · <a href="/legacy/leaderboard">Leaderboard</a></p>
           <h2>Documents</h2>
-          <ul>${board.documents().map((d) => html`<li><a href="/documents/${d.id}">${d.id}</a> (${d.template}, ${d.uploadedAt.toISOString()})</li>`)}</ul>`,
+          <ul>${board.documents().map((d) => html`<li><a href="/legacy/documents/${d.id}">${d.id}</a> (${d.template}, ${d.uploadedAt.toISOString()})</li>`)}</ul>`,
       ),
     ),
   );
@@ -48,7 +54,7 @@ export function webApp(board: JobBoard): Hono {
     if (!(file instanceof File)) return c.text("missing file", 400);
     try {
       const meta = await board.upload(new Uint8Array(await file.arrayBuffer()), String(body["template"]));
-      return c.redirect(`/documents/${meta.id}`, 303);
+      return c.redirect(`/legacy/documents/${meta.id}`, 303);
     } catch (e) {
       return c.text(`upload rejected: ${(e as Error).message}`, 400);
     }
@@ -65,7 +71,7 @@ export function webApp(board: JobBoard): Hono {
     return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { "content-type": "application/pdf" });
   });
 
-  app.get("/documents/:id", (c) => {
+  app.get("/legacy/documents/:id", (c) => {
     const d = board.document(c.req.param("id"));
     if (!d) return c.notFound();
     const views = Object.entries(d.pipelines);
@@ -89,13 +95,13 @@ export function webApp(board: JobBoard): Hono {
                   ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
                   : "Settled: Bond and Fee paid to the Operator."}${explorer(v.escrow.settlementLink, v.escrow.slashes ? "settlement and Slashes" : "settlement")}`
               : v.escrow.msLeft > 0
-                ? html`${Math.ceil(v.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/documents/${d.id}/challenge?pipeline=${name}">Challenge a Field</a>`
+                ? html`${Math.ceil(v.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/legacy/documents/${d.id}/challenge?pipeline=${name}">Challenge a Field</a>`
                 : "Challenge Window closed; waiting for the Arbiter."}</p>`
         : html`<p><b>${name}</b> (${v.operator}): working.</p>`;
     return c.html(
       layout(
         "Document",
-        html`<meta http-equiv="refresh" content="3"><p><a href="/">All Documents</a> · <a href="/leaderboard">Leaderboard</a></p>
+        html`<meta http-equiv="refresh" content="3"><p><a href="/legacy">All Documents</a> · <a href="/legacy/leaderboard">Leaderboard</a></p>
           <h1>${d.template} Document</h1>
           <p><a href="/documents/${d.id}/file">Original file</a></p>
           ${views.map(([name, v]) => escrow(name, v))}
@@ -112,27 +118,27 @@ export function webApp(board: JobBoard): Hono {
 
   app.get("/api/leaderboard", async (c) => c.json(await board.leaderboard()));
 
-  app.get("/leaderboard", async (c) => {
+  app.get("/legacy/leaderboard", async (c) => {
     const rows = (await board.leaderboard()).map(
       (r) => html`<tr><th>${r.operator}</th><td>${r.documents}</td><td>${r.challengesUpheld}</td><td>${r.totalSlashed} USDC</td></tr>`,
     );
     return c.html(
       layout(
         "Leaderboard",
-        html`<p><a href="/">All Documents</a></p><h1>Operators</h1>
+        html`<p><a href="/legacy">All Documents</a></p><h1>Operators</h1>
           <table><tr><th>Operator</th><th>Documents</th><th>Challenges upheld</th><th>Total Slashed</th></tr>${rows}</table>`,
       ),
     );
   });
 
-  app.get("/documents/:id/challenge", (c) => {
+  app.get("/legacy/documents/:id/challenge", (c) => {
     const d = board.document(c.req.param("id"));
     if (!d) return c.notFound();
     const pipeline = c.req.query("pipeline") ?? "";
     return c.html(
       layout(
         "Challenge",
-        html`<p><a href="/documents/${d.id}">Back to the Document</a></p>
+        html`<p><a href="/legacy/documents/${d.id}">Back to the Document</a></p>
           <h1>Challenge a Field</h1>
           <p>Cite the page and the exact words of the <a href="/documents/${d.id}/file">Document</a> that state the Correct value.</p>
           <form method="post" action="/documents/${d.id}/challenges">
@@ -153,7 +159,7 @@ export function webApp(board: JobBoard): Hono {
     const form = Object.fromEntries(Object.entries(await c.req.parseBody()).filter(([, v]) => v !== ""));
     const { pipeline, ...rest } = form;
     const r = board.challenge(id, rest, typeof pipeline === "string" ? pipeline : undefined);
-    return r.ok ? c.redirect(`/documents/${id}`, 303) : c.text(`Challenge rejected: ${r.error}`, statusOf[r.reason]);
+    return r.ok ? c.redirect(`/legacy/documents/${id}`, 303) : c.text(`Challenge rejected: ${r.error}`, statusOf[r.reason]);
   });
 
   app.get("/api/challenges", (c) => c.json(board.challenges.open()));
@@ -169,10 +175,10 @@ export function webApp(board: JobBoard): Hono {
 
   app.post("/challenges/:id/decision", async (c) => {
     const r = decide(c.req.param("id"), (await c.req.parseBody())["decision"]);
-    return r === "ok" ? c.redirect("/arbiter", 303) : c.text(r, decisionStatus[r]);
+    return r === "ok" ? c.redirect("/legacy/arbiter", 303) : c.text(r, decisionStatus[r]);
   });
 
-  app.get("/arbiter", (c) => {
+  app.get("/legacy/arbiter", (c) => {
     const rows = board.challenges.open().map((ch) => {
       const label = templates[board.document(ch.documentId)!.template]!.fields.find((f) => f.name === ch.field)!.label;
       const d = ch.challenged;
@@ -187,12 +193,20 @@ export function webApp(board: JobBoard): Hono {
     return c.html(
       layout(
         "Arbiter",
-        html`<p><a href="/">All Documents</a></p><h1>Open Challenges</h1>
+        html`<p><a href="/legacy">All Documents</a></p><h1>Open Challenges</h1>
           ${rows.length
             ? html`<table><tr><th>Document</th><th>Field</th><th>Delivered</th><th>Claimed Correct</th><th>Page</th><th>Quote</th><th></th></tr>${rows}</table>`
             : html`<p class="muted">No open Challenges.</p>`}`,
       ),
     );
+  });
+
+  // The front end (web/, built by `npm run build`): static files, then index.html for every other GET (client routes).
+  app.use("*", serveStatic({ root: spaRoot }));
+  app.get("*", async (c) => {
+    if (/^\/(api|mcp|legacy)(\/|$)|\.\w+$/.test(c.req.path)) return c.notFound();
+    const index = await readFile(join(spaRoot, "index.html"), "utf8").catch(() => null);
+    return index ? c.html(index) : c.text("Front end not built: run `npm run build`.", 404);
   });
 
   return app;
