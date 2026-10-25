@@ -43,10 +43,9 @@ export function shown(f: ApiField): string {
 /** FieldRow shows `display`; give it shown() so rows read "220 Ah · rated" like the prototype. */
 export const withShown = (f: ApiField): ApiField => ("display" in f ? { ...f, display: shown(f) } : f);
 
-/** The Compare tab: the first two Pipelines side by side; `diff` is the server's canonical comparison. */
+/** The Compare tab: every Pipeline side by side, ours, the Baseline's and any outside Operator's; `diff` is the server's canonical comparison. */
 export function compare(d: ApiDocument) {
-  const [a, b] = d.views;
-  const rows = a!.fields.map((f, i) => ({ name: f.name, label: f.label, values: [shown(f), b ? shown(b.fields[i]!) : "—"], diff: d.differs.includes(f.name) }));
+  const rows = d.views[0]!.fields.map((f, i) => ({ name: f.name, label: f.label, values: d.views.map((v) => shown(v.fields[i]!)), diff: d.differs.includes(f.name) }));
   const n = rows.filter((r) => r.diff).length;
   return { rows, summary: `${n} difference${n === 1 ? "" : "s"} in ${rows.length} Fields. Click a row to see its quote.` };
 }
