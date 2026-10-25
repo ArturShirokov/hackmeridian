@@ -15,7 +15,8 @@ import { webApp, type WebOptions } from "../src/web.js";
 type UnionToIntersection<U> = (U extends unknown ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
 /** An ApiField with every variant's keys optional, so tests read them without narrowing. */
 export type Field = Pick<ApiField, "name" | "label" | "tieBreak" | "status"> &
-  Partial<Omit<UnionToIntersection<ApiField>, "name" | "label" | "tieBreak" | "status">>;
+  Partial<UnionToIntersection<DistOmit<ApiField, "name" | "label" | "tieBreak" | "status">>>;
+type DistOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 type PipelineView = Omit<ApiPipelineView, "fields"> & { fields: Field[] };
 
 export function startBoard(
