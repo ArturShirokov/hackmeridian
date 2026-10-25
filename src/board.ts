@@ -28,9 +28,44 @@ const stated = z.strictObject({
   quote: z.string().min(1),
 });
 const notStated = z.strictObject({ field: z.string(), notStated: z.literal(true) });
-const extractionResult = z.strictObject({ fields: z.array(z.union([stated, notStated])) });
-
 export type FieldValue = z.infer<typeof stated> | z.infer<typeof notStated>;
+// Pick the entry shape by `notStated` so errors name the bad key instead of "Invalid input" from a union.
+const entry = z.looseObject({}).transform((v, ctx): FieldValue => {
+  const r = ("notStated" in v ? notStated : stated).safeParse(v);
+  if (!r.success) for (const i of r.error.issues) ctx.addIssue(i as never);
+  return r.success ? r.data : z.NEVER;
+});
+const extractionResult = z.strictObject(
+  { fields: z.array(entry) },
+  { error: "result must be { fields: [ { field, value, unit, qualifier, page, quote } or { field, notStated: true } ] }" },
+);
+
+/** Every Template Field exactly once, each value shaped for its Field type. Returns one line per problem. */
+function checkAgainstTemplate(values: FieldValue[], template: Template, pages: number): string[] {
+  const problems: string[] = [];
+  const seen = new Set<string>();
+  for (const v of values) {
+    const f = template.fields.find((f) => f.name === v.field);
+    if (!f) problems.push(`unknown Field "${v.field}"`);
+    else if (seen.has(v.field)) problems.push(`Field "${v.field}" given more than once`);
+    seen.add(v.field);
+    if (!f || !("value" in v)) continue;
+    const at = `Field "${f.name}":`;
+    const isNumber = typeof v.value === "number";
+    const isRecord = typeof v.value === "object";
+    if (f.type === "quantity" && !isNumber) problems.push(`${at} a quantity value must be a number`);
+    if (f.type === "composition" && !isRecord) problems.push(`${at} a composition value must be { fibre: percent }`);
+    if (f.type !== "quantity" && f.type !== "composition" && typeof v.value !== "string")
+      problems.push(`${at} a ${f.type} value must be a string`);
+    if (f.type === "quantity" && !v.unit) problems.push(`${at} a quantity needs a unit`);
+    if (v.qualifier && !f.qualifiers?.includes(v.qualifier as never))
+      problems.push(`${at} qualifier "${v.qualifier}" not allowed (allowed: ${f.qualifiers?.join(", ") || "none"})`);
+    if (v.page > pages) problems.push(`${at} page ${v.page} but the Document has ${pages} pages`);
+  }
+  const missing = template.fields.filter((f) => !seen.has(f.name)).map((f) => f.name);
+  if (missing.length) problems.push(`missing Fields (give each a value or notStated): ${missing.join(", ")}`);
+  return problems;
+}
 
 export type SubmitOutcome = { ok: true } | { ok: false; error: string };
 
@@ -130,8 +165,11 @@ export class JobBoard {
     if (s.done) return { ok: false, error: `Job "${jobId}" was already submitted` };
     const parsed = extractionResult.safeParse(result);
     if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+    const doc = this.docs.get(s.job.documentId)!;
+    const problems = checkAgainstTemplate(parsed.data.fields, doc.template, doc.text.length);
+    if (problems.length) return { ok: false, error: problems.join("\n") };
     s.done = true;
-    this.docs.get(s.job.documentId)!.delivered.set(s.pipeline, parsed.data.fields);
+    doc.delivered.set(s.pipeline, parsed.data.fields);
     return { ok: true };
   }
 

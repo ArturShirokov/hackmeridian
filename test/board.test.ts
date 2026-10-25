@@ -35,3 +35,32 @@ test("a Worker does the Baseline extraction Job and the Brand sees its Field val
   expect((await brand.page(`/documents/${docId}`)).text).toContain("Rated capacity: 220 Ah");
   expect(await w1.nextJob()).toBeNull();
 });
+
+test("a malformed submission is rejected with what is wrong, and the Worker can fix it and resubmit", async () => {
+  const { worker, brand } = startBoard();
+  const docId = await brand.upload(await sheet());
+  const w1 = await worker("w1");
+  const job = (await w1.nextJob())!;
+  const capacity = { value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah" };
+  const full = extraction(job, { rated_capacity_ah: capacity });
+
+  const cases: [unknown, RegExp][] = [
+    [{ fields: full.fields.filter((f) => f.field !== "battery_chemistry") }, /missing.*battery_chemistry/],
+    [{ fields: [...full.fields, { field: "colour", notStated: true }] }, /unknown Field "colour"/],
+    [{ fields: [...full.fields, { field: "name", notStated: true }] }, /"name" given more than once/],
+    [extraction(job, { rated_capacity_ah: { ...capacity, value: "220" } }), /rated_capacity_ah.*number/],
+    [extraction(job, { rated_capacity_ah: { ...capacity, unit: undefined } }), /rated_capacity_ah.*unit/],
+    [extraction(job, { rated_capacity_ah: { ...capacity, qualifier: "peak" } }), /rated_capacity_ah.*qualifier "peak"/],
+    [extraction(job, { rated_capacity_ah: { ...capacity, page: 5 } }), /rated_capacity_ah.*page 5.*2 pages/],
+    [extraction(job, { rated_capacity_ah: { ...capacity, quote: undefined } }), /quote/],
+    ["just text", /fields/],
+  ];
+  for (const [result, message] of cases) {
+    const r = await w1.submitJob(job.id, result);
+    expect(r.ok, JSON.stringify(result).slice(0, 200)).toBe(false);
+    expect(r.text).toMatch(message);
+  }
+  expect((await brand.document(docId)).fields.find((f) => f.name === "rated_capacity_ah")).not.toHaveProperty("value");
+
+  expect(await w1.submitJob(job.id, full)).toMatchObject({ ok: true });
+});
