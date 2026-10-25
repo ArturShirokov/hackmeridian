@@ -2,8 +2,9 @@
 // the Brand through web.ts. It touches the outside world only through the Storage and Ledger adapters.
 import { createHash, randomUUID } from "node:crypto";
 import * as z from "zod";
-import { converge, type FieldResult } from "./converge.js";
-import type { EscrowRequest, Ledger } from "./ledger.js";
+import { Challenges } from "./challenges.js";
+import { compositionSum, converge, type FieldResult } from "./converge.js";
+import { slashes, type EscrowRequest, type Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
@@ -64,6 +65,10 @@ function checkAgainstTemplate(values: FieldValue[], template: Template, pages: n
     const isRecord = typeof v.value === "object";
     if (f.type === "quantity" && !isNumber) problems.push(`${at} a quantity value must be a number`);
     if (f.type === "composition" && !isRecord) problems.push(`${at} a composition value must be { fibre: percent }`);
+    if (f.type === "composition" && isRecord) {
+      const sum = compositionSum(v.value as Record<string, number>);
+      if (sum !== 100) problems.push(`${at} fibre percentages must add up to 100, these add up to ${sum}`);
+    }
     if (f.type !== "quantity" && f.type !== "composition" && typeof v.value !== "string")
       problems.push(`${at} a ${f.type} value must be a string`);
     if (f.type === "quantity" && !v.unit) problems.push(`${at} a quantity needs a unit`);
@@ -98,6 +103,8 @@ interface Escrow extends EscrowRequest {
   /** When the Challenge Window closes, in ms since the epoch. */
   closesAt: number;
   status: "open" | "settling" | "settled";
+  /** Paid to the Brand at settlement, one per upheld Challenge. */
+  slashes?: string[];
 }
 
 interface JobState {
@@ -131,6 +138,7 @@ export class JobBoard {
   private challengeWindowMs: number;
   /** Keyed by `${documentId} ${pipeline}`. */
   private escrows = new Map<string, Escrow>();
+  readonly challenges = new Challenges();
 
   constructor(opts: {
     storage: Storage;
@@ -304,18 +312,34 @@ export class JobBoard {
 
   /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
   async tick(): Promise<void> {
-    for (const e of this.escrows.values()) {
+    for (const [key, e] of this.escrows) {
       if (e.status !== "open" || this.now() < e.closesAt) continue;
-      // ponytail: no Challenges exist yet, so every closed window settles clean; slashes come with Challenges.
+      const [documentId, pipeline] = key.split(" ") as [string, string];
+      if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
+      const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
       e.status = "settling";
       try {
-        await this.ledger.settleClean(e.escrowId);
+        if (s.length) await this.ledger.settleWithSlashes(e.escrowId, s);
+        else await this.ledger.settleClean(e.escrowId);
         e.status = "settled";
+        if (s.length) e.slashes = s;
       } catch (err) {
         e.status = "open";
         console.error(`settling escrow ${e.escrowId} failed:`, err);
       }
     }
+  }
+
+  /** File a Challenge against a delivered Field, only while its Challenge Window is open. */
+  challenge(documentId: string, raw: unknown, pipeline = this.pipelines[0]!.name) {
+    const d = this.docs.get(documentId);
+    const e = this.escrows.get(`${documentId} ${pipeline}`);
+    const delivered = d?.delivered.get(pipeline);
+    if (!d || !e || !delivered) return { ok: false as const, reason: "not found" as const, error: "no delivered Document with that id" };
+    if (e.status !== "open" || this.now() >= e.closesAt)
+      return { ok: false as const, reason: "closed" as const, error: "the Challenge Window has closed" };
+    const r = this.challenges.file({ documentId, pipeline, template: d.template, pages: d.text.length, delivered }, raw);
+    return r.ok ? r : { ...r, reason: "invalid" as const };
   }
 
   documents(): DocumentMeta[] {
@@ -339,8 +363,11 @@ export class JobBoard {
         outputHash: e.outputHash,
         status: e.status === "settled" ? ("settled" as const) : ("open" as const),
         msLeft: Math.max(0, e.closesAt - this.now()),
+        ...(e.slashes && { slashes: e.slashes }),
       },
       fields: d.template.fields.map((f) => {
+        const corrected = this.challenges.correction(id, this.pipelines[0]!.name, f.name);
+        if (corrected) return { name: f.name, label: f.label, status: "final" as const, ...corrected };
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         return { name: f.name, label: f.label, ...v };
       }),
