@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { extraction, makePdf, startBoard } from "./seam.js";
+import { templates } from "../src/templates.js";
 
 const sheet = () => makePdf([["Voltaris NMC-800", "Rated capacity: 220 Ah"], ["Chemistry: NMC811"]]);
 const wrongCapacity = { value: 22, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah" };
@@ -13,6 +14,28 @@ async function deliver(opts: Parameters<typeof startBoard>[0] = {}) {
   expect(await w.submitJob(job.id, extraction(job, { rated_capacity_ah: wrongCapacity }))).toMatchObject({ ok: true });
   return { ...board, docId };
 }
+
+test("one Challenge per Field: a second one on the same Field is refused and never replaces the first", async () => {
+  const { brand, arbiter, docId } = await deliver({ challengeWindowMs: 60_000 });
+  const first = await brand.challenge(docId, capacityChallenge);
+  expect(first.status).toBe(201);
+  const second = await brand.challenge(docId, { ...capacityChallenge, value: 230 });
+  expect(second.status).toBe(409);
+  expect(second.body.error).toMatch(/already Challenged/);
+  // Another Field has its own.
+  expect((await brand.challenge(docId, { field: "battery_chemistry", page: 2, quote: "Chemistry: NMC811", value: "NMC811" })).status).toBe(201);
+  expect((await arbiter.challenges()).map((c) => c.field)).toEqual(["rated_capacity_ah", "battery_chemistry"]);
+  expect((await brand.document(docId)).fields.find((f) => f.name === "rated_capacity_ah")!.challenge).toMatchObject({ id: first.body.id, value: "220 Ah (rated)" });
+});
+
+test("after an Uphold, the corrected Field quotes the challenger's line, not the old evidence", async () => {
+  const { brand, arbiter, docId } = await deliver({ challengeWindowMs: 60_000 });
+  await brand.challenge(docId, { field: "rated_capacity_ah", page: 2, quote: "Chemistry: NMC811", value: 220, unit: "Ah" });
+  await arbiter.decide((await arbiter.challenges())[0]!.id, "upheld");
+  const f = (await brand.document(docId)).fields.find((f) => f.name === "rated_capacity_ah")!;
+  expect(f).toMatchObject({ display: "220 Ah", corrected: { was: "22 Ah (rated)" }, evidence: { page: 2, quote: "Chemistry: NMC811" } });
+  expect(f.evidence!.rects).toHaveLength(1);
+});
 
 test("one upheld and one rejected Challenge: the upheld one corrects the Field and Slashes one tenth of the Bond to the Brand", async () => {
   const board = await deliver({ challengeWindowMs: 60_000 });
@@ -82,7 +105,10 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
 test("Slashes are capped at the whole Bond", async () => {
   const board = await deliver({ operators: { baseline: { operator: "op", bond: "2.5", fee: "1" } } });
   const { brand, arbiter, docId } = board;
-  for (let i = 0; i < 12; i++) await brand.challenge(docId, capacityChallenge);
+  // One Challenge per Field, so twelve Fields.
+  const fields = templates.battery!.fields.filter((f) => f.type !== "composition").slice(0, 12);
+  for (const f of fields)
+    expect((await brand.challenge(docId, { field: f.name, page: 1, quote: "Rated capacity: 220 Ah", value: f.type === "quantity" ? 220 : "220" })).status).toBe(201);
   for (const c of await arbiter.challenges()) await arbiter.decide(c.id, "upheld");
 
   board.clock.advance(5 * 60_000);

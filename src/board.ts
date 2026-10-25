@@ -717,6 +717,9 @@ export class JobBoard {
     const deposit = this.challengeDeposit;
     const r = this.challenges.check({ documentId, pipeline, template: t.d.template, text: t.d.text, delivered: t.delivered }, rest, { challenger, deposit });
     if (!r.ok) return { ...r, reason: "invalid" as const };
+    // One Challenge per Field (per Operator): a second never replaces or resets the first.
+    if (this.challenges.of(documentId, pipeline).some((c) => c.field === r.challenge.field))
+      return { ok: false as const, reason: "challenged" as const, error: `Field "${r.challenge.field}" is already Challenged; it takes one Challenge` };
     // Filed first, so settlement waits for it (and returns its Deposit) even if the Window closes while it locks.
     this.challenges.add(r.challenge);
     try {
