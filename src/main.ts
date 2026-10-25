@@ -37,7 +37,18 @@ if (cache) {
   accuracy = Object.fromEntries(
     score(expected, deliveredBy(board, run.documents), (p) => board.operatorOf(p)).map((r) => [r.operator, { correct: r.correct, fields: r.fields }]),
   );
-} else board = new JobBoard({ storage: new InMemoryStorage(), ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
+} else {
+  board = new JobBoard({ storage: new InMemoryStorage(), ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
+  // State is in memory, so a restart starts empty. SEED_DOCUMENTS=<testdata PDF>,... uploads those on start so
+  // Workers find Jobs waiting. The Template comes from the file name (battery-… or textile-…).
+  for (const file of (process.env.SEED_DOCUMENTS ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
+    const supplier = file.split("-")[2] ?? "";
+    await board.upload(new Uint8Array(readFileSync(testdata(`documents/${file}`))), file.split("-")[0]!, {
+      name: file,
+      supplier: supplier.charAt(0).toUpperCase() + supplier.slice(1),
+    });
+  }
+}
 setInterval(() => board.poll().catch((e) => console.error("poll failed:", e)), 5000);
 setInterval(() => board.tick().catch((e) => console.error("settlement failed:", e)), 5000);
 

@@ -83,6 +83,7 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
     return c.json(await board.ledger.brandBalance(user.brand));
   });
 
+  app.get("/api/health", (c) => c.json({ ok: true, documents: board.documents().length }));
   app.get("/api/config", (c) => c.json(board.config()));
   app.get("/api/templates", (c) => c.json(apiTemplates));
   app.get("/api/documents", (c) => c.json(board.documentList()));
