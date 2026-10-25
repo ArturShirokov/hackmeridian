@@ -57,7 +57,13 @@ export function startBoard(
       return (await res.json()) as {
         id: string;
         template: string;
-        fields: { name: string; status: "converging" | "final" | "disagreeing"; value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean }[];
+        fields: {
+          name: string;
+          status: "converging" | "final" | "disagreeing" | "not stated";
+          value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean;
+          quotes?: { page: number; quote: string }[];
+          supplierRequest?: string;
+        }[];
         escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number };
       };
     },

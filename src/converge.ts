@@ -2,8 +2,13 @@
 import type { FieldValue } from "./board.js";
 import type { Field, Template } from "./templates.js";
 
-export type FieldStatus = "converging" | "final" | "disagreeing";
-export type FieldResult = (FieldValue & { status: "final" }) | { field: string; status: "disagreeing" };
+export type FieldStatus = "converging" | "final" | "disagreeing" | "not stated";
+export type Quote = { page: number; quote: string };
+export type FieldResult =
+  | (FieldValue & { status: "final" })
+  | { field: string; status: "disagreeing" }
+  /** Still split after the tie-break: every competing quote, for the Supplier Request. */
+  | { field: string; status: "not stated"; notStated: true; quotes: Quote[] };
 
 /** Factor from each accepted unit to the canonical one, keyed by spelling() of the canonical unit. */
 const units: Record<string, Record<string, number>> = {
@@ -92,15 +97,23 @@ function shown(f: Field, v: FieldValue): FieldValue {
 
 /**
  * Converge the extraction Sieves' results (one FieldValue[] per Sieve, in Pipeline order) Field by Field.
- * A single Sieve (the Baseline) is delivered as is. Several must all agree, else the Field is disagreeing.
+ * A single Sieve (the Baseline) is delivered as is. The first two must agree, else the Field is disagreeing.
+ * A third result is the tie-break and holds only the disagreeing Fields: a normal Field is final when it agrees
+ * with either earlier value, a high-stake Field only when it agrees with both (never 2 of 3). Else Not stated.
  */
 export function converge(template: Template, results: FieldValue[][], pages: string[]): FieldResult[] {
   const text = fold(pages.join(" "));
-  return template.fields.map((f) => {
-    const values = results.map((r) => r.find((v) => v.field === f.name)!);
+  return template.fields.map((f): FieldResult => {
+    const values = results.map((r) => r.find((v) => v.field === f.name));
     if (values.length === 1) return { ...values[0]!, status: "final" };
-    const keys = values.map((v) => key(f, v, text));
-    const agreed = keys[0] !== undefined && keys.every((k) => k === keys[0]);
-    return agreed ? { ...shown(f, values[0]!), status: "final" } : { field: f.name, status: "disagreeing" };
+    const [a, b, tie] = values as [FieldValue, FieldValue, FieldValue | undefined];
+    const [ka, kb] = [key(f, a, text), key(f, b, text)];
+    if (ka !== undefined && ka === kb) return { ...shown(f, a), status: "final" };
+    if (values.length === 2) return { field: f.name, status: "disagreeing" };
+    const kt = tie && key(f, tie, text);
+    const agreed = kt !== undefined && (f.highStake ? kt === ka && kt === kb : kt === ka || kt === kb);
+    if (agreed) return { ...shown(f, tie!), status: "final" };
+    const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
+    return { field: f.name, status: "not stated", notStated: true, quotes };
   });
 }

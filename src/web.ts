@@ -64,7 +64,12 @@ export function webApp(board: JobBoard): Hono {
     if (!d) return c.notFound();
     const rows = d.fields.map((f) => {
       const cells =
-        "notStated" in f
+        "supplierRequest" in f
+          ? html`<td colspan="5">Not stated. Competing quotes:
+              <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
+              Supplier Request:<br><textarea readonly rows="5" cols="70">${f.supplierRequest}</textarea>
+              <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
+          : "notStated" in f
           ? html`<td colspan="5" class="muted">Not stated</td>`
           : "value" in f
             ? html`<td>${typeof f.value === "object" ? JSON.stringify(f.value) : f.value}</td><td>${f.unit ?? ""}</td><td>${f.qualifier ?? ""}</td><td>${f.page}</td><td><q>${f.quote}</q></td>`

@@ -68,7 +68,10 @@ function checkAgainstTemplate(values: FieldValue[], template: Template, pages: n
   return problems;
 }
 
-export type SubmitOutcome = { ok: true } | { ok: false; error: string };
+/** Sieve kinds that extract Field values; a Worker does at most one of them per Document. */
+const extracts = (k: SieveKind) => k === "extract" || k === "tiebreak";
+
+export type SubmitOutcome ={ ok: true } | { ok: false; error: string };
 
 interface Doc {
   meta: DocumentMeta;
@@ -76,6 +79,8 @@ interface Doc {
   text: string[];
   /** Delivered Field values by Pipeline name, set once the Pipeline's last Sieve is handed in. */
   delivered: Map<string, FieldResult[]>;
+  /** Field values so far by Pipeline name, while a tie-break is still out. */
+  progress: Map<string, FieldResult[]>;
 }
 
 /** What an Operator puts up and is paid per Document, in USDC decimal strings. */
@@ -172,12 +177,12 @@ export class JobBoard {
     if (this.seen.has(meta.id)) return;
     this.seen.add(meta.id);
     const template = templates[meta.template]!;
-    this.docs.set(meta.id, { meta, template, text, delivered: new Map() });
+    this.docs.set(meta.id, { meta, template, text, delivered: new Map(), progress: new Map() });
     for (const p of this.pipelines) this.post(p, 0, meta.id);
   }
 
   /** Put the Job for Sieve `index` of Pipeline `p` on the board for this Document. */
-  private post(p: Pipeline, index: number, documentId: string) {
+  private post(p: Pipeline, index: number, documentId: string, fields?: string[]) {
     const d = this.docs.get(documentId)!;
     const sieve = p.sieves[index]!;
     this.jobs.push({
@@ -190,7 +195,7 @@ export class JobBoard {
         sieve: sieve.kind,
         view: sieve.view,
         instructions: sieve.instructions,
-        template: d.template,
+        template: fields ? { ...d.template, fields: d.template.fields.filter((f) => fields.includes(f.name)) } : d.template,
         document: { url: `${this.baseUrl}/documents/${documentId}/file`, text: d.text },
       },
     });
@@ -199,7 +204,7 @@ export class JobBoard {
   /** Sieves stay independent: a Worker does at most one extraction Sieve per Document and Pipeline. */
   private didExtraction(worker: string, j: JobState): boolean {
     return this.jobs.some(
-      (o) => o !== j && o.takenBy === worker && o.pipeline === j.pipeline && o.job.documentId === j.job.documentId && o.job.sieve === "extract",
+      (o) => o !== j && o.takenBy === worker && o.pipeline === j.pipeline && o.job.documentId === j.job.documentId && extracts(o.job.sieve),
     );
   }
 
@@ -210,7 +215,7 @@ export class JobBoard {
       (j) =>
         !j.done &&
         (!j.takenBy || now - j.takenAt! >= this.jobTimeoutMs) &&
-        !(j.job.sieve === "extract" && this.didExtraction(worker, j)),
+        !(extracts(j.job.sieve) && this.didExtraction(worker, j)),
     );
     if (!s) return null;
     s.takenBy = worker;
@@ -226,17 +231,27 @@ export class JobBoard {
     const parsed = extractionResult.safeParse(result);
     if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
     const doc = this.docs.get(s.job.documentId)!;
-    const problems = checkAgainstTemplate(parsed.data.fields, doc.template, doc.text.length);
+    const problems = checkAgainstTemplate(parsed.data.fields, s.job.template, doc.text.length);
     if (problems.length) return { ok: false, error: problems.join("\n") };
     s.done = true;
     s.result = parsed.data.fields;
     const p = this.pipelines.find((p) => p.name === s.pipeline)!;
-    if (s.sieve + 1 < p.sieves.length) {
-      this.post(p, s.sieve + 1, doc.meta.id);
-      return { ok: true };
-    }
-    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.job.sieve === "extract");
+    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && extracts(j.job.sieve));
     const fields = converge(doc.template, ran.map((j) => j.result!), doc.text);
+    const next = s.sieve + 1;
+    if (next < p.sieves.length) {
+      if (p.sieves[next]!.kind !== "tiebreak") {
+        this.post(p, next, doc.meta.id);
+        return { ok: true };
+      }
+      const split = fields.filter((f) => f.status === "disagreeing").map((f) => f.field);
+      // ponytail: tie-break assumed to be the last Sieve; no Sieve runs after it.
+      if (split.length) {
+        doc.progress.set(p.name, fields);
+        this.post(p, next, doc.meta.id, split);
+        return { ok: true };
+      }
+    }
     doc.delivered.set(p.name, fields);
     try {
       await this.openEscrow(doc, p.name, fields);
@@ -286,7 +301,8 @@ export class JobBoard {
   document(id: string) {
     const d = this.docs.get(id);
     if (!d) return undefined;
-    const values = d.delivered.get(this.pipelines[0]!.name) ?? [];
+    const p = this.pipelines[0]!.name;
+    const values = d.delivered.get(p) ?? d.progress.get(p) ?? [];
     const e = this.escrows.get(`${id} ${this.pipelines[0]!.name}`);
     return {
       id,
@@ -302,7 +318,12 @@ export class JobBoard {
       },
       fields: d.template.fields.map((f) => {
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
-        return { name: f.name, label: f.label, ...v };
+        if (v.status !== "not stated") return { name: f.name, label: f.label, ...v };
+        const quoted = v.quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
+        const supplierRequest =
+          `Please confirm "${f.label}" for Document ${id} (${d.meta.template}).` +
+          ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`;
+        return { name: f.name, label: f.label, ...v, supplierRequest };
       }),
     };
   }
