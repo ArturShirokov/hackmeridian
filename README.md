@@ -58,6 +58,8 @@ starter prompt. By hand:
 Then give the session [`agents/worker-prompt.md`](agents/worker-prompt.md) (a Worker) or
 [`agents/operator-prompt.md`](agents/operator-prompt.md) (an outside Operator, see
 [`docs/testing.md`](docs/testing.md#6-a-third-operator-joins-live)).
+The prompts long-poll (`next_job` / `list_open_documents` with `wait: 25`), so for a live demo start the agents a
+few minutes before, then upload: they pick the Document up within a second.
 
 **State:** Documents live on ICP and come back after a restart (the Job Board re-reads the Task and re-runs their
 Pipelines). Pipeline results, Challenges and the leaderboard are in memory and start again on a restart; escrows

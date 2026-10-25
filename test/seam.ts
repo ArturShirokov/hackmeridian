@@ -39,8 +39,22 @@ export function startBoard(
   const { explorer, web: webOpts, storage = new InMemoryStorage(), ...boardOpts } = opts;
   const ledger = new FakeLedger(explorer);
   let time = 0;
-  const clock = { advance: (ms: number) => void (time += ms) };
-  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, ...boardOpts });
+  /** Fake timers on the fake clock: advance fires the ones due. */
+  const timers = new Set<{ at: number; fn: () => void }>();
+  const clock = {
+    advance(ms: number) {
+      time += ms;
+      for (const t of [...timers]) if (t.at <= time) timers.delete(t), t.fn();
+    },
+    /** How many long-polls are waiting (each holds one timer). */
+    waiting: () => timers.size,
+  };
+  const setTimer = (ms: number, fn: () => void) => {
+    const t = { at: time + ms, fn };
+    timers.add(t);
+    return () => void timers.delete(t);
+  };
+  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, setTimer, ...boardOpts });
   const web = webApp(board, webOpts);
 
   async function worker(name: string) {
@@ -49,8 +63,9 @@ export function startBoard(
     const client = new Client({ name, version: "0" });
     await client.connect(clientT);
     return {
-      async nextJob(): Promise<Job | null> {
-        const r = await client.callTool({ name: "next_job", arguments: { worker: name } });
+      /** wait: long-poll for up to that many seconds; signal: abandon the call. */
+      async nextJob({ wait, signal }: { wait?: number; signal?: AbortSignal } = {}): Promise<Job | null> {
+        const r = await client.callTool({ name: "next_job", arguments: { worker: name, ...(wait !== undefined && { wait }) } }, { signal });
         if (r.isError) throw new Error(JSON.stringify(r.content));
         return (r.structuredContent as { job: Job | null }).job;
       },
@@ -87,8 +102,8 @@ export function startBoard(
     };
     return {
       address: operator,
-      async openDocuments() {
-        const r = await call("list_open_documents", {});
+      async openDocuments({ wait }: { wait?: number } = {}) {
+        const r = await call("list_open_documents", wait === undefined ? {} : { wait });
         return r.data!.documents as { id: string; template: { name: string; fields: { name: string }[] }; bond: string; fee: string }[];
       },
       claim: (documentId: string, signer = kp) => signed("claim_document", { documentId }, signer),
