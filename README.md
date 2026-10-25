@@ -170,8 +170,10 @@ needs at least four distinct Workers: two for our extraction Sieves, one for our
 
 ## Shift runner
 
-One command keeps four Workers on shift, each a headless harness: two on Claude Code with Sonnet (`claude/sonnet`)
-and two on Pi with Qwen (`pi/qwen3.8-max`). Four, because a Worker does at most one extraction per Document and a
+One command keeps four Workers on shift, each a headless harness: four Claude Code sessions with Sonnet
+(`claude/sonnet`). Pi with Qwen (`pi/qwen3.8-max`) is commented out on 25 Oct only because the OpenCode Go plan behind
+it hit its usage limit (`429 Go usage limit exceeded`); it did a 60-Field extraction in 154 s, so put it back when it has
+quota. Four, because a Worker does at most one extraction per Document and a
 Document can need four distinct extraction Workers: two for ours (Original and Markdown extraction), the tie-break and
 the Baseline. The OpenCode Workers (Kimi, DeepSeek) are commented out: on 25 Oct their 60-Field extractions ran past
 the 9-minute run limit, though they are fine for the Markdown and faithfulness Sieves. The runner is the MCP client,
@@ -216,7 +218,9 @@ lets the model run shell commands; Kimi did, to decompress the PDF). Nothing byp
 `$TMPDIR/shift-<id>-last-output.txt`.
 
 Smoke run on 25 Oct 2026, battery-02 on a local Job Board (both Pipelines): claude/sonnet took the Baseline's One-pass
-extraction (19 s) and our Markdown (12 s), pi/qwen3.8-max our Original extraction (67 s), all accepted first try.
+extraction (19 s) and our Markdown (12 s), pi/qwen3.8-max our Original extraction (67 s), all accepted first try. With four Claude Workers (25 Oct, 19:35): both Pipelines delivered battery-02 in 101 s, every
+Sieve run (Original 20 s, One-pass 20 s, Markdown 11 s, Faithfulness 7 s, Markdown extraction 42 s on retry, Tie-break
+11 s).
 opencode/kimi-k3 printed nothing on stdout for the Faithfulness check, twice in a row on two takes (88 s and 297 s),
 so the Job went back on the board each time. Diagnosed the same day on one real Faithfulness Job: with
 `--format json` the events showed Kimi reading job.json, then running shell commands to decode the PDF before
@@ -228,7 +232,7 @@ back under their ids within 2 s of the restart.
 
 1. Start the Job Board: `PORT=3100 npm start` (or point `--url` at the one you demo on).
 2. Start the shift a few minutes before your slot: `npx tsx scripts/shift.ts`. Four lines say `w1`...`w4` are on
-   shift, and the Job Board's Workers list shows them with harness and model ("w3 · Pi · qwen3.8-max").
+   shift, and the Job Board's Workers list shows them with harness and model ("w3 · Claude Code · sonnet").
 3. On stage, upload a Supplier PDF on `/` and pick its Template.
 4. Watch the terminal and the Document page: the Workers take the Original extraction, the Markdown, the
    faithfulness check, the Markdown extraction and the Baseline within a second of each other's hand-ins, one line per

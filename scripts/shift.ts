@@ -26,8 +26,11 @@ export interface WorkerConfig {
 export const defaultWorkers: WorkerConfig[] = [
   { harness: "claude", model: "sonnet" }, // claude-sonnet: Claude Code's alias for the latest Sonnet
   { harness: "claude", model: "sonnet" },
-  { harness: "pi", model: "opencode-go/qwen3.8-max" },
-  { harness: "pi", model: "opencode-go/qwen3.8-max" },
+  { harness: "claude", model: "sonnet" },
+  { harness: "claude", model: "sonnet" },
+  // Off on 25 Oct evening: the OpenCode Go plan behind these hit its usage limit (429 "Go usage limit exceeded").
+  // Put Pi back when it has quota; it did a 60-Field extraction in 154 s.
+  // { harness: "pi", model: "opencode-go/qwen3.8-max" },
   // 60-Field extractions ran past the 9-min run limit on 25 Oct; fine for Markdown/faithfulness.
   // { harness: "opencode", model: "opencode-go/kimi-k3" },
   // { harness: "opencode", model: "opencode-go/deepseek-v4-pro" },
