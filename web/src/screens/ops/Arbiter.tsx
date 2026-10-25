@@ -36,7 +36,7 @@ export function Arbiter() {
         </div>
         {data && (
           <div style={{ marginLeft: "auto", display: "flex", gap: 28, alignItems: "baseline" }}>
-            {([["Decided", data.record.decided, INK], ["Upheld", data.record.upheld, RED], ["Rejected", data.record.rejected, INK]] as const).map(([k, v, fg]) => (
+            {([["Decided", data.record.decided, INK], ["Upheld", data.record.upheld, RED], ["Rejected", data.record.rejected, INK], ["Earned · USDC", usdc(data.record.earned), "var(--money)"]] as const).map(([k, v, fg]) => (
               <span key={k} style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={label}>{k}</span>
                 <span style={{ font: "500 26px/1 var(--mono)", color: fg }}>{v}</span>

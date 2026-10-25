@@ -23,13 +23,14 @@ function serve(routes: Record<string, unknown>) {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 test("with nothing open the Arbiter desk shows its record and the empty state", async () => {
-  serve({ "/api/challenges": { open: [], decided: [], record: { decided: 3, upheld: 1, rejected: 2 } } });
+  serve({ "/api/challenges": { open: [], decided: [], record: { decided: 3, upheld: 1, rejected: 2, earned: "2.1" } } });
   render(<Arbiter />);
   expect(await screen.findByText("No open Challenges.")).toBeTruthy();
   expect(screen.getByText("Bonds are settling automatically.")).toBeTruthy();
   expect(screen.getByText("Decided").nextSibling?.textContent).toBe("3");
   expect(screen.getByText("Upheld").nextSibling?.textContent).toBe("1");
   expect(screen.getByText("Rejected").nextSibling?.textContent).toBe("2");
+  expect(screen.getByText("Earned · USDC").nextSibling?.textContent).toBe("2.10");
 });
 
 test("the Job Board shows a timed-out take as its own row, the Sieves of each Pipeline and the real MCP command", async () => {

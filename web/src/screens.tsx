@@ -192,6 +192,12 @@ export function Review({ id }: { id: string }) {
           <SidePanel open={!!panel} onClose={() => setPanel(undefined)} title="Challenge a Field">
             <div style={{ padding: "20px 22px", font: "400 15px/1.5 var(--sans)" }}>
               {panel?.pick ? <>Picked p. {panel.pick.page}: “{panel.pick.quote}”</> : "Click the line on the Document that states the value."} The form comes in ticket 3.
+              {config && (
+                <p style={{ margin: "14px 0 0", font: "400 14px/1.45 var(--sans)" }}>
+                  Filing locks a Challenge Deposit of <b style={{ fontFamily: "var(--mono)" }}>{usdc(config.challengeDeposit)} USDC</b>.
+                  It comes back if the Arbiter upholds the Challenge, and pays the Arbiter if it is rejected.
+                </p>
+              )}
             </div>
           </SidePanel>
         </div>
