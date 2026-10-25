@@ -78,3 +78,11 @@ button, input, textarea, select { font-family: inherit; }
   .om-mobile-only { display: none !important; }
   .om-app { min-width: 1180px; }
 }
+
+/* Landing: the demo card lifts on hover; the grids stack on narrow screens. */
+.om-land-card:hover > div { box-shadow: 0 0 0 3px var(--ink); }
+@media (max-width: 899px) {
+  .om-land-2, .om-land-3, .om-land-4 { grid-template-columns: minmax(0, 1fr) !important; }
+  .om-land-2, .om-land-head, .om-land section > div, .om-land footer { padding-left: 16px !important; padding-right: 16px !important; }
+  .om-land-2 h1 { font-size: 40px !important; }
+}
