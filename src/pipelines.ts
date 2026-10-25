@@ -1,6 +1,7 @@
 // Pipeline configuration as data: each Pipeline is an ordered list of Sieves.
-export type SieveKind = "extract";
-export type View = "original";
+export type SieveKind = "extract" | "markdown" | "faithfulness";
+/** original: the PDF and its text layer. markdown: the checked Markdown. mix: both, for checking one against the other. */
+export type View = "original" | "markdown" | "mix";
 
 export interface Sieve {
   kind: SieveKind;
@@ -21,6 +22,18 @@ For every Field in template.fields, give exactly one entry in result.fields:
   page: 1-based page number. quote: the exact words from that page that state the value.
 - { field, notStated: true } when the Document does not clearly give it. Never guess.`;
 
+const extractFromMarkdown = `Read document.markdown, a checked Markdown version of the Document. Do not open document.url.
+${extractFromOriginal.split("\n").slice(1).join("\n")}
+  page: from the <!-- page N --> marks in the Markdown. quote: the Document's words only, without Markdown syntax (| # * -).`;
+
+const toMarkdown = `Open document.url and turn the whole Document into normalised Markdown.
+Keep every fact, number, unit and qualifier exactly as written; tables become Markdown tables; start each page with <!-- page N -->.
+Add nothing, summarise nothing, fix nothing. Hand in { markdown: "..." }.`;
+
+const faithfulness = `Check document.markdown against the original (document.url, document.text) line by line.
+Look for any value, unit, qualifier, name or table cell the Markdown drops, changes, moves to the wrong row or adds.
+Hand in { pass: true } when it is faithful, or { pass: false, problems: ["..."] } naming each problem found.`;
+
 export const baseline: Pipeline = {
   name: "baseline",
   sieves: [{ kind: "extract", view: "original", instructions: extractFromOriginal }],
@@ -31,6 +44,9 @@ export const ours: Pipeline = {
   name: "ours",
   sieves: [
     { kind: "extract", view: "original", instructions: extractFromOriginal },
-    { kind: "extract", view: "original", instructions: extractFromOriginal }, // #9 switches this to the checked Markdown
+    { kind: "markdown", view: "original", instructions: toMarkdown },
+    // A fail reruns the Markdown Sieve before it, once.
+    { kind: "faithfulness", view: "mix", instructions: faithfulness },
+    { kind: "extract", view: "markdown", instructions: extractFromMarkdown },
   ],
 };

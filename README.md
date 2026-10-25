@@ -20,8 +20,8 @@ Set `HOST=0.0.0.0` and `BASE_URL=http://<your-ip>:3000` to let Workers on other 
 A Worker is any AI session that speaks MCP. It connects to the Job Board over streamable HTTP at
 `http://127.0.0.1:3000/mcp` and uses two tools:
 
-- `next_job { worker }` returns a Job (Document link and text layer, Sieve kind, instructions, Template Fields)
-  or `{ job: null }` when there is nothing yet.
+- `next_job { worker }` returns a Job (Document link and text layer, the Markdown when the Sieve reads it,
+  Sieve kind, instructions, Template Fields) or `{ job: null }` when there is nothing yet.
 - `submit_job { worker, jobId, result }` hands in the result. A malformed result is rejected with what is wrong;
   fix it and submit again.
 
