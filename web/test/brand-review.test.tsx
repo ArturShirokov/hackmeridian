@@ -127,6 +127,12 @@ test("a Not stated Field the Brand provides says so instead of offering a Suppli
   expect(screen.queryByText("Copy Supplier Request")).toBeNull();
 });
 
+test("the Trace tab draws a Span tree, sub-agents nested under their parent", async () => {
+  const { TraceView } = await import("../src/screens/brand/views.tsx");
+  render(<TraceView spans={[{ label: "Extraction", view: "original", model: "claude", start: 0, end: 100, children: [{ label: "Table reader", view: "Markdown", model: "script", result: "3 tables", start: 10, end: 40 }] }]} />);
+  expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Extractionoriginal · claude", "↳ Table readerMarkdown · script · 3 tables"]);
+});
+
 test("arrow keys move between rows and C opens a Challenge on the selected Field", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.keyDown(window, { key: "ArrowDown" });

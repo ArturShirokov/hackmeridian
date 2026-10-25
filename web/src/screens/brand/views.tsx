@@ -7,13 +7,13 @@ const INK = "#141414", MUTED = "#3D3A34";
 export const VIEWS = ["Review", "JSON", "Markdown", "Source Markdown", "Trace"] as const;
 export type View = (typeof VIEWS)[number];
 
-/** A Span as #18 reports it, nested: sub-agents are children. */
+/** A Span as #18 reports it (ApiSpan), nested by parent into a tree: sub-agents are children. Fits SpanNode from spanTree(). */
 export interface TraceSpan {
   label: string;
   /** What it looked at: original, Markdown, a script's output… */
-  input?: string;
+  view?: string;
   /** The model or tool used. */
-  tool?: string;
+  model?: string;
   result?: string;
   start: number;
   end?: number;
@@ -109,7 +109,7 @@ export function TraceView({ spans }: { spans?: TraceSpan[] }) {
             <div role="listitem" key={i} style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 40%", gap: 12, alignItems: "center", padding: `6px 20px 6px ${20 + depth * 18}px`, borderBottom: "1px solid var(--rule-row)" }}>
               <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                 <span style={{ font: "600 14px/1.3 var(--sans)" }}>{depth > 0 && "↳ "}{s.label}</span>
-                <span style={{ font: "400 12px/1.3 var(--mono)", color: MUTED }}>{[s.input, s.tool, s.result].filter(Boolean).join(" · ")}</span>
+                <span style={{ font: "400 12px/1.3 var(--mono)", color: MUTED }}>{[s.view, s.model, s.result].filter(Boolean).join(" · ")}</span>
               </span>
               <span style={{ position: "relative", height: 10, background: "var(--band)" }}>
                 <span style={{ position: "absolute", top: 0, bottom: 0, left: `${((s.start - t0) / span) * 100}%`, width: `${Math.max(1, (((s.end ?? s.start) - s.start) / span) * 100)}%`, background: INK }} />

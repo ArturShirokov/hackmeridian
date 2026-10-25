@@ -1,6 +1,6 @@
 // Brand: the Document review. Money and status bar, the Document viewer (left), Operator tabs with Fields,
 // Not stated cards and Compare (right), the Challenge side panel, Supplier Request and Export modals.
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, usePoll, ApiFailure, type ApiConfig, type ApiDocument, type ApiField, type ApiPipelineView, type ApiTemplate, type ChallengeBody } from "../../api.ts";
 import { navigate } from "../../router.tsx";
 import { shortHash, splitMark, usdc } from "../../format.ts";
@@ -62,9 +62,13 @@ export function ReviewView({ d, config, offset, template, file }: {
     const p = pageOf(fields.find((f) => f.name === name)!);
     if (p) setPage(p);
   };
-  // A Field picked on the Document, or by keys, scrolls its row (or its Not stated card and quotes) into view.
+  // A Field picked on the Document, or by keys, scrolls its row (or its Not stated card and quotes) into view;
+  // the page's default first selection doesn't (a ?field= deep link does).
+  const prevSel = useRef(sel);
   useEffect(() => {
-    if (sel) document.querySelector(`[data-review] [data-field="${sel}"]`)?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
+    const was = prevSel.current;
+    prevSel.current = sel;
+    if (sel && (was !== undefined || q.get("field"))) document.querySelector(`[data-review] [data-field="${sel}"]`)?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
   }, [sel, tab]);
   const openPanel = (name: string) => {
     if (isCompare) return;
@@ -182,7 +186,7 @@ export function ReviewView({ d, config, offset, template, file }: {
             ))}
             <span style={{ marginLeft: "auto", alignSelf: "center", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingLeft: 8, font: "400 12px/1.3 var(--mono)", color: "#3D3A34" }}>↑ ↓ move · Enter quote · C Challenge</span>
           </div>
-          <div data-review style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+          <div data-review key={viewTab} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
             {viewTab === "JSON" ? <JsonView d={d} v={view} template={template} />
             : viewTab === "Markdown" ? <MarkdownView d={d} v={view} template={template} />
             : viewTab === "Source Markdown" ? <SourceMarkdown v={view} />
