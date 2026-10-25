@@ -123,6 +123,16 @@ export async function makePdf(pages: string[][]): Promise<Uint8Array> {
   return doc.save();
 }
 
+/** In our Pipeline: this Worker takes the Markdown Sieve, hands in `markdown`, then passes it in the faithfulness Sieve. */
+export async function checkedMarkdown(w: Awaited<ReturnType<ReturnType<typeof startBoard>["worker"]>>, markdown = "# Document") {
+  const md = (await w.nextJob())!;
+  if (md.sieve !== "markdown") throw new Error(`expected a Markdown Job, got ${md.sieve}`);
+  await w.submitJob(md.id, { markdown });
+  const check = (await w.nextJob())!;
+  if (check.sieve !== "faithfulness") throw new Error(`expected a faithfulness Job, got ${check.sieve}`);
+  await w.submitJob(check.id, { pass: true });
+}
+
 /** An extraction result saying Not stated for every Field of the Job, except the given values. */
 export function extraction(job: Job, values: Record<string, object> = {}) {
   return {

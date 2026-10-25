@@ -106,7 +106,6 @@ const fold = (s: string) => s.replace(/\s+/g, " ").trim();
 /** Comparison key of a value, or undefined when it can't converge (unnormalisable, or quote not in the text). */
 function key(f: Field, v: FieldValue, text: string): string | undefined {
   if (!("value" in v)) return "not stated";
-  // ponytail: a scan has no text layer, so every quote fails here; #9 checks against the checked Markdown instead.
   if (!text.includes(fold(v.quote))) return undefined;
   const c = canonical(f, v);
   return c === undefined ? undefined : JSON.stringify([c, v.qualifier ?? null]);
@@ -126,6 +125,7 @@ function shown(f: Field, v: FieldValue): FieldValue {
  * A single Sieve (the Baseline) is delivered as is. The first two must agree, else the Field is disagreeing.
  * A third result is the tie-break and holds only the disagreeing Fields: a normal Field is final when it agrees
  * with either earlier value, a high-stake Field only when it agrees with both (never 2 of 3). Else Not stated.
+ * `pages` is what quotes are checked against: the text layer, or the checked Markdown for a scan.
  */
 export function converge(template: Template, results: FieldValue[][], pages: string[]): FieldResult[] {
   const text = fold(pages.join(" "));

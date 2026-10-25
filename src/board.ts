@@ -18,7 +18,8 @@ export interface Job {
   view: View;
   instructions: string;
   template: Template;
-  document: { url: string; text: string[] };
+  /** markdown: the Markdown to check (faithfulness Sieve) or the checked Markdown (Sieves that read Markdown). */
+  document: { url: string; text: string[]; markdown?: string };
 }
 
 const stated = z.strictObject({
@@ -40,6 +41,13 @@ const entry = z.looseObject({}).transform((v, ctx): FieldValue => {
 const extractionResult = z.strictObject(
   { fields: z.array(entry) },
   { error: "result must be { fields: [ { field, value, unit, qualifier, page, quote } or { field, notStated: true } ] }" },
+);
+
+const markdownResult = z.strictObject({ markdown: z.string().trim().min(1) }, { error: 'result must be { markdown: "..." }' });
+const faithfulnessResult = z.discriminatedUnion(
+  "pass",
+  [z.strictObject({ pass: z.literal(true) }), z.strictObject({ pass: z.literal(false), problems: z.array(z.string().min(1)).min(1) })],
+  { error: 'result must be { pass: true } or { pass: false, problems: ["..."] }' },
 );
 
 /** Every Template Field exactly once, each value shaped for its Field type. Returns one line per problem. */
@@ -109,7 +117,12 @@ interface JobState {
   pipeline: string;
   /** Index of the Job's Sieve in its Pipeline. */
   sieve: number;
+  /** Extraction Sieves: the Field values. */
   result?: FieldValue[];
+  /** Markdown Sieve: the Markdown text. */
+  markdown?: string;
+  /** Faithfulness Sieve: whether the Markdown passed. */
+  pass?: boolean;
   takenBy?: string;
   takenAt?: number;
   done: boolean;
@@ -193,6 +206,7 @@ export class JobBoard {
   private post(p: Pipeline, index: number, documentId: string, fields?: string[]) {
     const d = this.docs.get(documentId)!;
     const sieve = p.sieves[index]!;
+    const markdown = sieve.view === "original" ? undefined : this.latestMarkdown(p.name, documentId);
     this.jobs.push({
       pipeline: p.name,
       sieve: index,
@@ -204,9 +218,14 @@ export class JobBoard {
         view: sieve.view,
         instructions: sieve.instructions,
         template: fields ? { ...d.template, fields: d.template.fields.filter((f) => fields.includes(f.name)) } : d.template,
-        document: { url: `${this.baseUrl}/documents/${documentId}/file`, text: d.text },
+        document: { url: `${this.baseUrl}/documents/${documentId}/file`, text: d.text, ...(markdown !== undefined && { markdown }) },
       },
     });
+  }
+
+  /** The last Markdown handed in for this Document and Pipeline; checked once a faithfulness Sieve after it passed. */
+  private latestMarkdown(pipeline: string, documentId: string): string | undefined {
+    return this.jobs.findLast((j) => j.pipeline === pipeline && j.job.documentId === documentId && j.markdown !== undefined)?.markdown;
   }
 
   /** Sieves stay independent: a Worker does at most one extraction Sieve per Document and Pipeline. */
@@ -236,22 +255,43 @@ export class JobBoard {
     if (!s) return { ok: false, error: `unknown Job "${jobId}"` };
     if (s.takenBy !== worker) return { ok: false, error: `Job "${jobId}" is not taken by Worker "${worker}"` };
     if (s.done) return { ok: false, error: `Job "${jobId}" was already submitted` };
-    const parsed = extractionResult.safeParse(result);
-    if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
     const doc = this.docs.get(s.job.documentId)!;
-    const problems = checkAgainstTemplate(parsed.data.fields, s.job.template, doc.text.length);
-    if (problems.length) return { ok: false, error: problems.join("\n") };
-    s.done = true;
-    s.result = parsed.data.fields;
     const p = this.pipelines.find((p) => p.name === s.pipeline)!;
-    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && extracts(j.job.sieve));
-    const fields = converge(doc.template, ran.map((j) => j.result!), doc.text);
+    if (s.job.sieve === "markdown") {
+      const parsed = markdownResult.safeParse(result);
+      if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+      s.markdown = parsed.data.markdown;
+    } else if (s.job.sieve === "faithfulness") {
+      const parsed = faithfulnessResult.safeParse(result);
+      if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+      s.pass = parsed.data.pass;
+    } else {
+      const parsed = extractionResult.safeParse(result);
+      if (!parsed.success) return { ok: false, error: z.prettifyError(parsed.error) };
+      const problems = checkAgainstTemplate(parsed.data.fields, s.job.template, doc.text.length);
+      if (problems.length) return { ok: false, error: problems.join("\n") };
+      s.result = parsed.data.fields;
+    }
+    s.done = true;
+    if (s.pass === false) {
+      // A failed check reruns the Markdown Sieve before it, once. A second fail stops this Pipeline for the Document.
+      // ponytail: the Document then stays converging with no delivery; add a fallback (all Not stated) if demos hit it.
+      const md = p.sieves.findLastIndex((v, i) => i < s.sieve && v.kind === "markdown");
+      const runs = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.sieve === md).length;
+      if (md >= 0 && runs < 2) this.post(p, md, doc.meta.id);
+      return { ok: true };
+    }
     const next = s.sieve + 1;
+    if (next < p.sieves.length && p.sieves[next]!.kind !== "tiebreak") {
+      this.post(p, next, doc.meta.id);
+      return { ok: true };
+    }
+    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && extracts(j.job.sieve));
+    // A scan has no text layer, so quotes are checked against the checked Markdown instead.
+    const scan = doc.text.every((t) => !t.trim());
+    const markdown = this.latestMarkdown(p.name, doc.meta.id);
+    const fields = converge(doc.template, ran.map((j) => j.result!), scan && markdown !== undefined ? [markdown] : doc.text);
     if (next < p.sieves.length) {
-      if (p.sieves[next]!.kind !== "tiebreak") {
-        this.post(p, next, doc.meta.id);
-        return { ok: true };
-      }
       const split = fields.filter((f) => f.status === "disagreeing").map((f) => f.field);
       // ponytail: tie-break assumed to be the last Sieve; no Sieve runs after it.
       if (split.length) {
