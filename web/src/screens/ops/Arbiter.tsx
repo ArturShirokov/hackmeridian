@@ -125,13 +125,14 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
   return (
     <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(0,5fr) minmax(0,4fr) minmax(320px,3fr)" }}>
       <div style={{ minHeight: 0, display: "flex", borderRight: `1px solid ${INK}` }}>
-        <DocumentViewer pdfUrl={fileUrl} page={page} onPage={setPage} onBoxClick={() => {}} boxes={evidenceBoxes(c)} caption={c.documentName} />
+        <DocumentViewer pdfUrl={fileUrl} page={page} onPage={setPage} onBoxClick={() => {}} boxes={evidenceBoxes(c, status)} caption={c.documentName} />
       </div>
 
       <div style={{ minHeight: 0, overflow: "auto", padding: "22px 26px", display: "flex", flexDirection: "column", gap: 20, borderRight: "1px solid var(--rule)" }}>
         <div style={{ font: "600 18px/1.2 var(--sans)" }}>{c.fieldLabel} <span style={{ fontWeight: 400, color: "#2A2723" }}>· {c.brand}</span></div>
-        <ValueBox title={`Delivered · ${c.operatorLabel}`} value={c.delivered.display} quote={c.delivered.evidence} border={`1.5px solid ${RED}`} color={RED} onPage={setPage} />
-        <ValueBox title={`Challenged · ${c.brand}`} value={c.claim.display} quote={c.claim.evidence} border={`1.5px solid ${INK}`} bg="#ECE5D3" onPage={setPage} />
+        {/* Neutral until the decision: no colour hints at a side. Then the losing value turns red. */}
+        <ValueBox title={`Delivered · ${c.operatorLabel}`} value={c.delivered.display} quote={c.delivered.evidence} onPage={setPage} {...tone(status, "rejected")} />
+        <ValueBox title={`Challenged · ${c.brand}`} value={c.claim.display} quote={c.claim.evidence} onPage={setPage} {...tone(status, "upheld")} />
         <div style={{ borderTop: `1px solid ${INK}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={{ ...label, fontSize: 11 }}>Template rule for this Field</span>
           <span style={{ font: "500 15px/1.5 var(--mono)" }}>{c.rule}</span>
@@ -193,6 +194,12 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
       </div>
     </div>
   );
+}
+
+/** A value box's look: neutral while filed; after the decision, the side it won on gets teal, the other red. */
+function tone(status: ApiChallenge["status"], wins: Decision) {
+  if (status === "filed") return { border: `1.5px solid ${INK}` };
+  return status === wins ? { border: "1.5px solid #0B4A57", bg: "#E3ECEE", color: "#0B4A57" } : { border: `1.5px solid ${RED}`, color: RED };
 }
 
 function ValueBox({ title, value, quote, border, bg, color, onPage }: {

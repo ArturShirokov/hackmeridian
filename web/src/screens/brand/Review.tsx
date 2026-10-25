@@ -2,7 +2,6 @@
 // Not stated cards and Compare (right), the Challenge side panel, Supplier Request and Export modals.
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, usePoll, ApiFailure, type ApiConfig, type ApiDocument, type ApiField, type ApiPipelineView, type ApiTemplate, type ChallengeBody } from "../../api.ts";
-import { navigate } from "../../router.tsx";
 import { shortHash, splitMark, usdc } from "../../format.ts";
 import { FieldRow, pageOf } from "../../components/FieldRow.tsx";
 import { DocumentViewer } from "../../components/DocumentViewer.tsx";
@@ -423,8 +422,7 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
               The Arbiter compares the Document with both values. The Field is marked Challenged until the decision. Your challenged value: <b style={{ font: "600 15px var(--mono)" }}>{filed.value}</b>, p. {filed.page}.
             </span>
             <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-              <button className="om-btn ghost" style={{ height: 42, padding: "0 16px" }} onClick={onClose}>Back to Document</button>
-              <button className="om-btn primary" style={{ height: 42, padding: "0 16px" }} onClick={() => navigate("/arbiter")}>Open Arbiter desk (demo)</button>
+              <button className="om-btn primary" style={{ height: 42, padding: "0 16px" }} onClick={onClose}>Back to Document</button>
             </div>
           </div>
         ) : closed ? (

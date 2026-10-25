@@ -20,6 +20,14 @@ test("the Arbiter sees both quotes boxed, or one box when the Brand quoted the d
   expect(evidenceBoxes({ ...c, delivered: { display: "Not stated" } }).map((b) => b.kind)).toEqual(["challenger"]);
 });
 
+test("the Arbiter's boxes stay neutral until the decision; then the losing side's turns red", () => {
+  const r = [{ x: 0.1, y: 0.2, w: 0.5, h: 0.02 }];
+  const c = { operatorLabel: "Baseline", fieldLabel: "Rated capacity", delivered: { display: "80 Ah", evidence: { page: 4, quote: "80 Ah nominal", rects: r } }, claim: { display: "78 Ah", evidence: { page: 4, quote: "78 Ah rated", rects: r } } };
+  expect(evidenceBoxes(c, "filed").map((b) => b.kind)).toEqual(["delivered", "challenger"]);
+  expect(evidenceBoxes(c, "upheld").map((b) => b.kind)).toEqual(["wrong", "right"]);
+  expect(evidenceBoxes(c, "rejected").map((b) => b.kind)).toEqual(["right", "wrong"]);
+});
+
 test("filed time reads like the prototype", () => {
   expect(ago(30_000)).toBe("just now");
   expect(ago(2 * 60_000 + 5_000)).toBe("2 min ago");

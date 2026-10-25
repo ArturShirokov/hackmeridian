@@ -10,15 +10,19 @@ export function ago(ms: number) {
 
 const norm = (q: string) => q.replace(/\s+/g, " ").trim().toLowerCase();
 
-/** The Arbiter's page boxes: the delivered quote in red, the challenger's in ink; one box when both quote the same line. */
-export function evidenceBoxes(c: Pick<ApiChallenge, "operatorLabel" | "fieldLabel" | "delivered" | "claim">): ViewerBox[] {
+/**
+ * The Arbiter's page boxes, one per quote (one when both quote the same line). Both are neutral until the decision,
+ * so nothing hints at a side; then the side that lost turns red ("wrong") and the other "right".
+ */
+export function evidenceBoxes(c: Pick<ApiChallenge, "operatorLabel" | "fieldLabel" | "delivered" | "claim">, status: ApiChallenge["status"] = "filed"): ViewerBox[] {
   const d = c.delivered.evidence, q = c.claim.evidence;
-  const challenger = (tag: string): ViewerBox => ({ id: "challenger", page: q.page, rects: q.rects, kind: "challenger", tag, title: `Challenger quote: ${q.quote}` });
-  if (!d) return [challenger("Challenger")];
-  if (d.page === q.page && norm(d.quote) === norm(q.quote)) return [challenger("Delivered + challenger quote")];
+  const side = (won: boolean, neutral: ViewerBox["kind"]): ViewerBox["kind"] => (status === "filed" ? neutral : won ? "right" : "wrong");
+  const challenger = (tag: string, kind: ViewerBox["kind"]): ViewerBox => ({ id: "challenger", page: q.page, rects: q.rects, kind, tag, title: `Challenger quote: ${q.quote}` });
+  if (!d) return [challenger("Challenger", side(status === "upheld", "challenger"))];
+  if (d.page === q.page && norm(d.quote) === norm(q.quote)) return [challenger("Delivered + challenger quote", "challenger")];
   return [
-    { id: "delivered", page: d.page, rects: d.rects, kind: "delivered", tag: `Delivered · ${c.operatorLabel}`, title: `Delivered quote: ${d.quote}` },
-    challenger("Challenger"),
+    { id: "delivered", page: d.page, rects: d.rects, kind: side(status === "rejected", "delivered"), tag: `Delivered · ${c.operatorLabel}`, title: `Delivered quote: ${d.quote}` },
+    challenger("Challenger", side(status === "upheld", "challenger")),
   ];
 }
 
