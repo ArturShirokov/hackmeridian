@@ -8,10 +8,12 @@ import { FakeLedger } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
 import { webApp } from "../src/web.js";
 
-export function startBoard() {
+export function startBoard(opts: { jobTimeoutMs?: number } = {}) {
   const storage = new InMemoryStorage();
   const ledger = new FakeLedger();
-  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test" });
+  let time = 0;
+  const clock = { advance: (ms: number) => void (time += ms) };
+  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, ...opts });
   const web = webApp(board);
 
   async function worker(name: string) {
@@ -56,7 +58,7 @@ export function startBoard() {
     },
   };
 
-  return { web, worker, brand, ledger };
+  return { web, worker, brand, ledger, clock };
 }
 
 /** A fixture PDF: one array of text lines per page. */
