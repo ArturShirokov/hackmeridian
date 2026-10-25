@@ -56,4 +56,35 @@ export const battery: Template = {
   ],
 };
 
-export const templates: Record<string, Template> = { battery };
+export const textile: Template = {
+  name: "textile",
+  label: "Textile",
+  fields: [
+    { name: "product_name", label: "Product / article name", type: "text" },
+    { name: "gtin", label: "GTIN / article number", type: "code" },
+    { name: "manufacturer_name", label: "Manufacturer name and address", type: "text" },
+    { name: "country_of_manufacture", label: "Country of manufacture (ISO 3166 alpha-2)", type: "code" },
+    { name: "production_date", label: "Production / issue date (YYYY-MM or YYYY-MM-DD)", type: "date" },
+    { name: "product_category", label: "Product category (e.g. T-shirt, denim trousers)", type: "text" },
+    {
+      name: "fibre_composition",
+      label: "Fibre composition, { fibre: percent by mass }, adding up to 100",
+      type: "composition",
+      unit: "%",
+      highStake: true,
+    },
+    q("recycled_content_percent", "Recycled content share of total mass", "%", ["minimum"], true),
+    { name: "recycled_fibre_type", label: "Recycled fibre and source (pre/post-consumer)", type: "text" },
+    q("carbon_footprint", "Carbon footprint per item", "kg CO2e", undefined, true),
+    q("water_usage", "Water usage per item", "L"),
+    q("fabric_weight", "Fabric weight", "g/m2", ["nominal", "typical"]),
+    { name: "certification_scheme", label: "Certification scheme (GRS, OEKO-TEX 100, GOTS, bluesign)", type: "code" },
+    { name: "certificate_number", label: "Certificate / licence number", type: "code" },
+    { name: "certificate_valid_until", label: "Certificate expiry date (YYYY-MM-DD)", type: "date" },
+    { name: "chemical_compliance", label: "Chemical compliance declaration (REACH SVHC, OEKO-TEX)", type: "text" },
+    { name: "care_instructions", label: "Care instructions", type: "text" },
+    { name: "durability_rating", label: "Durability rating / test result (e.g. pilling grade, Martindale cycles)", type: "text" },
+  ],
+};
+
+export const templates: Record<string, Template> = { battery, textile };
