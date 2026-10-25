@@ -1,5 +1,5 @@
 // Brand and Arbiter web pages, their JSON API, and the MCP endpoint, on one Hono app.
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { html } from "hono/html";
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import type { JobBoard } from "./board.js";
@@ -7,7 +7,9 @@ import { formatValue } from "./converge.js";
 import { buildMcpServer } from "./mcp.js";
 import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
-import type { ApiTemplate } from "./api.js";
+import type { ApiTemplate, ApiUser } from "./api.js";
+import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
+import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,7 +32,18 @@ const layout = (title: string, body: unknown) => html`<!doctype html>
 export interface WebOptions {
   /** Per Operator, scored against testdata/expected at startup (DEMO_REPLAY only). */
   accuracy?: Record<string, { correct: number; fields: number }>;
+  /** Signs the session cookie; without it, a random one per process (everyone signs in again after a restart). */
+  sessionSecret?: string;
 }
+
+/** The seeded demo users ("Sign in as"). Magic links, invites and settings are production work. */
+export const users: ApiUser[] = [
+  { id: "ines", name: "Inês Duarte", role: "brand", org: "Voltaris", sub: "Product Compliance, Voltaris", brand: "brand" },
+  { id: "arbiter", name: "Arbiter desk", role: "arbiter", org: "Arbiter", sub: "Neutral third party" },
+  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs the Origyn Pipeline", operator: "ours" },
+  { id: "baseline", name: "Baseline Operator", role: "operator", org: "Baseline", sub: "Runs the one-pass Baseline", operator: "baseline" },
+];
+const SESSION = "om-session";
 
 const apiTemplates: ApiTemplate[] = Object.values(templates).map((t) => ({
   name: t.name,
@@ -43,6 +56,32 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
   const app = new Hono();
   const mcp = createMcpHandler(() => buildMcpServer(board));
   app.all("/mcp", (c) => mcp.fetch(c.req.raw));
+
+  const secret = opts.sessionSecret ?? process.env.SESSION_SECRET ?? randomBytes(32).toString("hex");
+  const signedIn = async (c: Context) => {
+    const id = await getSignedCookie(c, secret, SESSION);
+    return users.find((u) => u.id === id) ?? null;
+  };
+  app.get("/api/users", (c) => c.json(users));
+  app.get("/api/session", async (c) => c.json({ user: await signedIn(c) }));
+  app.post("/api/session", async (c) => {
+    const { user: id } = ((await c.req.json().catch(() => null)) ?? {}) as { user?: unknown };
+    const user = users.find((u) => u.id === id);
+    if (!user) return c.json({ error: "no such user" }, 404);
+    await setSignedCookie(c, SESSION, user.id, secret, { path: "/", httpOnly: true, sameSite: "Lax" });
+    return c.json({ user });
+  });
+  app.delete("/api/session", (c) => {
+    deleteCookie(c, SESSION, { path: "/" });
+    return c.json({ user: null });
+  });
+
+  app.get("/api/balance", async (c) => {
+    const user = await signedIn(c);
+    if (!user) return c.json({ error: "sign in first" }, 401);
+    if (!user.brand || !board.ledger.brandBalance) return c.json({ error: "only a Brand has a balance" }, 403);
+    return c.json(await board.ledger.brandBalance(user.brand));
+  });
 
   app.get("/api/config", (c) => c.json(board.config()));
   app.get("/api/templates", (c) => c.json(apiTemplates));

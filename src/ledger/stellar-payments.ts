@@ -5,7 +5,7 @@
 // Challenge Deposits are paid into the same account, each in its own transaction.
 import type { Keypair } from "@stellar/stellar-sdk";
 import { addUsdc, settlement, type Deposit, type EscrowRequest, type Ledger, type Payee } from "../ledger.js";
-import { DepositAccount, Escrows, explorer, HORIZON_TESTNET, keyFor, paymentTx, USDC, type HorizonLike } from "./stellar.js";
+import { DepositAccount, Escrows, explorer, HORIZON_TESTNET, horizonUsdc, keyFor, paymentTx, USDC, type HorizonLike } from "./stellar.js";
 
 export type { HorizonLike };
 
@@ -142,6 +142,11 @@ export class StellarPaymentsLedger implements Ledger {
 
   private operator = (id: string) => keyFor(this.o.operators, "Operator", id);
   private brand = (id: string) => keyFor(this.o.brands, "Brand", id);
+
+  async brandBalance(id: string) {
+    const address = this.brand(id).publicKey();
+    return { usdc: await horizonUsdc(address, this.o.horizonUrl, this.o.fetch), link: explorer("account", address) };
+  }
 
   private async pay(action: string, from: Keypair, req: EscrowRequest, payments: [string, string][]) {
     const tx = await paymentTx(this.o.horizon, from.publicKey(), payments, req.outputHash);
