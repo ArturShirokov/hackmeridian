@@ -1,6 +1,7 @@
 // The one test seam: a Job Board with fake adapters, driven through its MCP tools (as Workers)
 // and its web API (as the Brand and the Arbiter), all in process.
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import type {
   ApiArbiter, ApiChallenge, ApiConfig, ApiDocument, ApiDocumentSummary, ApiField, ApiJob, ApiLeaderRow, ApiPipelineView, ApiTemplate, ApiWorker,
@@ -56,6 +57,43 @@ export function startBoard(
         const text = (r.content as { type: string; text: string }[]).map((c) => c.text).join("\n");
         return { ok: !r.isError, text };
       },
+    };
+  }
+
+  /** An outside Operator: its identity is its Stellar address, and it signs with its own key, which the board never sees. */
+  async function outsideOperator(kp = Keypair.random()) {
+    const [clientT, serverT] = InMemoryTransport.createLinkedPair();
+    await buildMcpServer(board).connect(serverT);
+    const client = new Client({ name: kp.publicKey(), version: "0" });
+    await client.connect(clientT);
+    const operator = kp.publicKey();
+    const call = async (name: string, args: Record<string, unknown>) => {
+      const r = await client.callTool({ name, arguments: { operator, ...args } });
+      const text = (r.content as { type: string; text: string }[]).map((c) => c.text).join("\n");
+      return { ok: !r.isError, text, data: r.structuredContent as Record<string, any> | undefined };
+    };
+    const sign = (xdr: string, signer: Keypair) => {
+      const tx = TransactionBuilder.fromXDR(xdr, Networks.TESTNET);
+      tx.sign(signer);
+      return tx.toXDR();
+    };
+    /** Call a tool that returns a transaction to sign, sign it with `signer` and hand it back with submit_signed. */
+    const signed = async (name: string, args: Record<string, unknown>, signer: Keypair) => {
+      const r = await call(name, args);
+      if (!r.ok) return r;
+      return call("submit_signed", { documentId: args.documentId, signedXdr: sign(r.data!.xdr, signer) });
+    };
+    return {
+      address: operator,
+      async openDocuments() {
+        const r = await call("list_open_documents", {});
+        return r.data!.documents as { id: string; template: { name: string; fields: { name: string }[] }; bond: string; fee: string }[];
+      },
+      claim: (documentId: string, signer = kp) => signed("claim_document", { documentId }, signer),
+      deliver: (documentId: string, fields: unknown, { signer = kp, trace }: { signer?: Keypair; trace?: unknown } = {}) =>
+        signed("deliver", { documentId, fields, ...(trace !== undefined && { trace }) }, signer),
+      reportSpan: (documentId: string, span: unknown) => call("report_span", { documentId, span }),
+      call,
     };
   }
 
@@ -134,7 +172,7 @@ export function startBoard(
   /** Run what main.ts runs every 5 s: settle escrows whose Challenge Window has closed. */
   const tick = () => board.tick();
 
-  return { web, worker, brand, arbiter, ledger, clock, tick };
+  return { web, worker, outsideOperator, brand, arbiter, ledger, clock, tick };
 }
 
 /** A fixture PDF: one array of text lines per page. */

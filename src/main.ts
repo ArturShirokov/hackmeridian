@@ -3,7 +3,8 @@
 // DEMO_REPLAY=<run file> starts from a cached run instead (fake Ledger, no models, no network).
 import { existsSync, readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
-import { deliveredBy, replay, score, type Expected } from "./accuracy.js";
+import { deliveredBy, score, type Expected } from "./accuracy.js";
+import { demoBoard } from "./demo.js";
 import { JobBoard } from "./board.js";
 import { baseline, ours } from "./pipelines.js";
 import { ledgerFromEnv } from "./ledger/env.js";
@@ -22,7 +23,7 @@ const testdata = (path: string) => new URL(`../testdata/${path}`, import.meta.ur
 let accuracy: WebOptions["accuracy"];
 let board: JobBoard;
 if (cache) {
-  const run = await replay(
+  const run = await demoBoard(
     JSON.parse(readFileSync(cache, "utf8")),
     async (file) => new Uint8Array(readFileSync(testdata(`documents/${file}`))),
     { now: Date.now, challengeWindowMs, baseUrl },

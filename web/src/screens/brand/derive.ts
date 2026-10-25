@@ -1,5 +1,5 @@
 // What the Brand screens derive from the API: Pipeline status, counters, row order, Compare, Challenge values.
-import type { ApiDocument, ApiEscrow, ApiField, ApiPipelineView, ApiTemplate, DocStatus } from "../../api.ts";
+import type { ApiDocument, ApiDocumentSummary, ApiEscrow, ApiField, ApiPipelineView, ApiTemplate } from "../../api.ts";
 import { usdc } from "../../format.ts";
 import { BADGE, type BadgeStatus } from "../../components/ui.tsx";
 import { badgeFor } from "../../components/FieldRow.tsx";
@@ -44,10 +44,9 @@ export function shown(f: ApiField): string {
 /** FieldRow shows `display`; give it shown() so rows read "220 Ah · rated" like the prototype. */
 export const withShown = (f: ApiField): ApiField => ("display" in f ? { ...f, display: shown(f) } : f);
 
-/** The Compare tab: the first two Pipelines side by side; `diff` is the server's canonical comparison. */
+/** The Compare tab: every Pipeline side by side, ours, the Baseline's and any outside Operator's; `diff` is the server's canonical comparison. */
 export function compare(d: ApiDocument) {
-  const [a, b] = d.views;
-  const rows = a!.fields.map((f, i) => ({ name: f.name, label: f.label, values: [shown(f), b ? shown(b.fields[i]!) : "—"], diff: d.differs.includes(f.name) }));
+  const rows = d.views[0]!.fields.map((f, i) => ({ name: f.name, label: f.label, values: d.views.map((v) => shown(v.fields[i]!)), diff: d.differs.includes(f.name) }));
   const n = rows.filter((r) => r.diff).length;
   return { rows, summary: `${n} difference${n === 1 ? "" : "s"} in ${rows.length} Fields. Click a row to see its quote.` };
 }
@@ -98,9 +97,46 @@ export function suggestions(docs: { supplier: string }[], typed: string) {
 
 export const windowLength = (ms: number) => (ms >= 3600_000 ? `${Math.round(ms / 3600_000)} h` : `${Math.round(ms / 60_000)} min`);
 
-const STATUS: Record<DocStatus, string> = { processing: "Processing", delivered: "Delivered", "awaiting arbiter": "Awaiting Arbiter", settled: "Settled" };
-export function listStatus(pipelines: Record<string, { status: DocStatus }>, labels: Record<string, string>) {
-  return Object.entries(pipelines).map(([p, { status }]) => `${labels[p] ?? p} ${STATUS[status]}`).join(" · ");
+export type ListStatus = "Processing" | "Delivered" | "Settled";
+
+/** A Documents list row. Final and Not stated are the lead (first) Pipeline's; Challenged counts every Pipeline. */
+export function docRow(d: ApiDocumentSummary) {
+  const ps = Object.values(d.pipelines);
+  const status: ListStatus = ps.some((p) => p.status === "processing") ? "Processing" : ps.every((p) => p.status === "settled") ? "Settled" : "Delivered";
+  const bonds = ps.map((p) => p.bond);
+  const bond = (["locked", "slashed", "released"] as const).find((b) => bonds.includes(b));
+  const open = ps.filter((p) => p.closesAt !== undefined && p.status !== "settled").map((p) => p.closesAt!);
+  const lead = ps[0]?.counts;
+  return {
+    status,
+    bond,
+    closesAt: open.length ? Math.max(...open) : undefined,
+    counts: { final: lead?.final ?? 0, notStated: lead?.notStated ?? 0, challenged: ps.reduce((n, p) => n + p.counts.challenged, 0) },
+    href: status === "Processing" ? `/documents/${d.id}/pipeline` : `/documents/${d.id}`,
+  };
+}
+
+/** The totals strip. Fields and Supplier Requests count the lead Pipeline once it has delivered. */
+export function listTotals(docs: ApiDocumentSummary[], now: number) {
+  const month = (t: number) => { const d = new Date(t); return d.getFullYear() * 12 + d.getMonth(); };
+  const leads = docs.map((d) => Object.values(d.pipelines)[0]).filter((p) => p && p.status !== "processing");
+  const received = docs.flatMap((d) => Object.values(d.pipelines)).reduce((n, p) => n + Number(p.received ?? 0), 0);
+  return {
+    thisMonth: docs.filter((d) => month(d.uploadedAt) === month(now)).length,
+    fieldsDelivered: leads.reduce((n, p) => n + p!.counts.final + p!.counts.notStated, 0),
+    supplierRequests: leads.reduce((n, p) => n + p!.counts.notStated, 0),
+    received: usdc(String(received)),
+  };
+}
+
+export interface ListFilter { template?: string; supplier?: string; status?: ListStatus; q?: string }
+export function filterDocs(docs: ApiDocumentSummary[], f: ListFilter) {
+  const q = f.q?.trim().toLowerCase();
+  return docs.filter((d) =>
+    (!f.template || d.template === f.template) &&
+    (!f.supplier || d.supplier === f.supplier) &&
+    (!f.status || docRow(d).status === f.status) &&
+    (!q || `${d.name} ${d.supplier}`.toLowerCase().includes(q)));
 }
 
 /** The settled banner's sentence. */

@@ -86,6 +86,7 @@ const counts = (fs: ApiField[]) => ({
   final: fs.filter((f) => f.status === "final").length,
   converging: fs.filter((f) => f.status === "converging").length,
   notStated: fs.filter((f) => f.status === "not stated").length,
+  challenged: fs.filter((f) => f.challenge && f.challenge.status !== "rejected").length,
 });
 
 const doc1: ApiDocument = {

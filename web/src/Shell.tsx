@@ -36,9 +36,9 @@ export function useRole(): [Role, (r: Role) => void] {
 }
 
 /** Which screen a path shows; `nav` is the sidebar entry it lights up. */
-function route(path: string) {
+function route(path: string, role: Role) {
   let m;
-  if (path === "/") return { nav: "/documents", el: <Redirect to="/documents" /> };
+  if (path === "/") return { nav: HOME[role], el: <Redirect to={HOME[role]} /> };
   if (match("/documents", path)) return { nav: "/documents", el: <BrandDocuments /> };
   if (match("/upload", path)) return { nav: "/upload", el: <BrandUpload /> };
   if ((m = match("/documents/:id/pipeline", path))) return { nav: "/documents", el: <BrandPipeline key={m.id} id={m.id!} /> };
@@ -57,7 +57,7 @@ function Redirect({ to }: { to: string }) {
 export function App() {
   const url = useLocation();
   const [role, setRole] = useRole();
-  const { nav, el } = route(url.pathname);
+  const { nav, el } = route(url.pathname, role);
   const demo = useDemoFlag(url);
   const switchRole = (r: Role) => { setRole(r); navigate(HOME[r]); };
   return (

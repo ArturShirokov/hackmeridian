@@ -68,6 +68,10 @@ test("the Compare tab counts the differences and marks them", () => {
 test("all four view tabs render for a delivered Document, for each Operator", () => {
   const d = doc();
   d.views[0]!.markdown = "# Voltaris NMC-800\n\n| Rated capacity | 220 Ah |";
+  d.views[0]!.trace = [
+    { id: "s1", label: "Original", view: "original", model: "Claude Code", result: "12 values", start: 0, end: 50 },
+    { id: "s2", parent: "s1", label: "Table reader", view: "markdown", model: "script", start: 10, end: 20 },
+  ];
   render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
   for (const op of ["Origyn Pipeline", "Baseline"]) {
     fireEvent.click(screen.getByRole("tab", { name: new RegExp(op) }));
@@ -81,7 +85,8 @@ test("all four view tabs render for a delivered Document, for each Operator", ()
     if (op === "Baseline") expect(screen.getByText(/Source Markdown is not available for Baseline/)).toBeTruthy();
     else expect(screen.getByTestId("source-markdown").textContent).toContain("# Voltaris NMC-800");
     fireEvent.click(screen.getByRole("tab", { name: "Trace" }));
-    expect(screen.getByText("No Trace reported.")).toBeTruthy();
+    if (op === "Baseline") expect(screen.getByText("No Trace reported.")).toBeTruthy();
+    else expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Originaloriginal · Claude Code · 12 values", "↳ Table readermarkdown · script"]);
     expect(screen.getByText("Self-reported; the Bond is the guarantee.")).toBeTruthy();
     fireEvent.click(screen.getByRole("tab", { name: "Review" }));
   }
@@ -131,6 +136,18 @@ test("the Trace tab draws a Span tree, sub-agents nested under their parent", as
   const { TraceView } = await import("../src/screens/brand/views.tsx");
   render(<TraceView spans={[{ label: "Extraction", view: "original", model: "claude", start: 0, end: 100, children: [{ label: "Table reader", view: "Markdown", model: "script", result: "3 tables", start: 10, end: 40 }] }]} />);
   expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["Extractionoriginal · claude", "↳ Table readerMarkdown · script · 3 tables"]);
+});
+
+test("the Compare tab shows any number of Operators side by side, an outside Operator's column included", () => {
+  const d = doc();
+  const third = structuredClone(d.views[1]!);
+  Object.assign(third, { pipeline: "GOUTSIDE", label: "Claude solo", operator: "GOUTSIDE" });
+  third.fields = third.fields.map((f) => (f.name === "rated_capacity_ah" && "display" in f ? { ...f, value: 230, display: "230 Ah" } : f));
+  d.views.push(third);
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
+  for (const v of d.views) expect(screen.getAllByText(v.label).length).toBeGreaterThan(0);
+  expect(screen.getByText("230 Ah")).toBeTruthy();
 });
 
 test("arrow keys move between rows and C opens a Challenge on the selected Field", () => {

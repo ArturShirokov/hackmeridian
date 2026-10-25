@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
 import { readFileSync } from "node:fs";
 import { replay, score, deliveredBy, type Expected, type Run } from "../src/accuracy.js";
+import type { ApiDocumentSummary } from "../src/api.js";
+import { demoBoard } from "../src/demo.js";
+import { webApp } from "../src/web.js";
 
 const dir = new URL("../testdata/", import.meta.url);
 const readPdf = async (f: string) => new Uint8Array(readFileSync(new URL(`documents/${f}`, dir)));
@@ -37,4 +40,25 @@ test("demo replay runs on the wall clock: every Challenge Window opens at start,
     { operator: "ours", documents: 6, challengesUpheld: 0, totalSlashed: "0" },
     { operator: "baseline", documents: 6, challengesUpheld: 1, totalSlashed: "1" },
   ]);
+});
+
+test("the demo seed: about 8 Documents across both Templates and several Suppliers, Processing, Delivered and Settled, one with a Slash", async () => {
+  const wall = 1_800_000_000_000;
+  const { board } = await demoBoard(cache, readPdf, { now: () => wall, challengeWindowMs: 3 * 60_000 });
+  const list = (await (await webApp(board).request("/api/documents")).json()) as ApiDocumentSummary[];
+  const status = (d: ApiDocumentSummary) => {
+    const ps = Object.values(d.pipelines);
+    return ps.some((p) => p.status === "processing") ? "processing" : ps.every((p) => p.status === "settled") ? "settled" : "delivered";
+  };
+  expect(list.length).toBeGreaterThanOrEqual(7);
+  expect(new Set(list.map((d) => d.template))).toEqual(new Set(["battery", "textile"]));
+  expect(new Set(list.map((d) => d.supplier)).size).toBeGreaterThanOrEqual(4);
+  expect(list.some((d) => d.supplier === "Linho Norte" && d.template === "textile")).toBe(true);
+  expect(new Set(list.map(status))).toEqual(new Set(["processing", "delivered", "settled"]));
+  const slashed = list.flatMap((d) => Object.values(d.pipelines)).filter((p) => p.bond === "slashed");
+  expect(slashed).toHaveLength(1);
+  expect(Number(slashed[0]!.received)).toBeGreaterThan(0);
+  // Delivered Documents keep their Challenge Window on the wall clock.
+  for (const d of list.filter((d) => status(d) === "delivered"))
+    for (const p of Object.values(d.pipelines)) expect(p.closesAt!).toBeGreaterThanOrEqual(wall + 3 * 60_000);
 });
