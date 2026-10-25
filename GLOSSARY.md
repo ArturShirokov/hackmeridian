@@ -36,6 +36,13 @@ _Avoid_: Schema, form
 One named slot in a Template, such as rated capacity or fibre composition, and the unit of work that gets extracted, challenged and paid for.
 _Avoid_: Attribute, property, key
 
+**High-stake Field**:
+A Field marked in its Template as the most likely to be Challenged, such as recycled content, carbon footprint or
+fibre composition. It needs both extraction Sieves to agree, never a majority; when they differ it is Not stated.
+It is about how a Field converges, not about money: the Bond is per Document, and an upheld Challenge Slashes the
+same share whichever Field it names.
+_Avoid_: Critical field, staked field
+
 **Correct**:
 A Field value is correct when it matches what the Document states, read under the Template's rules. Whether the physical product really has that value is out of scope.
 _Avoid_: True, accurate, verified
