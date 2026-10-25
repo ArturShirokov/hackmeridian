@@ -101,7 +101,7 @@ export function SieveTrack({ label, sub, stations, trace }: { label: string; sub
           ))}
         </div>
         <div style={{ height: 3, background: "var(--track)", position: "relative" }}>
-          <div className="om-motion" style={{ position: "absolute", left: 0, top: 0, height: 3, background: "var(--ink)", width: `${(done / cols) * 100}%`, transition: "width .35s linear" }} />
+          <div data-progress className="om-motion" style={{ position: "absolute", left: 0, top: 0, height: 3, background: "var(--ink)", width: `${items.length ? (done / items.length) * 100 : 0}%`, transition: "width .35s linear" }} />
         </div>
       </div>
     </div>

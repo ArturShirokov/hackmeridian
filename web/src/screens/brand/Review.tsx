@@ -6,15 +6,13 @@ import { shortHash, splitMark, usdc } from "../../format.ts";
 import { FieldRow, pageOf } from "../../components/FieldRow.tsx";
 import { DocumentViewer } from "../../components/DocumentViewer.tsx";
 import { spanTree } from "../../components/SieveTrack.tsx";
-import { Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel } from "../../components/ui.tsx";
+import { clamp2, Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, useDocument } from "./common.tsx";
 import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, shown, windowLabel, withShown } from "./derive.ts";
 import { JsonView, MarkdownView, SourceMarkdown, TraceView, VIEWS, type View } from "./views.tsx";
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
-/** At most two lines, then an ellipsis (the full value is in the title). */
-const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" } as const;
 type Final = Extract<ApiField, { evidence: unknown }>;
 type NotStated = Extract<ApiField, { quotes: unknown }>;
 type TemplateField = ApiTemplate["fields"][number];

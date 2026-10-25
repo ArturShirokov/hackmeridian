@@ -26,6 +26,11 @@ test("a Trace renders generically: top-level Spans as stations, sub-agent Spans 
   expect(tables.querySelector('[data-span="ocr"]')!.textContent).toContain("tesseract · page 2 image");
 });
 
+test("a one-Sieve Pipeline that is done shows its progress as complete", () => {
+  const { container } = render(<SieveTrack label="Baseline" sub="" stations={[{ ...blackBox, label: "One-pass extraction", state: "done" }]} />);
+  expect(container.querySelector<HTMLElement>("[data-progress]")!.style.width).toBe("100%");
+});
+
 test("no Trace shows the stations as they are: one Black box station", () => {
   const { container } = render(<SieveTrack label="Acme" sub="" stations={[blackBox]} />);
   expect(container.querySelectorAll("[data-state]")).toHaveLength(1);

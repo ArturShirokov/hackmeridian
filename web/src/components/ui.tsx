@@ -2,6 +2,9 @@
 import { useEffect, useState, type CSSProperties, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { clock, shortHash, splitMark, usdc } from "../format.ts";
 
+/** At most two lines, then an ellipsis; give the element the full value as its title. */
+export const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" } as const;
+
 export type BadgeStatus = "final" | "converging" | "not stated" | "challenged" | "upheld" | "rejected" | "queued";
 
 const INK = "#141414", PAPER = "#F7F5F0", RED = "#A3221B";

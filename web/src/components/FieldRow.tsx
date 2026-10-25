@@ -1,7 +1,7 @@
 // One Field: the Review row (click to select, expand for the quote, Challenge button) or the dense Pipeline/mobile row.
 import type { ReactNode } from "react";
 import type { ApiChallengeSummary, ApiField } from "../api.ts";
-import { Button, Quote, StatusBadge, TieBreakTag, type BadgeStatus } from "./ui.tsx";
+import { Button, clamp2, Quote, StatusBadge, TieBreakTag, type BadgeStatus } from "./ui.tsx";
 
 /** The badge a Field shows: its Challenge's state wins over its own status. */
 export function badgeFor(field: ApiField, challenge?: ApiChallengeSummary): BadgeStatus {
@@ -44,7 +44,7 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
           borderBottom: "1px solid var(--rule-row)", background: field.status === "not stated" ? "var(--amber-bg)" : "transparent", transition: "background .4s",
         }}>
         <span style={{ font: "500 15px/1.2 var(--sans)" }}>{field.label}</span>
-        <span style={{ font: "500 15px/1.2 var(--mono)", color: v.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.text}</span>
+        <span title={v.text} style={{ font: "500 15px/1.2 var(--mono)", color: v.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.text}</span>
         <StatusBadge status={badge} size="md" />
         <span style={{ font: "500 13px/1 var(--mono)", color: "#3D3A34" }}>{pageLbl}</span>
         <span>{tieBreak && <TieBreakTag />}</span>
@@ -65,8 +65,8 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
           </span>
         </span>
         <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
-          {badge === "upheld" && final?.corrected && <span style={{ font: "500 13px/1.2 var(--mono)", color: "#5E594F", textDecoration: "line-through" }}>{final.corrected.was}</span>}
-          <span style={{ font: "500 15px/1.25 var(--mono)", color: v.color }}>{v.text}</span>
+          {badge === "upheld" && final?.corrected && <span title={final.corrected.was} style={{ font: "500 13px/1.2 var(--mono)", color: "#5E594F", textDecoration: "line-through", ...clamp2 }}>{final.corrected.was}</span>}
+          <span title={v.text} style={{ font: "500 15px/1.25 var(--mono)", color: v.color, ...clamp2 }}>{v.text}</span>
           {badge === "rejected" && challenge && (
             <span style={{ font: "500 12px/1.2 var(--mono)", color: "#5E594F" }}>
               <span style={{ textDecoration: "line-through" }}>{challenge.value}</span> challenge rejected
