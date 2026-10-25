@@ -34,9 +34,10 @@ function useSession() {
       setUser(user);
       if (user) navigate(to ?? HOME[user.role]);
     },
-    async signOut() {
+    async signOut(to?: string) {
       await api.signOut();
       setUser(null);
+      if (to) navigate(to);
     },
   };
 }
@@ -72,7 +73,7 @@ export function App() {
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative" }}>
-        <Sidebar user={user} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onSwitch={signOut} />
+        <Sidebar user={user} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onSwitch={() => signOut()} onSignOut={() => signOut("/")} />
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative" }}>{el}</main>
       </div>
       {demo && <StoryDock path={url.pathname} role={role} onRole={asRole} />}
@@ -89,8 +90,14 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
   return (
     <main className="om-app" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 28 }}>doc2dpp</div>
-        <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as</div>
+        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 10 }}>doc2dpp</div>
+        <div style={{ font: "400 17px/1.4 var(--sans)", color: "var(--ink)", marginBottom: 6 }}>
+          Supplier documents in, passport data out — a Bond in USDC behind every Field.
+        </div>
+        <div style={{ font: "400 14px/1.45 var(--sans)", color: "#3D3A34", marginBottom: 28 }}>
+          Our Pipeline turns Supplier PDFs into passport Fields; on delivery an Operator locks a <span style={{ fontFamily: "var(--mono)", fontSize: 13 }}>10 USDC</span> Bond in escrow on Stellar. A Field proven wrong is Slashed — a tenth of the Bond to the Brand. Wrong answers have a price, right ones are boring and nobody hears about them.
+        </div>
+        <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as a role</div>
         <ul aria-label="Sign in as" style={{ listStyle: "none", margin: 0, padding: 0, borderTop: "1px solid var(--rule)" }}>
           {users.map((u) => (
             <li key={u.id}>
@@ -103,7 +110,7 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
           ))}
         </ul>
         <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 12, font: "400 13px/1.4 var(--sans)", color: "#3D3A34" }}>
-          <span>Have an agent? Work the Job Board or join as an Operator.</span>
+          <span>Pick a role to explore the demo — Brand, Arbiter or Operator. Have an agent? Work the Job Board or join as an Operator.</span>
           <ConnectAgent variant="ghost" />
         </div>
       </div>
@@ -124,12 +131,13 @@ function Balance() {
   );
 }
 
-function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; onSwitch(): void }) {
+function Sidebar({ user, active, onSwitch, onSignOut }: { user: ApiUser; active: string; onSwitch(): void; onSignOut(): void }) {
   const role = user.role;
   const lit = NAV[role].find(([, to]) => to === active)?.[1];
   return (
     <aside className="om-desktop-only" style={{ width: 228, flex: "none", borderRight: "1px solid var(--rule)", display: "flex", flexDirection: "column", background: "var(--sidebar)" }}>
-      <Link to="/" style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
+      {/* Landing is the sign-in screen, so the wordmark signs out on the way there. */}
+      <Link to="/" onClick={(e) => { e.preventDefault(); onSignOut(); }} style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
       <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{user.org}</div>
       <nav style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--rule)" }}>
         {NAV[role].map(([label, to]) => (
@@ -146,6 +154,10 @@ function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; on
         <button onClick={onSwitch}
           style={{ marginTop: 12, height: 28, border: "1px solid var(--ink)", background: "transparent", color: "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer" }}>
           Switch user
+        </button>
+        <button onClick={onSignOut}
+          style={{ marginTop: 4, height: 28, border: 0, background: "transparent", color: "var(--ink)", font: "500 12px/1 var(--sans)", textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer" }}>
+          Sign out
         </button>
       </div>
     </aside>
