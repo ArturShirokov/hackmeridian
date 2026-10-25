@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 // pdf.js doesn't load in jsdom; the evidence view's page is checked in the browser.
 vi.mock("../src/components/DocumentViewer.tsx", () => ({ DocumentViewer: () => null }));
 import { Arbiter } from "../src/screens/ops/Arbiter.tsx";
@@ -43,6 +43,9 @@ test("the Job Board shows a timed-out take as its own row, the Sieves of each Pi
   expect(await screen.findByText("timed out · back on board")).toBeTruthy();
   expect(screen.getByText("Connected Workers · 1")).toBeTruthy();
   expect(screen.queryByText("Old")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Connect an agent" }));
+  fireEvent.click(screen.getByRole("button", { name: "Claude Code" }));
+  fireEvent.click(screen.getByRole("button", { name: /Worker in our Pipeline/ }));
   expect(await screen.findByText("claude mcp add --transport http doc2dpp http://127.0.0.1:3193/mcp")).toBeTruthy();
   expect(screen.getByText("Tie-break")).toBeTruthy();
   expect(screen.getByText("No cross-check, no tie-break.")).toBeTruthy();

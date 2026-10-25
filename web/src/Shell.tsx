@@ -1,6 +1,7 @@
 // The app shell: "Sign in as" a seeded user, the sidebar and routes of that user's role, and the ?demo story dock.
 import { useEffect, useState } from "react";
 import { api, usePoll, type ApiUser, type Role } from "./api.ts";
+import { ConnectAgent } from "./components/ConnectAgent.tsx";
 import { ProofLink } from "./components/ui.tsx";
 import { usdc } from "./format.ts";
 import { Link, match, navigate, useLocation } from "./router.tsx";
@@ -101,6 +102,10 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
             </li>
           ))}
         </ul>
+        <div style={{ marginTop: 28, display: "flex", alignItems: "center", gap: 12, font: "400 13px/1.4 var(--sans)", color: "#3D3A34" }}>
+          <span>Have an agent? Work the Job Board or join as an Operator.</span>
+          <ConnectAgent variant="ghost" />
+        </div>
       </div>
     </main>
   );
