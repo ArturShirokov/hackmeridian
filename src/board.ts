@@ -95,6 +95,7 @@ interface JobState {
   job: Job;
   pipeline: string;
   takenBy?: string;
+  takenAt?: number;
   done: boolean;
 }
 
@@ -108,6 +109,7 @@ export class JobBoard {
   private seen = new Set<string>();
   private lastPoll = new Date(0);
   private now: () => number;
+  private jobTimeoutMs: number;
   private operators: Record<string, OperatorTerms>;
   private challengeWindowMs: number;
   /** Keyed by `${documentId} ${pipeline}`. */
@@ -120,11 +122,14 @@ export class JobBoard {
     pipelines?: Pipeline[];
     /** Milliseconds since the epoch; tests inject a fake one. */
     now?: () => number;
+    /** How long a Worker may hold a Job before it goes back on the board. */
+    jobTimeoutMs?: number;
     /** Bond and Fee by Pipeline name. A Pipeline not listed is run by an Operator of the same name for 10 + 1 USDC. */
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
   }) {
     this.now = opts.now ?? Date.now;
+    this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
     this.operators = opts.operators ?? {};
     this.challengeWindowMs = opts.challengeWindowMs ?? 5 * 60_000;
     this.storage = opts.storage;
@@ -184,9 +189,11 @@ export class JobBoard {
 
   /** The next open Job for this Worker, or null when there is nothing yet. */
   nextJob(worker: string): Job | null {
-    const s = this.jobs.find((j) => !j.done && !j.takenBy);
+    const now = this.now();
+    const s = this.jobs.find((j) => !j.done && (!j.takenBy || now - j.takenAt! >= this.jobTimeoutMs));
     if (!s) return null;
     s.takenBy = worker;
+    s.takenAt = now;
     return s.job;
   }
 

@@ -8,7 +8,9 @@ import { FakeLedger } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
 import { webApp } from "../src/web.js";
 
-export function startBoard(opts: { operators?: Record<string, OperatorTerms>; challengeWindowMs?: number } = {}) {
+export function startBoard(
+  opts: { jobTimeoutMs?: number; operators?: Record<string, OperatorTerms>; challengeWindowMs?: number } = {},
+) {
   const storage = new InMemoryStorage();
   const ledger = new FakeLedger();
   let time = 0;
