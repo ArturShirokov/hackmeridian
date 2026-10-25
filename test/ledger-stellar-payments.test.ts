@@ -60,6 +60,23 @@ const req = { documentId: "doc-9", operator: "op-1", brand: "brand-1", bond: "10
 const txLink = (tx: Transaction) => `https://stellar.expert/explorer/testnet/tx/${Buffer.from(tx.hash()).toString("hex")}`;
 
 describe("StellarPaymentsLedger", () => {
+  it("reads the Brand's USDC balance from Horizon, with a link to its account", async () => {
+    const fetch = async (url: string | URL | Request) => {
+      expect(String(url)).toBe(`https://horizon.test/accounts/${brand.publicKey()}`);
+      return Response.json({ balances: [
+        { asset_type: "native", balance: "9999.0000000" },
+        { asset_code: "USDC", asset_issuer: "GFAKEISSUER", balance: "5.0000000" },
+        { asset_code: "USDC", asset_issuer: USDC.split(":")[1], balance: "42.5000000" },
+      ] });
+    };
+    const horizon = { loadAccount: async () => { throw new Error("no tx"); }, submitTransaction: async () => { throw new Error("no tx"); } };
+    const ledger = new StellarPaymentsLedger({ horizon, horizonUrl: "https://horizon.test", fetch, brands: { "brand-1": brand }, escrow, operators: {} });
+    expect(await ledger.brandBalance("brand-1")).toEqual({
+      usdc: "42.5",
+      link: `https://stellar.expert/explorer/testnet/account/${brand.publicKey()}`,
+    });
+  });
+
   it("opens an escrow: Operator pays the Bond and Brand the Fee into the escrow account, output hash in the memo", async () => {
     const { ledger, summary, txs } = fakeHorizon();
     const { escrowId, link } = await ledger.openEscrow(req);

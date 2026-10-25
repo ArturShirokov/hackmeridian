@@ -3,7 +3,7 @@
 import { templates } from "../../src/templates.ts";
 import type {
   ApiArbiter, ApiChallenge, ApiConfig, ApiDocument, ApiDocumentSummary, ApiField, ApiJob, ApiLeaderRow, ApiQuote,
-  ApiStation, ApiTemplate, ApiWorker, Rect,
+  ApiStation, ApiTemplate, ApiUser, ApiWorker, Rect,
 } from "../../src/api.ts";
 
 const t0 = Date.now();
@@ -89,6 +89,7 @@ const counts = (fs: ApiField[]) => ({
   final: fs.filter((f) => f.status === "final").length,
   converging: fs.filter((f) => f.status === "converging").length,
   notStated: fs.filter((f) => f.status === "not stated").length,
+  challenged: fs.filter((f) => f.challenge && f.challenge.status !== "rejected").length,
 });
 
 const doc1: ApiDocument = {
@@ -194,13 +195,26 @@ const workers: ApiWorker[] = [
 ];
 
 /** The fixture answer for a request to `path`. Writes succeed and change nothing. */
+const users: ApiUser[] = [
+  { id: "ines", name: "Inês Duarte", role: "brand", org: "Voltaris", sub: "Product Compliance, Voltaris", brand: "brand" },
+  { id: "arbiter", name: "Arbiter desk", role: "arbiter", org: "Arbiter", sub: "Neutral third party" },
+  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs the Origyn Pipeline", operator: "ours" },
+  { id: "baseline", name: "Baseline Operator", role: "operator", org: "Baseline", sub: "Runs the one-pass Baseline", operator: "baseline" },
+];
+let user: ApiUser | null = null;
+
 export function respond(path: string, init?: RequestInit): unknown {
   const p = path.split("?")[0]!;
+  if (p === "/api/session" && init?.method === "POST") return { user: (user = users.find((u) => u.id === JSON.parse(String(init.body)).user) ?? null) };
+  if (p === "/api/session" && init?.method === "DELETE") return { user: (user = null) };
   if (init?.method === "POST") return p.endsWith("/challenges") ? { id: "ch-new" } : { ok: true };
   const doc = p.match(/^\/api\/documents\/([^/]+)$/);
   if (doc) return docs.find((d) => d.id === doc[1]) ?? docs[1];
   const routes: Record<string, unknown> = {
     "/api/config": { ...config, now: Date.now() },
+    "/api/users": users,
+    "/api/session": { user },
+    "/api/balance": { usdc: "94.9", link: "https://stellar.expert/explorer/testnet/account/GB5QYOD56IOJBI5LK6BZCI2CYSUIVLSSDUJBYKCZAAQLVCSTMEBS4R55" },
     "/api/templates": templateList,
     "/api/documents": docs.map(summary),
     "/api/challenges": arbiter,

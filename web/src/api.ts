@@ -3,7 +3,7 @@
 // without it the fixtures are not in the bundle.
 import { useEffect, useRef, useState } from "react";
 import type {
-  ApiArbiter, ApiConfig, ApiDocument, ApiDocumentSummary, ApiJob, ApiLeaderRow, ApiTemplate, ApiWorker,
+  ApiArbiter, ApiBalance, ApiConfig, ApiDocument, ApiDocumentSummary, ApiJob, ApiLeaderRow, ApiSession, ApiTemplate, ApiUser, ApiWorker,
 } from "../../src/api.ts";
 
 export type * from "../../src/api.ts";
@@ -39,6 +39,11 @@ export function makeApi(fetcher: typeof fetch, loadFixtures?: () => Promise<Fixt
 
   return {
     config: () => send<ApiConfig>("/api/config"),
+    users: () => send<ApiUser[]>("/api/users"),
+    session: () => send<ApiSession>("/api/session"),
+    signIn: (user: string) => post<ApiSession>("/api/session", { user }),
+    signOut: () => send<ApiSession>("/api/session", { method: "DELETE" }),
+    balance: () => send<ApiBalance>("/api/balance"),
     templates: () => send<ApiTemplate[]>("/api/templates"),
     documents: () => send<ApiDocumentSummary[]>("/api/documents"),
     document: (id: string) => send<ApiDocument>(`/api/documents/${id}`),

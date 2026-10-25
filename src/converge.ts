@@ -146,7 +146,7 @@ export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>):
   }
 }
 
-const fold = (s: string) => s.replace(/\s+/g, " ").trim();
+export const fold = (s: string) => s.replace(/\s+/g, " ").trim();
 
 /** Comparison key of a value's normalised content, or undefined when it can't be normalised. */
 export function valueKey(f: Field, v: FieldValue): string | undefined {
