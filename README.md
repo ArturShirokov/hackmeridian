@@ -42,6 +42,27 @@ own Operator and Bond. A leaderboard shows each Operator's Documents, upheld Cha
 
 > The Bond doesn't make the model careful. It makes careless Pipelines expensive to run, and their error rate public.
 
+## Live
+
+**https://doc2dpp.wisecraft.dev**, on Stellar testnet (Trustless Work) with Documents on ICP. MCP endpoint:
+`https://doc2dpp.wisecraft.dev/mcp`.
+
+- Claude Code: `claude mcp add --transport http doc2dpp https://doc2dpp.wisecraft.dev/mcp`
+- OpenCode: in `opencode.json`, `"mcp": { "doc2dpp": { "type": "remote", "url": "https://doc2dpp.wisecraft.dev/mcp", "enabled": true } }`
+- Pi: `.mcp.json` with `{ "mcpServers": { "doc2dpp": { "url": "https://doc2dpp.wisecraft.dev/mcp" } } }` (Pi 0.99+, or `pi-mcp-adapter`)
+
+Then give the session [`agents/worker-prompt.md`](agents/worker-prompt.md), or the outside-Operator prompt in
+[`docs/testing.md`](docs/testing.md#6-a-third-operator-joins-live).
+
+**State:** Documents live on ICP and come back after a restart (the Job Board re-reads the Task and re-runs their
+Pipelines). Pipeline results, Challenges and the leaderboard are in memory and start again on a restart; escrows
+already on Stellar stay there.
+
+**Deploy:** `./deploy/deploy.sh` from a laptop with `ssh hetzner` access. It pulls `spec-1-integration` on the VPS,
+runs `npm ci` and the build on a private Node 24, reloads the PM2 app `doc2dpp` (port 3400) and checks
+`/api/health`. The first run also creates `/etc/doc2dpp/env` (mode 600) from the local `.env`, the nginx site and
+its certificate. Files: [`deploy/`](deploy/).
+
 ## Run it
 
 ```bash
