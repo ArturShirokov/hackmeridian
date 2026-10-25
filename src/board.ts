@@ -259,7 +259,7 @@ export class JobBoard {
 
   /** Delivery: lock the Operator's Bond and the Brand's Fee behind a hash of the delivered Field values. */
   private async openEscrow(doc: Doc, pipeline: string, fields: FieldResult[]) {
-    const terms = this.operators[pipeline] ?? { operator: pipeline, bond: "10", fee: "1" };
+    const terms = this.terms(pipeline);
     const req: EscrowRequest = {
       documentId: doc.meta.id,
       ...terms,
@@ -306,16 +306,30 @@ export class JobBoard {
     return [...this.docs.values()].map((d) => d.meta);
   }
 
-  /** What the Brand sees: every Template Field with its status and, once final, its value. */
+  /** What the Brand sees: every Template Field with its status and, once final, its value. Top level is the first Pipeline's. */
   document(id: string) {
     const d = this.docs.get(id);
     if (!d) return undefined;
-    const values = d.delivered.get(this.pipelines[0]!.name) ?? [];
-    const e = this.escrows.get(`${id} ${this.pipelines[0]!.name}`);
+    const pipelines = Object.fromEntries(this.pipelines.map((p) => [p.name, this.view(d, p.name)]));
+    return { id, template: d.template.name, uploadedAt: d.meta.uploadedAt, ...pipelines[this.pipelines[0]!.name]!, pipelines };
+  }
+
+  /** Per Operator, in Pipeline order: Documents, upheld Challenges and total Slashed, read from the Ledger. */
+  async leaderboard() {
+    const ops = [...new Set(this.pipelines.map((p) => this.terms(p.name).operator))];
+    return Promise.all(ops.map(async (operator) => ({ operator, ...(await this.ledger.operatorRecord(operator)) })));
+  }
+
+  private terms(pipeline: string): OperatorTerms {
+    return this.operators[pipeline] ?? { operator: pipeline, bond: "10", fee: "1" };
+  }
+
+  private view(d: Doc, pipeline: string) {
+    const id = d.meta.id;
+    const values = d.delivered.get(pipeline) ?? [];
+    const e = this.escrows.get(`${id} ${pipeline}`);
     return {
-      id,
-      template: d.template.name,
-      uploadedAt: d.meta.uploadedAt,
+      operator: this.terms(pipeline).operator,
       escrow: e && {
         operator: e.operator,
         bond: e.bond,
@@ -326,7 +340,7 @@ export class JobBoard {
         ...(e.slashes && { slashes: e.slashes }),
       },
       fields: d.template.fields.map((f) => {
-        const corrected = this.challenges.correction(id, this.pipelines[0]!.name, f.name);
+        const corrected = this.challenges.correction(id, pipeline, f.name);
         if (corrected) return { name: f.name, label: f.label, status: "final" as const, ...corrected };
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         return { name: f.name, label: f.label, ...v };
