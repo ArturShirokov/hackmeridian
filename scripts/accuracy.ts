@@ -2,13 +2,15 @@
 // and compare the delivered Field values with testdata/expected.
 //   npx tsx scripts/accuracy.ts                         live: serve MCP, wait for Workers to drain the board
 //   npx tsx scripts/accuracy.ts --replay testdata/runs/<file>.json
+//   add --set public for testdata/public (fetch its PDFs first: npx tsx scripts/fetch-public-testdata.ts)
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
 import { accuracyBoard, deliveredBy, drained, record, replay, score, type Expected, type Run } from "../src/accuracy.js";
 import type { JobBoard } from "../src/board.js";
 import { webApp } from "../src/web.js";
 
-const dir = new URL("../testdata/", import.meta.url);
+const publicSet = process.argv[process.argv.indexOf("--set") + 1] === "public";
+const dir = new URL(publicSet ? "../testdata/public/" : "../testdata/", import.meta.url);
 const expected: Expected[] = readdirSync(new URL("expected/", dir))
   .filter((f) => f.endsWith(".json"))
   .sort()
