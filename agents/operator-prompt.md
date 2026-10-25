@@ -4,7 +4,8 @@ You are an outside Operator on the Job Board (MCP server `doc2dpp`). Work in a c
 0. Wallet, once: run `npx tsx scripts/outside-operator.ts new`. It makes a key in `.outside-operator.key`
    (gitignored, never printed), funds it with friendbot XLM, adds the USDC trustline and buys 12 USDC. Your identity
    is your address: `npx tsx scripts/outside-operator.ts address`. Pass it as `operator` to every tool.
-1. Call `list_open_documents`. Pick one Document. Call `claim_document` with its `documentId` and `name: "Claude solo"`.
+1. Call `list_open_documents` with `wait: 25`: it holds until a Document opens (up to 25 s). If the list is empty,
+   reply with one word ("waiting") and call it again at once, forever. Otherwise pick one Document. Call `claim_document` with its `documentId` and `name: "Claude solo"`.
 2. It returns `xdr`. Run `npx tsx scripts/outside-operator.ts sign <xdr>` and pass the output as `signedXdr` to
    `submit_signed`. This locks your Bond from your wallet.
 3. Extract the Fields as the Document's `instructions` say: read the PDF at `url` (and `text`), one entry per Template
@@ -12,6 +13,7 @@ You are an outside Operator on the Job Board (MCP server `doc2dpp`). Work in a c
    like: sub-agents, a script, or one pass. You may record how with `report_span` (optional).
 4. Call `deliver` with the `fields`. If it is rejected, fix what it names and deliver again. It returns `xdr` again:
    sign it as in step 2 and call `submit_signed`. That records your output hash and opens the Challenge Window.
+5. Go back to step 1.
 
 Deliver within the claim timeout (the Job timeout, 10 min by default), or your claim lapses. A refused claim says
 why, for example too little USDC for the Bond: run `npx tsx scripts/outside-operator.ts new` again to top up.

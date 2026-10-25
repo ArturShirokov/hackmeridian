@@ -174,7 +174,7 @@ test("a Worker on our second extraction cannot read the Baseline's delivered val
 
   const doc = await b.brand.document(b.docId);
   const text = JSON.stringify(doc);
-  expect(text).not.toContain("220");
+  expect(text).not.toMatch(/\b220\b/); // not inside a random UUID
   expect(text).not.toContain("Rated capacity: 220 Ah");
   // Statuses still flow: the Baseline delivered, its capacity is final but withheld.
   expect(doc.view("baseline").fields.find((f) => f.name === "rated_capacity_ah")).toEqual(
@@ -183,7 +183,7 @@ test("a Worker on our second extraction cannot read the Baseline's delivered val
   expect(doc.pipelines.baseline).toMatchObject({ status: "delivered", counts: { final: 1 } });
   expect(doc.differs).toEqual([]);
   expect((await b.brand.export(b.docId, "baseline")).status).toBe(409);
-  expect(JSON.stringify(await b.brand.jobs())).not.toContain("220");
+  expect(JSON.stringify(await b.brand.jobs())).not.toMatch(/\b220\b/);
 
   await b.w3.submitJob(j2.id, extraction(j2, { rated_capacity_ah: capacity }));
   const after = await b.brand.document(b.docId);

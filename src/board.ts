@@ -235,6 +235,9 @@ export class JobBoard {
   /** When each Worker last asked for or handed in a Job. */
   private workersSeen = new Map<string, number>();
   readonly brand: Brand;
+  /** Long-polls waiting for work; notify() wakes them all to try again. */
+  private wakers = new Set<() => void>();
+  private setTimer: (ms: number, fn: () => void) => () => void;
 
   constructor(opts: {
     storage: Storage;
@@ -243,6 +246,8 @@ export class JobBoard {
     pipelines?: Pipeline[];
     /** Milliseconds since the epoch; tests inject a fake one. */
     now?: () => number;
+    /** Start a timer, returning its cancel; tests run it on the fake clock. Default: setTimeout. */
+    setTimer?: (ms: number, fn: () => void) => () => void;
     /** How long a Worker may hold a Job before it goes back on the board. */
     jobTimeoutMs?: number;
     /** Bond and Fee by Pipeline name. A Pipeline not listed is run by an Operator of the same name for 10 + 1 USDC. */
@@ -257,6 +262,10 @@ export class JobBoard {
     brand?: Brand;
   }) {
     this.now = opts.now ?? Date.now;
+    this.setTimer = opts.setTimer ?? ((ms, fn) => {
+      const t = setTimeout(fn, ms);
+      return () => clearTimeout(t);
+    });
     this.challenges = new Challenges(this.now);
     this.brand = opts.brand ?? { name: "Voltaris", reviewer: "Inês Duarte" };
     this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
@@ -330,6 +339,61 @@ export class JobBoard {
         document: { url: d.meta.link ?? `${this.baseUrl}/documents/${documentId}/file`, text: d.text, ...(markdown !== undefined && { markdown }) },
       },
     });
+    this.notify();
+  }
+
+  private notify() {
+    for (const wake of [...this.wakers]) wake();
+  }
+
+  /**
+   * Long-poll: try `take` now, then again each time work may have appeared (a Job posted, a Job or claim timing out),
+   * until it gives something or `waitSec` (capped at 25) runs out. An aborted wait returns empty without trying again.
+   */
+  private async waitFor<T>(take: () => T, empty: (t: T) => boolean, waitSec = 0, signal?: AbortSignal): Promise<T> {
+    const until = this.now() + Math.min(Math.max(waitSec, 0), 25) * 1000;
+    for (;;) {
+      const t = take();
+      if (!empty(t) || this.now() >= until) return t;
+      await this.changed(Math.min(until, this.nextExpiry()) - this.now(), signal);
+      if (signal?.aborted) return t;
+    }
+  }
+
+  /** Resolves on notify(), after `ms`, or on abort, whichever comes first. */
+  private changed(ms: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve) => {
+      const wake = () => {
+        this.wakers.delete(wake);
+        cancel();
+        signal?.removeEventListener("abort", wake);
+        resolve();
+      };
+      this.wakers.add(wake);
+      const cancel = this.setTimer(Math.max(ms, 0), wake);
+      signal?.addEventListener("abort", wake);
+      if (signal?.aborted) wake();
+    });
+  }
+
+  /** When the next taken Job or claim runs past the Job timeout and frees up work (past ones already have). */
+  private nextExpiry(): number {
+    const now = this.now();
+    const ats = [
+      ...this.jobs.filter((j) => j.takenBy && !j.done).map((j) => j.takenAt!),
+      ...[...this.docs.values()].flatMap((d) => [...d.claims.values()].filter((c) => c.step === "claimed").map((c) => c.claimedAt!)),
+    ].map((t) => t + this.jobTimeoutMs);
+    return Math.min(Infinity, ...ats.filter((t) => t > now));
+  }
+
+  /** next_job with `wait`: the next Job, waiting up to `waitSec` (max 25) for one; null when none came. */
+  waitJob(worker: string, waitSec?: number, signal?: AbortSignal): Promise<Job | null> {
+    return this.waitFor(() => this.nextJob(worker), (j) => j === null, waitSec, signal);
+  }
+
+  /** list_open_documents with `wait`: as openDocuments, waiting up to `waitSec` (max 25) for one to open. */
+  waitOpenDocuments(operator: string, waitSec?: number, signal?: AbortSignal) {
+    return this.waitFor(() => this.openDocuments(operator), (ds) => ds.length === 0, waitSec, signal);
   }
 
   /** The Markdown a passing faithfulness check approved, if any (the Brand's Source Markdown). */

@@ -40,7 +40,8 @@ The page for the Document fills in as Workers hand in Jobs.
 
 Each Worker needs its own id: a Worker does at most one extraction per Document, so one Document needs four
 (two extractions and a tie-break for ours, one for the Baseline). Give each session
-[`agents/worker-prompt.md`](../agents/worker-prompt.md) with `WORKER_ID` replaced.
+[`agents/worker-prompt.md`](../agents/worker-prompt.md) with `WORKER_ID` replaced. It long-polls `next_job` with
+`wait: 25` (the call holds until a Job appears), so start the Workers before you upload.
 
 | Id | Harness | Start it with |
 |---|---|---|

@@ -7,18 +7,20 @@ const text = (s: string) => [{ type: "text" as const, text: s }];
 
 export function buildMcpServer(board: JobBoard): McpServer {
   const server = new McpServer({ name: "doc2dpp", version: "0.1.0" });
+  const wait = z.number().min(0).optional().describe("Seconds to wait for work before answering empty; capped at 25. Use 25.");
 
   server.registerTool(
     "next_job",
     {
       description:
-        "Get the next Job for this Worker, or { job: null } when there is nothing yet (wait and retry). " +
+        "Get the next Job for this Worker, or { job: null } when there is nothing yet (call again). " +
+        "With wait, the call holds until a Job appears or wait seconds (max 25) pass. " +
         "Do the Job as its instructions say, then hand it in with submit_job.",
-      inputSchema: z.object({ worker: z.string().min(1).describe("Your stable Worker identity") }),
+      inputSchema: z.object({ worker: z.string().min(1).describe("Your stable Worker identity"), wait }),
       outputSchema: z.object({ job: z.record(z.string(), z.unknown()).nullable() }),
     },
-    async ({ worker }) => {
-      const out = { job: board.nextJob(worker) as Record<string, unknown> | null };
+    async ({ worker, wait }, ctx) => {
+      const out = { job: (await board.waitJob(worker, wait, ctx.mcpReq.signal)) as Record<string, unknown> | null };
       return { content: text(JSON.stringify(out)), structuredContent: out };
     },
   );
@@ -55,12 +57,13 @@ export function buildMcpServer(board: JobBoard): McpServer {
     {
       description:
         "For outside Operators: the Documents you can claim whole, each with its Template Fields, text layer, PDF link, " +
-        "the Bond you lock and the Fee you earn (USDC), and how to deliver.",
-      inputSchema: z.object({ operator }),
+        "the Bond you lock and the Fee you earn (USDC), and how to deliver. " +
+        "With wait, an empty list holds until a Document opens or wait seconds (max 25) pass.",
+      inputSchema: z.object({ operator, wait }),
       outputSchema: z.object({ documents: z.array(z.record(z.string(), z.unknown())) }),
     },
-    async ({ operator }) => {
-      const out = { documents: board.openDocuments(operator) as Record<string, unknown>[] };
+    async ({ operator, wait }, ctx) => {
+      const out = { documents: (await board.waitOpenDocuments(operator, wait, ctx.mcpReq.signal)) as Record<string, unknown>[] };
       return { content: text(JSON.stringify(out)), structuredContent: out };
     },
   );

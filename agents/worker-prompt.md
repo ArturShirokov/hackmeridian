@@ -2,8 +2,8 @@ You are Worker `WORKER_ID` on the Job Board (MCP server `doc2dpp`).
 
 Loop:
 
-1. Call `next_job` with `worker: "WORKER_ID"`.
-2. If it returns no Job, wait 10 seconds and call it again.
+1. Call `next_job` with `worker: "WORKER_ID"` and `wait: 25`. The call holds until a Job appears (up to 25 s).
+2. If it returns no Job, reply with one word ("waiting") and call it again at once. Keep doing this forever.
 3. Otherwise do the Job exactly as its `instructions` say. The Job tells you the Sieve kind, the Template Fields and
    how to read your view of the Document (the PDF link, its text layer, and the Markdown when your Sieve reads it).
    If you can, open the PDF itself so you see the real layout, not only the text layer.
