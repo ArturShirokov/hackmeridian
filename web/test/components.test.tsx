@@ -37,6 +37,23 @@ test("Countdown counts down from the server's clock", () => {
   vi.useRealTimers();
 });
 
+test("a paused Countdown holds its time and says why, with the demo label", () => {
+  vi.useFakeTimers({ now: 1_000_000 });
+  render(<Countdown closesAt={1_070_000} msLeft={120_000} paused="challenge open" windowMs={180_000} serverOffsetMs={0} settled={false} note="3 min demo · 48 h live" />);
+  act(() => void vi.advanceTimersByTime(5_000));
+  expect(screen.getByText("00:02:00")).toBeTruthy();
+  expect(screen.getByText(/paused while a Challenge is open/i)).toBeTruthy();
+  expect(screen.getByText("3 min demo · 48 h live")).toBeTruthy();
+  vi.useRealTimers();
+});
+
+test("a long value is clamped to two lines with the full value on hover", () => {
+  row({ name: "chem", label: "Cathode", section: "Materials", author: "Supplier", tieBreak: false, status: "final", value: "LiNi0.8Mn0.1Co0.1O2", display: "LiNi0.8Mn0.1Co0.1O2", evidence: { page: 1, quote: "LiNi0.8Mn0.1Co0.1O2", rects: [] } });
+  const v = screen.getByText("LiNi0.8Mn0.1Co0.1O2");
+  expect(v.getAttribute("title")).toBe("LiNi0.8Mn0.1Co0.1O2");
+  expect(v.style.webkitLineClamp).toBe("2");
+});
+
 test("ProofLink renders nothing without a link", () => {
   const { container } = render(<ProofLink hash="a3f9000000000000c21e" />);
   expect(container.innerHTML).toBe("");

@@ -43,7 +43,7 @@ export function Leaderboard() {
             </>
           ) : (
             <>
-              {data.map((r) => <Row key={r.operator} r={r} />)}
+              {data.map((r) => <Row key={r.operator} r={r} bond={config?.operators.find((o) => o.operator === r.operator)?.bond} />)}
               {data.length === 1 && (
                 <div style={{ padding: "18px 20px", font: "400 15px/1.4 var(--sans)", color: "#2A2723", borderTop: "1px dashed #B5AE9F" }}>
                   Only one Operator so far. Any Pipeline can join by posting a Bond on the same Documents.
@@ -65,14 +65,16 @@ export function Leaderboard() {
   );
 }
 
-function Row({ r }: { r: ApiLeaderRow }) {
-  const cells: [string, string?][] = [
-    [String(r.documents)],
-    [String(r.fieldsDelivered)],
-    [String(r.challengesUpheld), r.challengesUpheld ? RED : undefined],
-    [usdc(r.totalSlashed), MONEY],
-    [usdc(r.bondsLocked), MONEY],
-    [r.accuracy ? `${((r.accuracy.correct / r.accuracy.fields) * 100).toFixed(1)} %` : "—"],
+/** Each number links its Stellar proof: the Operator's account, or the latest settlement that Slashed it. A zero, or a number not on chain, has none. */
+function Row({ r, bond }: { r: ApiLeaderRow; bond?: string }) {
+  const slashed = r.series.filter((s) => s.settlementLink && (bond === undefined || Number(s.balance) < Number(bond))).at(-1)?.settlementLink ?? r.link;
+  const cells: [string, string, string?, string?][] = [
+    ["Documents delivered", String(r.documents), undefined, r.documents ? r.link : undefined],
+    ["Fields delivered", String(r.fieldsDelivered)],
+    ["Challenges upheld", String(r.challengesUpheld), r.challengesUpheld ? RED : undefined, r.challengesUpheld ? slashed : undefined],
+    ["Total Slashed", usdc(r.totalSlashed), MONEY, Number(r.totalSlashed) ? slashed : undefined],
+    ["Bonds locked", usdc(r.bondsLocked), MONEY, Number(r.bondsLocked) ? r.link : undefined],
+    ["Accuracy", r.accuracy ? `${((r.accuracy.correct / r.accuracy.fields) * 100).toFixed(1)} %` : "—"],
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 12, alignItems: "center", padding: "18px 20px", borderBottom: "1px solid var(--rule-row)" }}>
@@ -81,9 +83,12 @@ function Row({ r }: { r: ApiLeaderRow }) {
         <span style={{ font: "500 12px/1 var(--mono)", color: "#2A2723" }}>{r.sieves} Sieve{r.sieves === 1 ? "" : "s"}</span>
         <span style={{ marginTop: 4 }}><ProofLink href={r.link} hash={tail(r.link)} label="Account on Stellar" /></span>
       </span>
-      {cells.map(([v, fg], i) => (
+      {cells.map(([name, v, fg, href], i) => (
         <span key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ font: "500 24px/1 var(--mono)", color: fg ?? INK }}>{v}</span>
+          {href ? (
+            <a href={href} target="_blank" rel="noopener" aria-label={`${name}: ${v}${fg === MONEY ? " USDC" : ""}`} title="View on Stellar ↗"
+              style={{ font: "500 24px/1 var(--mono)", color: fg ?? INK, textDecorationThickness: 1, textUnderlineOffset: 4 }}>{v}</a>
+          ) : <span style={{ font: "500 24px/1 var(--mono)", color: fg ?? INK }}>{v}</span>}
           {i === 5 && r.accuracy && <span style={{ font: "500 11px/1 var(--mono)", color: "#2A2723" }}>{r.accuracy.correct} of {r.accuracy.fields} Fields</span>}
         </span>
       ))}

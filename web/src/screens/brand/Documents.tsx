@@ -104,7 +104,11 @@ function Row({ d, labels, now }: { d: ApiDocumentSummary; labels: Record<string,
         {n(r.counts.final, "var(--ink)", "Final")}{n(r.counts.notStated, "var(--amber-ink)", "Not stated")}{n(r.counts.challenged, "var(--red)", "Challenged")}
       </span>
       {r.bond ? <span style={{ font: "600 12.5px/1 var(--mono)", color: BOND[r.bond][1] }}>{BOND[r.bond][0]}</span> : dash}
-      <span>{r.closesAt && r.status === "Delivered" ? <span style={{ font: "500 13.5px/1 var(--mono)" }}>{clock(r.closesAt - now)}</span> : dash}</span>
+      <span>{r.closesAt && r.status === "Delivered" ? (
+        <span style={{ font: "500 13.5px/1 var(--mono)" }} title={r.paused === "until opened" ? "Starts when you open the Document" : r.paused ? "Paused while a Challenge is open" : undefined}>
+          {clock(r.paused ? r.msLeft! : r.closesAt - now)}{r.paused && <span style={{ display: "block", marginTop: 4, font: "500 11px/1 var(--sans)", color: "#5E594F" }}>{r.paused === "until opened" ? "not started" : "paused"}</span>}
+        </span>
+      ) : dash}</span>
       <span style={{ font: "500 12.5px/1 var(--mono)", color: "#3D3A34" }}>{new Date(d.uploadedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
     </Link>
   );

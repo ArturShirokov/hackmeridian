@@ -18,7 +18,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 const spaRoot = fileURLToPath(new URL("../web/dist", import.meta.url));
 
 const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
-const statusOf = { "not found": 404, closed: 409, invalid: 400, deposit: 402 } as const;
+const statusOf = { "not found": 404, closed: 409, challenged: 409, invalid: 400, deposit: 402 } as const;
 
 const layout = (title: string, body: unknown) => html`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -145,6 +145,8 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
     const d = board.apiDocument(c.req.param("id"));
     return d ? c.json(d) : c.json({ error: "not found" }, 404);
   });
+
+  app.post("/api/documents/:id/open", (c) => (board.open(c.req.param("id")) ? c.body(null, 204) : c.json({ error: "not found" }, 404)));
 
   app.get("/documents/:id/file", async (c) => {
     const bytes = await board.documentBytes(c.req.param("id"));

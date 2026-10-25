@@ -58,7 +58,10 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
             ? <><span style={{ width: 18, height: 18, borderRadius: "50%", background: "var(--ink)", color: "var(--paper)", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 10px/1 var(--mono)" }}>✓</span>Delivered</>
             : <><Spinner />{state.word}</>}
         </div>
-        <div style={{ font: "500 22px/1 var(--mono)" }}>{elapsed}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, alignItems: "flex-end" }}>
+          <span style={{ font: "600 10.5px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#3D3A34" }}>Elapsed since upload</span>
+          <span style={{ font: "500 22px/1 var(--mono)" }}>{elapsed}</span>
+        </div>
       </div>
       <div style={{ padding: "18px 32px 20px", borderBottom: "1px solid var(--rule)", background: "var(--band)", display: "flex", flexDirection: "column", gap: 16 }}>
         {state.banner && (
@@ -83,7 +86,12 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
               <span /><span>{field.tieBreak && <TieBreakTag />}</span>
             </div>
           )
-          : <FieldRow key={field.name} dense field={withShown(field)} selected={false} expanded={false} tieBreak={field.tieBreak} canChallenge={false} onSelect={noop} onToggle={noop} onChallenge={noop} />)}
+          : state.delivered
+            // Delivered: a row opens the Review at that Field.
+            ? <Link key={field.name} to={`/documents/${d.id}?field=${encodeURIComponent(field.name)}`} style={{ display: "block", color: "inherit", textDecoration: "none" }}>
+                <FieldRow dense field={withShown(field)} selected={false} expanded={false} tieBreak={field.tieBreak} canChallenge={false} onSelect={noop} onToggle={noop} onChallenge={noop} />
+              </Link>
+            : <FieldRow key={field.name} dense field={withShown(field)} selected={false} expanded={false} tieBreak={field.tieBreak} canChallenge={false} onSelect={noop} onToggle={noop} onChallenge={noop} />)}
       </div>
       <div style={{ flex: "none", borderTop: "1px solid var(--ink)", padding: "0 32px", height: 76, display: "flex", alignItems: "center", gap: 28, background: "var(--surface)" }}>
         {!state.delivered ? (
@@ -95,12 +103,12 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
             <span style={{ color: "#6B4400" }}>{counts.notStated} <span style={{ font: "500 15px/1 var(--sans)" }}>Not stated</span></span>
           </div>
         ) : (
-          <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 22, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
+          <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 18, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
             <span style={{ font: "600 20px/1 var(--sans)" }}>Delivered.</span>
-            {e && <span style={{ font: "500 20px/1 var(--mono)", color: "var(--money)" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
+            {e && <span style={{ font: "500 17px/1 var(--mono)", color: "var(--money)", whiteSpace: "nowrap" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
             {e && windowMs !== undefined && (
-              <span style={{ font: "500 20px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline" }}>
-                Challenge Window <Countdown bare closesAt={e.closesAt} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
+              <span style={{ font: "500 17px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline", whiteSpace: "nowrap" }}>
+                Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
               </span>
             )}
             {e && <ProofLink href={e.link} hash={e.outputHash} />}

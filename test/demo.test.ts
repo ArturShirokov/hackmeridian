@@ -44,7 +44,7 @@ test("demo replay runs on the wall clock: every Challenge Window opens at start,
 
 test("the demo seed: about 8 Documents across both Templates and several Suppliers, Processing, Delivered and Settled, one with a Slash", async () => {
   const wall = 1_800_000_000_000;
-  const { board } = await demoBoard(cache, readPdf, { now: () => wall, challengeWindowMs: 3 * 60_000 });
+  const { board } = await demoBoard(cache, readPdf, { now: () => wall, challengeWindowMs: 3 * 60_000, demoWindow: true });
   const list = (await (await webApp(board).request("/api/documents")).json()) as ApiDocumentSummary[];
   const status = (d: ApiDocumentSummary) => {
     const ps = Object.values(d.pipelines);
@@ -58,7 +58,7 @@ test("the demo seed: about 8 Documents across both Templates and several Supplie
   const slashed = list.flatMap((d) => Object.values(d.pipelines)).filter((p) => p.bond === "slashed");
   expect(slashed).toHaveLength(1);
   expect(Number(slashed[0]!.received)).toBeGreaterThan(0);
-  // Delivered Documents keep their Challenge Window on the wall clock.
+  // Delivered Documents keep their whole Challenge Window until the Brand opens them.
   for (const d of list.filter((d) => status(d) === "delivered"))
-    for (const p of Object.values(d.pipelines)) expect(p.closesAt!).toBeGreaterThanOrEqual(wall + 3 * 60_000);
+    for (const p of Object.values(d.pipelines)) expect(p).toMatchObject({ paused: "until opened", msLeft: 3 * 60_000 });
 });

@@ -46,7 +46,7 @@ export function MobileView({ d, view, live, config, offset }: { d: ApiDocument; 
             <span style={{ border: "1px solid #0B4A57", color: "#0B4A57", padding: "6px 9px", font: "500 13px/1 var(--mono)" }}>
               Bond <b style={{ fontWeight: 600 }}>{usdc(e.bondLeft)} USDC</b> · {settled ? "released" : e.upheld ? "slashed" : "locked"}
             </span>
-            {config && <span style={{ font: "500 15px/1 var(--mono)" }}><Countdown bare closesAt={e.closesAt} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} /></span>}
+            {config && <span style={{ font: "500 15px/1 var(--mono)" }}><Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} /></span>}
           </div>
         )}
       </div>

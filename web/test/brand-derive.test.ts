@@ -66,7 +66,7 @@ test("a text Field takes the words as typed", () => {
   expect(parseClaim(" Komorniki, Poland ", { type: "text", label: "Place" })).toEqual({ value: "Komorniki, Poland" });
 });
 
-import { settledText, suggestions, windowLength } from "../src/screens/brand/derive.ts";
+import { settledText, suggestions, windowLabel, windowLength } from "../src/screens/brand/derive.ts";
 
 test("Supplier suggestions come from past uploads, with a count, filtered by what is typed", () => {
   const docs = [{ supplier: "Hunan Cellworks" }, { supplier: "Hunan Cellworks" }, { supplier: "Fiação do Ave" }, { supplier: "" }];
@@ -78,6 +78,8 @@ test("Supplier suggestions come from past uploads, with a count, filtered by wha
 test("the Challenge Window reads in hours, or minutes when short", () => {
   expect(windowLength(48 * 3600_000)).toBe("48 h");
   expect(windowLength(3 * 60_000)).toBe("3 min");
+  expect(windowLabel({ challengeWindowMs: 3 * 60_000, demoWindow: true })).toBe("3 min demo · 48 h live");
+  expect(windowLabel({ challengeWindowMs: 48 * 3600_000 })).toBe("48 h");
 });
 
 test("the settled banner names the Slash when one was upheld", () => {

@@ -12,7 +12,8 @@ export interface ViewerBox {
   id: string;
   page: number;
   rects: Rect[];
-  kind: "selected" | "quoted" | "notStated" | "challenged" | "pick" | "delivered" | "challenger";
+  /** delivered / challenger: the Arbiter's two quotes, neutral until the decision; then right / wrong. */
+  kind: "selected" | "quoted" | "notStated" | "challenged" | "pick" | "delivered" | "challenger" | "right" | "wrong";
   tag?: string;
   title: string;
   /** Several Fields quote these words: a click opens a picker listing them. */
@@ -27,8 +28,10 @@ const BOX: Record<ViewerBox["kind"], { bg: string; ol: string; tagBg: string }> 
   notStated: { bg: "var(--hatch)", ol: "1px solid #B9862A", tagBg: AMBER },
   challenged: { bg: "transparent", ol: `2px solid ${RED}`, tagBg: RED },
   pick: { bg: "#EFE9DA", ol: `2px dashed ${INK}`, tagBg: INK },
-  delivered: { bg: "transparent", ol: `2px solid ${RED}`, tagBg: RED },
-  challenger: { bg: "#ECE5D3", ol: `2px solid ${INK}`, tagBg: INK },
+  delivered: { bg: "transparent", ol: `2px solid ${INK}`, tagBg: INK },
+  challenger: { bg: "transparent", ol: `2px solid ${INK}`, tagBg: INK },
+  right: { bg: "#E3ECEE", ol: "2px solid #0B4A57", tagBg: "#0B4A57" },
+  wrong: { bg: "transparent", ol: `2px solid ${RED}`, tagBg: RED },
 };
 const PAD_X = 5, PAD_Y = 3;
 const MAX_PAGE_WIDTH = 760;
@@ -77,7 +80,7 @@ export function DocumentViewer({ pdfUrl, page, onPage, boxes, onBoxClick, pick, 
       )}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 14, padding: "10px 20px", borderBottom: "1px solid var(--rule)", font: "400 13px/1.3 var(--sans)", color: "#2A2723" }}>
-          <span style={{ font: "500 13px/1 var(--mono)" }}>p. {page} of {pages || "…"}</span>
+          <span style={{ font: "500 13px/1 var(--mono)", whiteSpace: "nowrap", flex: "none" }}>p. {page} of {pages || "…"}</span>
           {caption && <span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{caption}</span>}
         </div>
         {pick && (
