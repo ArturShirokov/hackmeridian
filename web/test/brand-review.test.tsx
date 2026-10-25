@@ -58,10 +58,22 @@ test("Copy Supplier Request opens the message and copies it", async () => {
   expect(writeText.mock.calls[0]![0]).toMatch(/^Hello Voltaris Mobility team/);
 });
 
+test("rows sit under their Template section; a Brand-authored Not stated Field is Brand to provide, with no Supplier Request", () => {
+  const d = doc();
+  const ns = d.views[0]!.fields.find((f) => f.status === "not stated")!;
+  Object.assign(ns, { author: "Brand", supplierRequest: undefined });
+  Object.assign(d.views[0]!, { supplierRequest: undefined, brandToProvide: [ns.name] });
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  expect(screen.getByText("Performance and durability · 3")).toBeTruthy();
+  expect(screen.getByText("Brand to provide · 1")).toBeTruthy();
+  expect(screen.getByText("Author: Brand")).toBeTruthy();
+  expect(screen.queryByText("Copy Supplier Request")).toBeNull();
+});
+
 test("the Compare tab counts the differences and marks them", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
-  expect(screen.getByText("2 differences in 12 Fields. Click a row to see its quote.")).toBeTruthy();
+  expect(screen.getByText("2 differences in 10 Fields. Click a row to see its quote.")).toBeTruthy();
   expect(screen.getAllByText("≠ Differs")).toHaveLength(2);
 });
 

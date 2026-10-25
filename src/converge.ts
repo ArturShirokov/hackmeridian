@@ -27,6 +27,27 @@ export function supplierRequest(f: Field, doc: { name: string; supplier: string;
   );
 }
 
+/**
+ * One Supplier Request for every Supplier-authored Not stated Field of a Document, or undefined when there are none.
+ * Brand-authored Fields never go to the Supplier: they are "Brand to provide".
+ */
+export function combinedSupplierRequest(
+  doc: { name: string; supplier: string; template: string },
+  notStated: { f: Field; quotes: Quote[] }[],
+): string | undefined {
+  const asked = notStated.filter(({ f }) => f.author === "Supplier");
+  if (!asked.length) return undefined;
+  const items = asked.map(({ f, quotes }, i) => {
+    const said = quotes.map((q) => `\n   page ${q.page} says: "${q.quote}"`).join("");
+    return `${i + 1}. "${f.label}"${f.unit ? ` [${f.unit}]` : ""}${said}`;
+  });
+  return (
+    `${doc.supplier ? `To ${doc.supplier}: please` : "Please"} confirm these ${asked.length} Field${asked.length === 1 ? "" : "s"} for the Document ${doc.name} (${doc.template}).` +
+    ` The Document does not state ${asked.length === 1 ? "it" : "them"} clearly.\n${items.join("\n")}\n` +
+    `For each, please send the value, its unit and the page that states it, or a corrected Document.`
+  );
+}
+
 /** Factor from each accepted unit to the canonical one, keyed by spelling() of the canonical unit. */
 const units: Record<string, Record<string, number>> = {
   Ah: { Ah: 1, mAh: 0.001 },
@@ -42,6 +63,10 @@ const units: Record<string, Record<string, number>> = {
   kgCO2e: { kgCO2e: 1, gCO2e: 0.001 },
   "g/m2": { "g/m2": 1, gsm: 1 },
   L: { L: 1, m3: 1000 },
+  years: { years: 1, year: 1 },
+  months: { months: 1, month: 1, years: 12, year: 12 },
+  "A/Ah": { "A/Ah": 1, C: 1 },
+  grade: { grade: 1 },
 };
 
 /** One spelling per unit: no spaces, CO₂-eq as CO2e, Ω as ohm, degrees as °C. Case is kept (mWh is not MWh). */
@@ -60,6 +85,7 @@ const codes: Record<string, string> = {
   LFP: "LFP", LIFEPO4: "LFP", NCA: "NCA", LMO: "LMO", LCO: "LCO", LTO: "LTO",
   NAION: "Na-ion", SODIUMION: "Na-ion", PBACID: "Pb-acid", LEADACID: "Pb-acid", NIMH: "NiMH",
   EV: "EV", LMT: "LMT", SLI: "SLI", INDUSTRIAL: "industrial", PORTABLE: "portable",
+  YES: "yes", NO: "no", PRECONSUMER: "pre-consumer", POSTCONSUMER: "post-consumer",
 };
 
 function code(raw: string): string {
@@ -113,8 +139,10 @@ export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>):
     }
     case "text":
       return (v.value as string).trim().toLowerCase();
-    case "date":
-      return (v.value as string).trim();
+    case "date": {
+      const d = (v.value as string).trim();
+      return /^\d{4}-\d{2}/.test(d) ? d.slice(0, 7) : d; // the Templates' date unit is YYYY-MM
+    }
   }
 }
 

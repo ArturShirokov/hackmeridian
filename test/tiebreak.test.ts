@@ -26,24 +26,24 @@ async function afterTwo(first: Record<string, object>, second: Record<string, ob
 
 test("a tie-break from a third Worker covers only the disagreeing and failed-quote Fields, and agreeing with either earlier value makes it final", async () => {
   const b = await afterTwo(
-    { rated_capacity_ah: capacity, battery_chemistry: chemistry, name: { value: "Cell C-32", page: 1, quote: "Cell C-32" } },
-    { rated_capacity_ah: capacity33, battery_chemistry: chemistry, name: { value: "Cell C-32", page: 1, quote: "Cell C 99" } },
+    { rated_capacity_ah: capacity, battery_chemistry: chemistry, manufacturing_place: { value: "Cell C-32", page: 1, quote: "Cell C-32" } },
+    { rated_capacity_ah: capacity33, battery_chemistry: chemistry, manufacturing_place: { value: "Cell C-32", page: 1, quote: "Cell C 99" } },
   );
   expect(await b.w1.nextJob()).toBeNull();
   expect(await b.w2.nextJob()).toBeNull();
   const tie = (await b.w3.nextJob())!;
   expect(tie).toMatchObject({ sieve: "tiebreak", view: "original", documentId: b.docId });
-  expect(tie.template.fields.map((f) => f.name).sort()).toEqual(["name", "rated_capacity_ah"]);
+  expect(tie.template.fields.map((f) => f.name).sort()).toEqual(["manufacturing_place", "rated_capacity_ah"]);
   // Our own finals are held back too while the tie-break is out.
   expect(await b.field("battery_chemistry")).toEqual(expect.objectContaining({ status: "final", withheld: true }));
   expect(await b.field("battery_chemistry")).not.toHaveProperty("value");
   expect(b.ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(0);
 
   expect(
-    await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: { ...capacity, value: 3.2, unit: "Ah" }, name: { value: "cell c-32", page: 1, quote: "Cell C-32" } })),
+    await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: { ...capacity, value: 3.2, unit: "Ah" }, manufacturing_place: { value: "cell c-32", page: 1, quote: "Cell C-32" } })),
   ).toMatchObject({ ok: true });
   expect(await b.field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, unit: "Ah" });
-  expect(await b.field("name")).toMatchObject({ status: "final", tieBreak: true });
+  expect(await b.field("manufacturing_place")).toMatchObject({ status: "final", tieBreak: true });
   expect(await b.field("battery_chemistry")).toMatchObject({ status: "final", value: "LFP", tieBreak: false });
   expect(b.ledger.calls.filter((c) => c.call === "openEscrow")).toHaveLength(1);
 });

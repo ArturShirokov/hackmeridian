@@ -14,6 +14,6 @@ test("fixture mode answers every read route without the network", async () => {
   const api = makeApi(reply(500, {}), () => import("../src/fixtures.ts"));
   expect((await api.documents()).length).toBeGreaterThan(0);
   expect((await api.document("doc-1")).views.map((v) => v.pipeline)).toEqual(["ours", "baseline"]);
-  expect((await api.templates()).find((t) => t.name === "battery")!.fields).toHaveLength(25);
+  expect((await api.templates()).find((t) => t.name === "battery")!.fields).toHaveLength(60);
   for (const read of [api.config, api.arbiter, api.leaderboard, () => api.jobs(), api.workers]) await expect(read()).resolves.toBeTruthy();
 });

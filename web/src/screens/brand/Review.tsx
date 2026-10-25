@@ -42,7 +42,7 @@ export function ReviewView({ d, config, offset, template, file }: {
   const [exp, setExp] = useState<string | undefined>(sel);
   const [page, setPage] = useState(1);
   const [panel, setPanel] = useState<{ pipeline: string; field: string; pick?: { page: number; quote: string }; filed?: boolean }>();
-  const [modal, setModal] = useState<{ kind: "sr"; field: NotStated } | { kind: "export" }>();
+  const [modal, setModal] = useState<{ kind: "sr"; text: string } | { kind: "export" }>();
 
   const isCompare = tab === "compare";
   const view = d.views.find((v) => v.pipeline === tab) ?? d.views[0]!;
@@ -171,20 +171,28 @@ export function ReviewView({ d, config, offset, template, file }: {
           <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
             {isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} /> : (
               <>
-                {groups.notStated.length > 0 && (
-                  <>
-                    <div style={{ padding: "14px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: AMBER }}>Not stated · {groups.notStated.length}</div>
-                    {groups.notStated.map((f) => (
-                      <NotStatedCard key={f.name} field={f as NotStated} selected={sel === f.name} onSelect={() => select(f.name)}
-                        onQuote={(p) => { setSel(f.name); setPage(p); }} onRequest={() => setModal({ kind: "sr", field: f as NotStated })} />
+                {/* Supplier-authored Not stated Fields share one Supplier Request; the Brand's are "Brand to provide". */}
+                {([["Not stated", groups.supplier], ["Brand to provide", groups.brand]] as const).map(([title, list]) => list.length > 0 && (
+                  <div key={title}>
+                    <div style={{ padding: "14px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: AMBER }}>{title} · {list.length}</div>
+                    {list.map((f) => {
+                      const text = view.supplierRequest ?? (f as NotStated).supplierRequest;
+                      return (
+                        <NotStatedCard key={f.name} field={f as NotStated} selected={sel === f.name} onSelect={() => select(f.name)}
+                          onQuote={(p) => { setSel(f.name); setPage(p); }} onRequest={f.author === "Brand" || !text ? undefined : () => setModal({ kind: "sr", text })} />
+                      );
+                    })}
+                  </div>
+                ))}
+                {groups.sections.map((s) => (
+                  <div key={s.section}>
+                    <div style={{ padding: "10px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#2A2723" }}>{s.section} · {s.fields.length}</div>
+                    {s.fields.map((f) => (
+                      <FieldRow key={f.name} field={withShown(f)} selected={sel === f.name} expanded={exp === f.name} tieBreak={f.tieBreak}
+                        canChallenge={open && challengeable(f)} upheldNote={upheldNote(view)}
+                        onSelect={() => select(f.name, true)} onToggle={() => setExp(exp === f.name ? undefined : f.name)} onChallenge={() => openPanel(f.name)} />
                     ))}
-                  </>
-                )}
-                <div style={{ padding: "10px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#2A2723" }}>Fields · {groups.rows.length}</div>
-                {groups.rows.map((f) => (
-                  <FieldRow key={f.name} field={withShown(f)} selected={sel === f.name} expanded={exp === f.name} tieBreak={f.tieBreak}
-                    canChallenge={open && challengeable(f)} upheldNote={upheldNote(view)}
-                    onSelect={() => select(f.name, true)} onToggle={() => setExp(exp === f.name ? undefined : f.name)} onChallenge={() => openPanel(f.name)} />
+                  </div>
                 ))}
               </>
             )}
@@ -200,7 +208,7 @@ export function ReviewView({ d, config, offset, template, file }: {
         </div>
       </div>
       <Modal open={modal?.kind === "sr"} onClose={() => setModal(undefined)} title={`Supplier Request · ${d.supplier || "Supplier"}`}>
-        {modal?.kind === "sr" && <SupplierRequest text={modal.field.supplierRequest} onClose={() => setModal(undefined)} />}
+        {modal?.kind === "sr" && <SupplierRequest text={modal.text} onClose={() => setModal(undefined)} />}
       </Modal>
       <Modal open={modal?.kind === "export"} onClose={() => setModal(undefined)} title="Export to passport">
         {modal?.kind === "export" && e && (
@@ -246,14 +254,16 @@ function CompareTab({ d, sel, onSelect }: { d: ApiDocument; sel?: string; onSele
 }
 
 export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }: {
-  field: NotStated; selected: boolean; onSelect(): void; onQuote(page: number): void; onRequest(): void;
+  field: NotStated; selected: boolean; onSelect(): void; onQuote(page: number): void;
+  /** Absent for a Brand-authored Field: the Brand provides it itself. */
+  onRequest?(): void;
 }) {
   return (
     <div onClick={onSelect} data-field={field.name} style={{ margin: "6px 20px 14px", border: "1px solid var(--amber-bd)", background: "var(--amber-card)", cursor: "pointer", outline: selected ? `2px solid ${AMBER}` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--hatch)", borderBottom: "1px solid var(--amber-bd)" }}>
         <span style={{ font: "600 15px/1.2 var(--sans)", color: INK }}>{field.label}</span>
         <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 9px 0 5px", border: `1px solid ${AMBER}`, background: "var(--amber-bg)", color: AMBER, font: "600 11.5px/1 var(--sans)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          <span aria-hidden style={{ width: 16, height: 16, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: AMBER, color: "var(--amber-bg)", font: "700 10px/1 var(--mono)" }}>–</span>Not stated
+          <span aria-hidden style={{ width: 16, height: 16, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: AMBER, color: "var(--amber-bg)", font: "700 10px/1 var(--mono)" }}>–</span>{onRequest ? "Not stated" : "Brand to provide"}
         </span>
       </div>
       <div style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
@@ -266,8 +276,9 @@ export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest }:
             <span style={{ font: "500 12px/1.6 var(--mono)", color: AMBER }}>p. {q.page}</span><span>“{q.quote}”</span>
           </div>
         ))}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-          <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 4 }}>
+          <span style={{ marginRight: "auto", font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>Author: {field.author}</span>
+          {onRequest && <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>}
         </div>
       </div>
     </div>
