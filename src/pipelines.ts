@@ -25,3 +25,12 @@ export const baseline: Pipeline = {
   name: "baseline",
   sieves: [{ kind: "extract", view: "original", instructions: extractFromOriginal }],
 };
+
+/** Our Pipeline. Sieves run in order, each Job posted when the previous Sieve is handed in. */
+export const ours: Pipeline = {
+  name: "ours",
+  sieves: [
+    { kind: "extract", view: "original", instructions: extractFromOriginal },
+    { kind: "extract", view: "original", instructions: extractFromOriginal }, // #9 switches this to the checked Markdown
+  ],
+};

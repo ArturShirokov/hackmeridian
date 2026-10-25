@@ -1,6 +1,7 @@
 // Wires adapters, serves the web pages and the MCP endpoint, and polls Storage every 5 s.
 import { serve } from "@hono/node-server";
 import { JobBoard } from "./board.js";
+import { baseline, ours } from "./pipelines.js";
 import { FakeLedger } from "./ledger.js";
 import { InMemoryStorage } from "./storage.js";
 import { webApp } from "./web.js";
@@ -11,7 +12,7 @@ const baseUrl = process.env.BASE_URL ?? `http://${host}:${port}`;
 
 // ponytail: fake adapters only; swap in ICP Storage and Trustless Work Ledger when they land.
 const challengeWindowMs = Number(process.env.CHALLENGE_WINDOW_MIN ?? 5) * 60_000;
-const board = new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl, challengeWindowMs });
+const board = new JobBoard({ storage: new InMemoryStorage(), ledger: new FakeLedger(), baseUrl, pipelines: [ours, baseline], challengeWindowMs });
 setInterval(() => board.poll().catch((e) => console.error("poll failed:", e)), 5000);
 setInterval(() => board.tick().catch((e) => console.error("settlement failed:", e)), 5000);
 
