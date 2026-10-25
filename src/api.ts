@@ -16,6 +16,10 @@ export interface ApiConfig {
   now: Ms;
   baseUrl: string;
   challengeWindowMs: number;
+  /** What a challenger locks to file a Challenge. */
+  challengeDeposit: Usdc;
+  /** What the Arbiter earns for an upheld Challenge, out of the Slash (at most the Slash). */
+  arbiterFee: Usdc;
   brand: { name: string; reviewer: string };
   operators: { pipeline: string; label: string; operator: string; bond: Usdc; fee: Usdc; sieves: { kind: SieveKind; label: string }[] }[];
 }
@@ -159,15 +163,22 @@ export interface ApiChallenge extends ApiChallengeSummary {
   closesAt: Ms;
   delivered: { display: string; evidence?: ApiQuote };
   claim: { display: string; evidence: ApiQuote };
-  /** Paid to the Brand at settlement if upheld. */
+  /** Paid to the Brand at settlement if upheld, less the Arbiter Fee. */
   slash: Usdc;
+  /** Who filed it: "brand", or the challenger's Stellar address. */
+  challenger: string;
+  /** The Challenge Deposit it locked: back to the challenger if upheld, to the Arbiter if rejected. */
+  deposit: Usdc;
+  /** Once decided: what the Arbiter earns for it (the Deposit if rejected, the Arbiter Fee if upheld). */
+  arbiterFee?: Usdc;
 }
 
 /** GET /api/challenges */
 export interface ApiArbiter {
   open: ApiChallenge[];
   decided: ApiChallenge[];
-  record: { decided: number; upheld: number; rejected: number };
+  /** earned: the Arbiter's fees from every decision, paid at settlement. */
+  record: { decided: number; upheld: number; rejected: number; earned: Usdc };
 }
 
 /** GET /api/leaderboard */
@@ -229,7 +240,10 @@ export interface ApiExport {
  * POST /api/documents (multipart file, template, supplier) → 201 { id } | 400 { error }
  * GET  /api/documents/:id → ApiDocument    GET /documents/:id/file → the PDF
  * GET  /api/documents/:id/export?pipeline= → ApiExport as an attachment | 409 before delivery
- * POST /api/documents/:id/challenges { pipeline, field, page, quote, value, unit?, qualifier? } → 201 { id } | 400/404/409 { error }
+ * POST /api/documents/:id/challenges { pipeline, field, page, quote, value, unit?, qualifier?, challenger?, depositXdr? } → 201 { id }
+ *      | 400/404/409 { error } | 402 { error } when the Challenge Deposit is not locked. challenger defaults to the Brand
+ *      (the Job Board signs its Deposit); any other challenger is a Stellar address and signs its own:
+ * POST /api/documents/:id/challenges/deposit { pipeline, challenger } → { xdr, amount }: sign xdr, pass it as depositXdr
  * GET  /api/challenges → ApiArbiter        POST /api/challenges/:id { decision: "upheld"|"rejected", note? } → 200 | 400/404/409
  * GET  /api/leaderboard → ApiLeaderRow[]   GET /api/jobs?limit=50 → ApiJob[]   GET /api/workers → ApiWorker[]
  */

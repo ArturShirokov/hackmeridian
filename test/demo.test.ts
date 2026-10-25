@@ -27,7 +27,7 @@ test("demo replay runs on the wall clock: every Challenge Window opens at start,
   for (const d of documents) for (const v of Object.values(board.document(d.id)!.pipelines))
     expect(v.escrow!.msLeft).toBeGreaterThanOrEqual(3 * 60_000);
 
-  const r = board.challenge(helion.id, { field: "recycled_content_lithium", page: 2, quote: "Recycled lithium, this production lot (pre + post consumer) 6 %", value: 6, unit: "%" }, "baseline");
+  const r = await board.challenge(helion.id, { field: "recycled_content_lithium", page: 2, quote: "Recycled lithium, this production lot (pre + post consumer) 6 %", value: 6, unit: "%" }, "baseline");
   expect(r.ok).toBe(true);
   expect(board.challenges.decide(board.challenges.open()[0]!.id, "upheld")).toBe("ok");
 

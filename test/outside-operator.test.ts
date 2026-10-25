@@ -126,8 +126,9 @@ test("an upheld Challenge against an outside Operator Slashes its Bond to the Br
   board.clock.advance(60_000);
   await board.tick();
   const lock = board.ledger.calls.find((c) => c.call === "lockBond")!;
-  expect(board.ledger.calls).toContainEqual({ call: "settleWithSlashes", escrowId: lock.escrowId, slashes: ["1"] });
-  expect(await board.ledger.usdcBalance("brand")).toBe("1");
+  const settled = board.ledger.calls.find((c) => c.call === "settleWithSlashes" && c.escrowId === lock.escrowId);
+  // The Slash goes to the Brand, less the Arbiter Fee.
+  expect(settled).toMatchObject({ slashes: ["1"], payouts: { escrow: expect.arrayContaining([{ to: "brand", amount: "0.9" }, { to: "operator", amount: "10" }]) } });
   expect(await board.ledger.usdcBalance(op.address)).toBe("10");
   expect((await board.brand.leaderboard()).find((r) => r.operator === op.address)).toMatchObject({ challengesUpheld: 1, totalSlashed: "1" });
 });

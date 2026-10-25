@@ -183,6 +183,35 @@ What the spike settled:
   the Slash minus 0.3%, not the full Slash as issue #1 says. To pay the Brand the full Slash, the Operator's share
   would have to cover the fee; that is not done yet.
 
+### Challenge Deposit and Arbiter Fee
+
+Anyone with a Stellar address can file a Challenge by locking a Challenge Deposit (`CHALLENGE_DEPOSIT`, default 1
+USDC). The Arbiter earns the Arbiter Fee (`ARBITER_FEE`, default 0.1 USDC, never more than the Slash), always paid by
+the losing side. Settlement pays out two pots, and each pays out exactly what it holds (`settlement()` in `src/ledger.ts`):
+
+| Pot | Holds | Upheld Challenge | Rejected Challenge |
+|---|---|---|---|
+| Trustless Work escrow | Bond + Fee | Brand: Slash − Arbiter Fee; Arbiter: Arbiter Fee; Operator: the rest | Operator: all of it |
+| Deposit account | the Deposits | back to the challenger | to the Arbiter |
+
+- **Where the Deposit sits: the deposit account, not the escrow.** It is the `ESCROW` wallet, held by the Job Board.
+  A v1 multi-release resolve pays out exactly the milestone amount, which is fixed at deploy to Bond + Fee. A
+  Deposit funded into the contract later could never be paid out, and the number of Challenges is not known at deploy.
+  A Deposit is a plain USDC payment with the escrow's output hash in the memo, so it is on Stellar next to the escrow.
+- **The 0.3% fee:** the escrow split is gross and adds up to Bond + Fee exactly. Trustless Work takes 0.3% out of each
+  share, so the Brand, the Arbiter and the Operator each get 99.7% of theirs. Deposits never touch the contract and are
+  paid back, or to the Arbiter, in full.
+- A Challenge with no upheld Slash still settles through the deposit account (the Deposits go to the Arbiter), then a
+  clean release of Bond + Fee to the Operator.
+- **Who signs the Deposit.** The Job Board holds the Brand's key and signs its Deposit. Any other challenger signs its
+  own: `POST /api/documents/:id/challenges/deposit { challenger }` returns an unsigned payment, the challenger signs it
+  and files the Challenge with `{ ..., challenger, depositXdr }`. Only a transaction handed out by that call is
+  accepted (checked by its hash). With no Deposit locked, the Challenge is refused with 402.
+
+Verified on testnet on 25 Oct 2026 (`scripts/smoke-ledger.ts`): two Brand Deposits locked, one upheld and one
+rejected, the Deposits paid back and to the Arbiter, then a three-way resolve to the Brand, Arbiter and Operator. An
+outside wallet's self-signed Deposit was locked and returned the same way.
+
 ### Wallets
 
 1. Create the wallets, fund them with XLM, add USDC trustlines and buy 20 testnet USDC each for the Brand and both

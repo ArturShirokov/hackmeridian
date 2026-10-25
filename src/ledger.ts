@@ -43,13 +43,27 @@ export interface OutsideLedger {
   submitSigned(escrowId: string, signedXdr: string): Promise<{ link?: string }>;
 }
 
+/** A decided Challenge's Deposit. challenger: a party id the Ledger holds a key for (the Brand), or a Stellar address. */
+export interface Deposit {
+  challenger: string;
+  amount: string;
+  upheld: boolean;
+}
+
 /** `link`: where to see it on a Stellar explorer; absent when the Ledger has no chain behind it. */
 export interface Ledger extends Partial<OutsideLedger> {
   openEscrow(req: EscrowRequest): Promise<{ escrowId: string; link?: string }>;
-  /** Window closed with no Challenge upheld: Fee and Bond go to the Operator. */
+  /** Window closed with no Challenge filed: Fee and Bond go to the Operator. */
   settleClean(escrowId: string): Promise<{ link?: string }>;
-  /** Each Slash goes to the Brand; the Operator gets the rest of the Bond plus the Fee. */
-  settleWithSlashes(escrowId: string, slashes: string[]): Promise<{ link?: string }>;
+  /** Pays out the settlement() split: each Slash to the Brand less the Arbiter Fee, the rest to the Operator; Deposits back or to the Arbiter. */
+  settleWithSlashes(escrowId: string, slashes: string[], deposits?: Deposit[], arbiterFee?: string): Promise<{ link?: string }>;
+  /**
+   * Locks a Challenge Deposit against the escrow, or throws. The Ledger signs for a challenger whose key it holds;
+   * any other challenger (a Stellar address) signs the transaction from prepareDeposit and passes it as signedXdr.
+   */
+  lockDeposit(escrowId: string, d: { challenger: string; amount: string; signedXdr?: string }): Promise<{ link?: string }>;
+  /** The unsigned Deposit transaction for a challenger that signs its own. */
+  prepareDeposit(escrowId: string, challenger: string, amount: string): Promise<{ xdr: string }>;
   operatorRecord(operator: string): Promise<OperatorRecord>;
   /** Where to see the Operator's account or contract on an explorer, when the Ledger has one. */
   operatorLink?(operator: string): string | undefined;
@@ -83,12 +97,47 @@ export function slashes(bond: string, upheld: number): string[] {
   return Array.from({ length: upheld }, (_, i) => (i < 10 ? tenth : "0"));
 }
 
+const min = (a: bigint, b: bigint) => (a < b ? a : b);
+const sum = (xs: bigint[]) => xs.reduce((a, b) => a + b, 0n);
+
+/** "brand" and "operator" are the escrow's; a challenger is as in Deposit. */
+export type Payee = "brand" | "operator" | "arbiter" | { challenger: string };
+export interface Payout {
+  to: Payee;
+  amount: string;
+}
+
+/**
+ * The settlement split, in two pots that each pay out exactly what they hold (zero shares left out):
+ * - escrow (Bond + Fee): per Slash, the Brand gets the Slash less the Arbiter Fee (never more than the Slash), the
+ *   Arbiter the Fee; the Operator the rest. Slashes past Bond + Fee are capped (one Brand share).
+ * - deposits: an upheld Challenge's Deposit goes back to its challenger, a rejected one's to the Arbiter.
+ */
+export function settlement(req: EscrowRequest, slashes: string[], deposits: Deposit[] = [], arbiterFee = "0") {
+  const total = toStroops(addUsdc(req.bond, req.fee));
+  const s = slashes.map(toStroops);
+  const fees = s.map((x) => min(x, toStroops(arbiterFee)));
+  const capped = sum(s) > total;
+  const slashed = min(sum(s), total);
+  const fee = min(sum(fees), slashed);
+  const brand: bigint[] = capped ? [slashed - fee] : s.map((x, i) => x - fees[i]!);
+  const out = (p: [Payee, bigint][]): Payout[] => p.filter(([, a]) => a > 0n).map(([to, a]) => ({ to, amount: fromStroops(a) }));
+  return {
+    escrow: out([...brand.map((a): [Payee, bigint] => ["brand", a]), ["arbiter", fee], ["operator", total - slashed]]),
+    deposits: out(deposits.map((d) => [d.upheld ? { challenger: d.challenger } : "arbiter", toStroops(d.amount)])),
+  };
+}
+
+/** min(a, b) of USDC decimal strings. */
+export const minUsdc = (a: string, b: string) => fromStroops(min(toStroops(a), toStroops(b)));
+
 export type LedgerCall =
   | { call: "openEscrow"; escrowId: string; req: EscrowRequest }
   | { call: "lockBond"; escrowId: string; req: BondRequest }
   | { call: "recordOutput"; escrowId: string; outputHash: string }
   | { call: "settleClean"; escrowId: string }
-  | { call: "settleWithSlashes"; escrowId: string; slashes: string[] };
+  | { call: "settleWithSlashes"; escrowId: string; slashes: string[]; payouts: ReturnType<typeof settlement> }
+  | { call: "lockDeposit"; escrowId: string; challenger: string; amount: string };
 
 /**
  * In memory. Models outside Operators too: USDC balances per address (fund() them), and real Stellar transactions
@@ -97,7 +146,7 @@ export type LedgerCall =
 export class FakeLedger implements Ledger, OutsideLedger {
   readonly calls: LedgerCall[] = [];
   private balances = new Map<string, string>();
-  private escrows = new Map<string, BondRequest>();
+  private escrows = new Map<string, EscrowRequest>();
   /** The XDR waiting for its Operator's signature, per escrow, and what submitting it does. */
   private pending = new Map<string, { xdr: string; operator: string; then: () => void }>();
   private claims = 0;
@@ -139,7 +188,7 @@ export class FakeLedger implements Ledger, OutsideLedger {
         const have = this.balances.get(req.operator) ?? "0";
         if (toStroops(have) < toStroops(req.bond)) throw new Error(`${req.operator} holds ${have} USDC, less than the Bond of ${req.bond}`);
         this.balances.set(req.operator, subUsdc(have, req.bond));
-        this.escrows.set(escrowId, req);
+        this.escrows.set(escrowId, { ...req, outputHash: "" });
         this.calls.push({ call: "lockBond", escrowId, req });
       },
     });
@@ -150,7 +199,10 @@ export class FakeLedger implements Ledger, OutsideLedger {
     const req = this.escrows.get(escrowId);
     if (!req) throw new Error(`unknown escrow ${escrowId}`);
     const xdr = this.toSign(req.operator, escrowId, outputHash.slice(0, 64));
-    this.pending.set(escrowId, { xdr, operator: req.operator, then: () => void this.calls.push({ call: "recordOutput", escrowId, outputHash }) });
+    this.pending.set(escrowId, { xdr, operator: req.operator, then: () => {
+      req.outputHash = outputHash;
+      this.calls.push({ call: "recordOutput", escrowId, outputHash });
+    } });
     return { xdr };
   }
 
@@ -179,15 +231,44 @@ export class FakeLedger implements Ledger, OutsideLedger {
     return this.link(`${escrowId}/settle`);
   }
 
-  async settleWithSlashes(escrowId: string, slashes: string[]) {
-    this.calls.push({ call: "settleWithSlashes", escrowId, slashes });
-    const req = this.escrows.get(escrowId);
-    if (req) {
-      const toBrand = addUsdc(...slashes);
-      this.fund(req.brand, toBrand);
-      this.fund(req.operator, subUsdc(addUsdc(req.bond, req.fee), toBrand));
-    }
+  async settleWithSlashes(escrowId: string, slashes: string[], deposits: Deposit[] = [], arbiterFee = "0") {
+    const req = this.req(escrowId);
+    const payouts = settlement(req, slashes, deposits, arbiterFee);
+    this.calls.push({ call: "settleWithSlashes", escrowId, slashes, payouts });
+    for (const p of [...payouts.escrow, ...payouts.deposits])
+      this.fund(p.to === "brand" ? req.brand : p.to === "operator" ? req.operator : p.to === "arbiter" ? "arbiter" : p.to.challenger, p.amount);
     return this.link(`${escrowId}/settle`);
+  }
+
+  private prepared = new Set<string>();
+
+  async prepareDeposit(escrowId: string, challenger: string, amount: string) {
+    const xdr = `fake-deposit:${escrowId}:${challenger}:${amount}`;
+    this.prepared.add(xdr);
+    return { xdr };
+  }
+
+  /** The Brand's key is "held"; anyone else must hand back the prepared transaction (the fake's signature leaves it as is). */
+  async lockDeposit(escrowId: string, { challenger, amount, signedXdr }: { challenger: string; amount: string; signedXdr?: string }) {
+    addUsdc(amount);
+    const ok = challenger === this.req(escrowId).brand || (signedXdr === `fake-deposit:${escrowId}:${challenger}:${amount}` && this.prepared.has(signedXdr));
+    if (!ok)
+      throw new Error(`${challenger} must sign the Deposit from prepareDeposit`);
+    if (signedXdr) this.prepared.delete(signedXdr);
+    this.calls.push({ call: "lockDeposit", escrowId, challenger, amount });
+    return this.link(`${escrowId}/deposit`);
+  }
+
+  /** What the escrow and the Deposits locked against it hold. */
+  held(escrowId: string): string {
+    const { bond, fee } = this.req(escrowId);
+    return addUsdc(bond, fee, ...this.calls.flatMap((c) => (c.call === "lockDeposit" && c.escrowId === escrowId ? [c.amount] : [])));
+  }
+
+  private req(escrowId: string): EscrowRequest {
+    const req = this.escrows.get(escrowId);
+    if (!req) throw new Error(`unknown escrow ${escrowId}`);
+    return req;
   }
 
   async operatorRecord(operator: string): Promise<OperatorRecord> {

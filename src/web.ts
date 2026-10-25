@@ -16,7 +16,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 const spaRoot = fileURLToPath(new URL("../web/dist", import.meta.url));
 
 const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
-const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
+const statusOf = { "not found": 404, closed: 409, invalid: 400, deposit: 402 } as const;
 
 const layout = (title: string, body: unknown) => html`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -153,8 +153,14 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
 
   app.post("/api/documents/:id/challenges", async (c) => {
     const { pipeline, ...body } = ((await c.req.json().catch(() => null)) ?? {}) as { pipeline?: string };
-    const r = board.challenge(c.req.param("id"), body, pipeline);
+    const r = await board.challenge(c.req.param("id"), body, pipeline);
     return r.ok ? c.json(r.challenge, 201) : c.json({ error: r.error }, statusOf[r.reason]);
+  });
+
+  app.post("/api/documents/:id/challenges/deposit", async (c) => {
+    const { pipeline, challenger } = ((await c.req.json().catch(() => null)) ?? {}) as { pipeline?: string; challenger?: unknown };
+    const r = await board.prepareDeposit(c.req.param("id"), challenger, pipeline);
+    return r.ok ? c.json({ xdr: r.xdr, amount: r.amount }) : c.json({ error: r.error }, statusOf[r.reason]);
   });
 
   app.get("/api/leaderboard", async (c) =>
@@ -201,7 +207,7 @@ export function webApp(board: JobBoard, opts: WebOptions = {}): Hono {
     const id = c.req.param("id");
     const form = Object.fromEntries(Object.entries(await c.req.parseBody()).filter(([, v]) => v !== ""));
     const { pipeline, ...rest } = form;
-    const r = board.challenge(id, rest, typeof pipeline === "string" ? pipeline : undefined);
+    const r = await board.challenge(id, rest, typeof pipeline === "string" ? pipeline : undefined);
     return r.ok ? c.redirect(`/legacy/documents/${id}`, 303) : c.text(`Challenge rejected: ${r.error}`, statusOf[r.reason]);
   });
 
