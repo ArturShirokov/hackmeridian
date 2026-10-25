@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
-import { configFile, mcpUrl, setup, starterPrompt } from "../src/connect.js";
+import { configFile, mcpUrl, setup } from "../src/connect.js";
 
 const PROD = "https://doc2dpp.wisecraft.dev";
 
@@ -32,12 +32,11 @@ test("the checked-in agent configs are the local runbook's URL, in the same shap
   expect(read("agents/pi/.pi/mcp.json")).toEqual(configFile("pi", local));
 });
 
-test("the starter prompt is the role's prompt with the Worker id filled in", () => {
+test("the Worker starter prompt registers first and holds no Worker id", () => {
   const worker = readFileSync("agents/worker-prompt.md", "utf8");
-  const p = starterPrompt(worker, "w7");
-  expect(p).toContain("You are Worker `w7`");
-  expect(p).toContain('`worker: "w7"`');
-  expect(p).not.toContain("WORKER_ID");
+  expect(worker.indexOf("register_worker")).toBeLessThan(worker.indexOf("next_job"));
+  expect(worker).toContain("wait: 25");
+  expect(worker).not.toMatch(/WORKER_ID|\bw\d+\b/);
   const operator = readFileSync("agents/operator-prompt.md", "utf8");
   for (const s of ["list_open_documents", "claim_document", "deliver", "submit_signed", "scripts/outside-operator.ts sign"]) expect(operator).toContain(s);
 });

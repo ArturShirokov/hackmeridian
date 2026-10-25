@@ -278,7 +278,11 @@ export interface ApiJob {
 
 /** GET /api/workers. live: seen within 60 s. */
 export interface ApiWorker {
+  /** The Worker id, e.g. "w3". */
   name: string;
+  /** From register_worker, e.g. "OpenCode"; absent for a Worker that never registered. */
+  harness?: string;
+  label?: string;
   lastSeen: Ms;
   live: boolean;
   current?: { jobId: string; sieve: string; documentName: string };

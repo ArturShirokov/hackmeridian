@@ -2,8 +2,8 @@
 // success line once the agent's first call shows up (a live Worker, or a new Leaderboard row for an outside Operator).
 // The MCP URL is always /api/config's baseUrl, so it is local in dev and the public URL in production.
 import { useRef, useState } from "react";
-import { api, usePoll } from "../api.ts";
-import { mcpUrl, setup, starterPrompt, type AgentRole, type Harness } from "../../../src/connect.ts";
+import { api, usePoll, type ApiWorker } from "../api.ts";
+import { mcpUrl, setup, type AgentRole, type Harness } from "../../../src/connect.ts";
 import { useServerClock } from "../screens.tsx";
 import { Button, Modal, SectionLabel } from "./ui.tsx";
 import workerPrompt from "../../../agents/worker-prompt.md?raw";
@@ -58,26 +58,17 @@ const Back = ({ onClick }: { onClick(): void }) => <Button variant="ghost" size=
 
 function Paste({ harness, role, onBack }: { harness: Harness; role: AgentRole; onBack(): void }) {
   const { config } = useServerClock();
-  const [workerId, setWorkerId] = useState("w1");
   if (!config) return null;
   const url = mcpUrl(config.baseUrl);
-  const tools = role === "worker" ? "next_job and submit_job" : "list_open_documents, claim_document, deliver and submit_signed";
-  const id = workerId.trim() || "w1";
+  const tools = role === "worker" ? "register_worker, next_job and submit_job" : "list_open_documents, claim_document, deliver and submit_signed";
   return (
     <>
       <SectionLabel>3 · Paste</SectionLabel>
       {setup(harness, url).map((b) => <Copyable key={b.label} label={b.label} text={b.text} />)}
       <span style={{ font: "400 13px/1.45 var(--sans)", color: "#2A2723" }}>Check: ask the session to list its MCP tools. It should show {tools}.</span>
-      {role === "worker" && (
-        <label style={{ display: "flex", alignItems: "center", gap: 10, font: "500 13px/1 var(--sans)" }}>
-          Worker id
-          <input aria-label="Worker id" value={workerId} onChange={(e) => setWorkerId(e.target.value)}
-            style={{ width: 90, height: 32, border: `1px solid ${INK}`, padding: "0 8px", font: "500 13px/1 var(--mono)" }} />
-          <span style={{ font: "400 12.5px/1.3 var(--sans)", color: "#2A2723" }}>one per session</span>
-        </label>
-      )}
-      <Copyable label="Starter prompt" text={role === "worker" ? starterPrompt(workerPrompt, id) : operatorPrompt} prose />
-      <Live role={role} workerId={id} />
+      <Copyable label="Starter prompt" text={role === "worker" ? workerPrompt : operatorPrompt} prose />
+      {role === "worker" && <span style={{ font: "400 12.5px/1.4 var(--sans)", color: "#2A2723" }}>The Job Board gives each session its own Worker id when it calls register_worker; paste the same prompt into every session.</span>}
+      <Live role={role} />
       <Back onClick={onBack} />
     </>
   );
@@ -97,17 +88,20 @@ function Copyable({ label, text, prose }: { label: string; text: string; prose?:
   );
 }
 
-/** The success state: the Worker id live on the Job Board, or a Leaderboard row that was not there when this opened. */
-function Live({ role, workerId }: { role: AgentRole; workerId: string }) {
+/** The success state: a live Worker, or a Leaderboard row, that was not there when this opened. */
+function Live({ role }: { role: AgentRole }) {
   const { data: workers } = usePoll(() => (role === "worker" ? api.workers() : Promise.resolve([])), 1000, [role]);
   const { data: rows } = usePoll(() => (role === "operator" ? api.leaderboard() : Promise.resolve([])), 1000, [role]);
   const seen = useRef<Set<string>>();
-  if (rows && !seen.current && role === "operator") seen.current = new Set(rows.map((r) => r.operator));
+  const ids = role === "worker" ? workers?.filter((w) => w.live).map((w) => w.name) : rows?.map((r) => r.operator);
+  if (ids && !seen.current) seen.current = new Set(ids);
+  const newWorker = role === "worker" && seen.current ? workers?.find((w) => w.live && !seen.current!.has(w.name)) : undefined;
   const fresh = role === "operator" && seen.current ? rows?.find((r) => !seen.current!.has(r.operator)) : undefined;
-  const ok = role === "worker" ? workers?.some((w) => w.name === workerId && w.live) : !!fresh;
-  const msg = ok
-    ? role === "worker" ? `${workerId} is connected. It shows as a Worker chip on the Job Board.` : `${fresh!.label} is on the Leaderboard.`
-    : role === "worker" ? `Waiting for ${workerId} to call next_job…` : "Waiting for a new Operator to claim a Document…";
+  const ok = !!newWorker || !!fresh;
+  const msg = newWorker
+    ? `${workerName(newWorker)} is connected. It shows as a Worker chip on the Job Board.`
+    : fresh ? `${fresh.label} is on the Leaderboard.`
+    : role === "worker" ? "Waiting for a new Worker to call register_worker…" : "Waiting for a new Operator to claim a Document…";
   return (
     <div role="status" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: `1.5px ${ok ? "solid" : "dashed"} ${ok ? "var(--live)" : "#8E877A"}`, font: "500 13.5px/1.3 var(--sans)" }}>
       <span className="om-motion" style={{ width: 9, height: 9, borderRadius: "50%", flex: "none", background: ok ? "var(--live)" : "#B5AE9F", animation: ok ? undefined : "om-pulse 1.4s ease-in-out infinite" }} />
@@ -115,3 +109,6 @@ function Live({ role, workerId }: { role: AgentRole; workerId: string }) {
     </div>
   );
 }
+
+/** "w3 · OpenCode" (plus its label, if it gave one), or the bare id for a Worker that never registered. */
+export const workerName = (w: Pick<ApiWorker, "name" | "harness" | "label">) => [w.name, w.harness, w.label].filter(Boolean).join(" · ");

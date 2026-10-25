@@ -31,6 +31,3 @@ export function setup(harness: Harness, url: string): { label: string; text: str
       return [{ label: "MCP server URL (streamable HTTP)", text: url }];
   }
 }
-
-/** A role's starter prompt (agents/worker-prompt.md or agents/operator-prompt.md) with the Worker id filled in. */
-export const starterPrompt = (template: string, workerId: string) => template.replaceAll("WORKER_ID", workerId);
