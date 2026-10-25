@@ -28,8 +28,35 @@ function serve(signedIn?: string) {
 const nav = () => within(screen.getByRole("navigation")).getAllByRole("link").map((a) => a.textContent);
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); history.replaceState(null, "", "/"); });
 
-test("signed out, the app offers the seeded users to sign in as; picking Inês opens the Brand's screens", async () => {
+test("signed out, Landing is the entry at /; Open demo leads to Sign in as", async () => {
   serve();
+  render(<App />);
+  expect(await screen.findByRole("heading", { name: "Supplier documents in. Passport data out. Money on every answer." })).toBeTruthy();
+  expect(screen.queryByRole("complementary")).toBeNull();
+  fireEvent.click(screen.getAllByRole("link", { name: "Open demo" })[0]!);
+  expect(await screen.findByRole("list", { name: "Sign in as" })).toBeTruthy();
+  expect(location.pathname).toBe("/sign-in");
+});
+
+test("signed out, the public Leaderboard opens without signing in", async () => {
+  serve();
+  render(<App />);
+  fireEvent.click((await screen.findAllByRole("link", { name: "Leaderboard" }))[0]!);
+  expect(await screen.findByRole("heading", { name: "Leaderboard" })).toBeTruthy();
+  expect(location.pathname).toBe("/leaderboard");
+  expect(screen.queryByRole("list", { name: "Sign in as" })).toBeNull();
+});
+
+test("signed in, / and /sign-in go to the role's home", async () => {
+  serve("arbiter");
+  history.replaceState(null, "", "/sign-in");
+  render(<App />);
+  await waitFor(() => expect(location.pathname).toBe("/arbiter"));
+});
+
+test("on Sign in as, picking Inês opens the Brand's screens", async () => {
+  serve();
+  history.replaceState(null, "", "/sign-in");
   render(<App />);
   const list = await screen.findByRole("list", { name: "Sign in as" });
   expect(within(list).getAllByRole("button").map((b) => b.textContent)).toEqual([
@@ -78,7 +105,7 @@ test.each(["Sign out", "doc2dpp"])("%s ends the session and leads to Landing", a
   render(<App />);
   await waitFor(() => expect(nav()).toEqual(["Documents", "Upload", "Leaderboard"]));
   fireEvent.click(name === "doc2dpp" ? screen.getByRole("link", { name }) : screen.getByRole("button", { name }));
-  expect(await screen.findByRole("list", { name: "Sign in as" })).toBeTruthy();
+  expect(await screen.findByRole("heading", { name: /Passport data out/ })).toBeTruthy();
   expect(location.pathname).toBe("/");
   expect((await fetch("/api/session").then((r) => r.json())).user).toBeNull();
 });

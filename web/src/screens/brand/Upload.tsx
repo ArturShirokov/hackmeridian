@@ -113,7 +113,7 @@ export function BrandUpload() {
               <>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, font: "600 22px/1.2 var(--sans)" }}>
                   <span style={{ width: 22, height: 22, borderRadius: "50%", background: INK, color: "var(--paper)", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 var(--mono)" }}>✓</span>
-                  Stored
+                  Document stored
                 </div>
                 <div style={{ font: "500 14px/1.3 var(--mono)" }}>{file?.name}</div>
               </>

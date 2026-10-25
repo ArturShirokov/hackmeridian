@@ -5,7 +5,7 @@ import { usdc } from "../../format.ts";
 import { ProofLink, Spinner } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { tail } from "./common.tsx";
-import { bondChart } from "./logic.ts";
+import { bondChart, ranked } from "./logic.ts";
 
 const INK = "#141414", RED = "#A3221B", MONEY = "#0B4A57";
 const cols = "minmax(200px,1.6fr) repeat(6,minmax(0,1fr))";
@@ -43,7 +43,7 @@ export function Leaderboard() {
             </>
           ) : (
             <>
-              {data.map((r) => <Row key={r.operator} r={r} bond={config?.operators.find((o) => o.operator === r.operator)?.bond} />)}
+              {ranked(data).map((r, i) => <Row key={r.operator} rank={i + 1} r={r} bond={config?.operators.find((o) => o.operator === r.operator)?.bond} />)}
               {data.length === 1 && (
                 <div style={{ padding: "18px 20px", font: "400 15px/1.4 var(--sans)", color: "#2A2723", borderTop: "1px dashed #B5AE9F" }}>
                   Only one Operator so far. Any Pipeline can join by posting a Bond on the same Documents.
@@ -66,7 +66,7 @@ export function Leaderboard() {
 }
 
 /** Each number links its Stellar proof: the Operator's account, or the latest settlement that Slashed it. A zero, or a number not on chain, has none. */
-function Row({ r, bond }: { r: ApiLeaderRow; bond?: string }) {
+function Row({ r, rank, bond }: { r: ApiLeaderRow; rank: number; bond?: string }) {
   const slashed = r.series.filter((s) => s.settlementLink && (bond === undefined || Number(s.balance) < Number(bond))).at(-1)?.settlementLink ?? r.link;
   const cells: [string, string, string?, string?][] = [
     ["Documents delivered", String(r.documents), undefined, r.documents ? r.link : undefined],
@@ -79,7 +79,7 @@ function Row({ r, bond }: { r: ApiLeaderRow; bond?: string }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: cols, gap: 12, alignItems: "center", padding: "18px 20px", borderBottom: "1px solid var(--rule-row)" }}>
       <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <span style={{ font: "600 18px/1.2 var(--sans)" }}>{r.label}</span>
+        <span style={{ font: "600 18px/1.2 var(--sans)" }}><span data-rank style={{ font: "500 15px/1 var(--mono)", color: "#2A2723", marginRight: 10 }}>{rank}</span>{r.label}</span>
         <span style={{ font: "500 12px/1 var(--mono)", color: "#2A2723" }}>{r.sieves} Sieve{r.sieves === 1 ? "" : "s"}</span>
         <span style={{ marginTop: 4 }}><ProofLink href={r.link} hash={tail(r.link)} label="Account on Stellar" /></span>
       </span>

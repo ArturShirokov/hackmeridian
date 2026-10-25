@@ -8,7 +8,7 @@ import { SieveTrack } from "../../components/SieveTrack.tsx";
 import { Countdown, ProofLink, Spinner, StatusBadge, TieBreakTag } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, templateLabel, useDocument } from "./common.tsx";
-import { pipelineRows, pipelineState, withShown } from "./derive.ts";
+import { pipelineRows, pipelineState, windowLabel, withShown } from "./derive.ts";
 
 const cols = "260px minmax(0,1fr) 170px 70px 110px";
 
@@ -32,13 +32,13 @@ export function BrandPipeline({ id }: { id: string }) {
   if (!d) return <Loading error={error} />;
   return (
     <>
-      <PipelineDesktop d={d} offset={offset} windowMs={config?.challengeWindowMs} />
+      <PipelineDesktop d={d} offset={offset} windowMs={config?.challengeWindowMs} note={config && windowLabel(config)} />
       <MobileView d={d} view={d.views[0]!} live config={config} offset={offset} />
     </>
   );
 }
 
-function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: number; windowMs?: number }) {
+function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset: number; windowMs?: number; note?: string }) {
   const ours = d.views[0]!;
   const state = pipelineState(d);
   const { rows, counts } = pipelineRows(ours);
@@ -63,7 +63,7 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
           <span style={{ font: "500 22px/1 var(--mono)" }}>{elapsed}</span>
         </div>
       </div>
-      <div style={{ padding: "18px 32px 20px", borderBottom: "1px solid var(--rule)", background: "var(--band)", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ flex: "none", maxHeight: "56%", overflow: "auto", padding: "14px 32px 16px", borderBottom: "1px solid var(--rule)", background: "var(--band)", display: "flex", flexDirection: "column", gap: 12 }}>
         {state.banner && (
           <div role="status" style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", border: `1px solid ${state.banner.kind === "rerun" ? "#A3221B" : "#8E877A"}`, background: "var(--surface)", font: "500 14px/1.3 var(--sans)", color: state.banner.kind === "rerun" ? "#A3221B" : "var(--ink)" }}>
             <span style={{ font: "700 13px/1 var(--mono)" }}>{state.banner.kind === "rerun" ? "×" : "…"}</span>{state.banner.text}
@@ -104,11 +104,12 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
           </div>
         ) : (
           <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 18, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
-            <span style={{ font: "600 20px/1 var(--sans)" }}>Delivered.</span>
+            <span style={{ font: "600 20px/1 var(--sans)", whiteSpace: "nowrap" }}>Delivered in {elapsed}.</span>
             {e && <span style={{ font: "500 17px/1 var(--mono)", color: "var(--money)", whiteSpace: "nowrap" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
             {e && windowMs !== undefined && (
               <span style={{ font: "500 17px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline", whiteSpace: "nowrap" }}>
                 Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
+                {note && e.status !== "settled" && <span style={{ font: "500 12px/1.25 var(--sans)", color: "#2A2723", whiteSpace: "normal", maxWidth: 110, alignSelf: "center" }}>{note}</span>}
               </span>
             )}
             {e && <ProofLink href={e.link} hash={e.outputHash} />}

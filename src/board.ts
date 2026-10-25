@@ -983,7 +983,7 @@ export class JobBoard {
   }
 
   private challengeSummary(c: Challenge) {
-    return { id: c.id, status: c.decision ?? ("filed" as const), value: formatValue(c), page: c.page, quote: c.quote };
+    return { id: c.id, status: c.decision ?? ("filed" as const), value: formatValue(c), page: c.page, quote: c.quote, ...(c.note && { note: c.note }) };
   }
 
   private apiField(d: Doc, pipeline: string, { f, v, was }: { f: Field; v: Entry; was?: string }, withheld: boolean): ApiField {
@@ -1078,7 +1078,7 @@ export class JobBoard {
         pipeline: p.name,
         label: p.label ?? p.name,
         ...this.terms(p.name),
-        sieves: p.sieves.map((s) => ({ kind: s.kind, label: s.label })),
+        sieves: p.sieves.map((s) => ({ kind: s.kind, label: s.label, view: s.view })),
       })),
     };
   }

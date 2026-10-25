@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ago, bondChart, evidenceBoxes, jobView } from "../src/screens/ops/logic.ts";
+import { ago, bondChart, evidenceBoxes, jobView, ranked, sieveRead } from "../src/screens/ops/logic.ts";
 
 const row = (operator: string, series: [string, string][]) => ({ operator, series: series.map(([documentId, balance]) => ({ documentId, short: documentId.toUpperCase(), balance })) });
 
@@ -40,4 +40,17 @@ test("a Job row shows its status, and how long the Worker took or has been on it
   expect(jobView({ ...j, status: "taken", worker: "Pi", takenAt: 1_000 }, 23_000)).toMatchObject({ label: "taken", tone: "taken", duration: "00:22" });
   expect(jobView({ ...j, status: "open" }, 5_000)).toMatchObject({ label: "open", tone: "open", duration: "—" });
   expect(jobView({ ...j, status: "timed out", worker: "Pi", takenAt: 1_000 }, 5_000)).toMatchObject({ label: "timed out · back on board", tone: "timeout" });
+});
+
+test("Leaderboard rank: higher test-set accuracy first, then fewer upheld Challenges per Document", () => {
+  const r = (operator: string, documents: number, challengesUpheld: number, accuracy?: [number, number]) =>
+    ({ operator, documents, challengesUpheld, ...(accuracy && { accuracy: { correct: accuracy[0], fields: accuracy[1] } }) });
+  expect(ranked([r("a", 4, 0, [80, 100]), r("b", 4, 2, [95, 100]), r("c", 4, 0)]).map((x) => x.operator)).toEqual(["b", "a", "c"]);
+  expect(ranked([r("slashy", 2, 2), r("clean", 4, 1), r("new", 0, 0)]).map((x) => x.operator)).toEqual(["clean", "slashy", "new"]);
+});
+
+test("a Sieve says what it reads: the second extraction reads the Markdown", () => {
+  const all = [{ kind: "extract", label: "Original", view: "original" }, { kind: "extract", label: "Markdown extraction", view: "markdown" }] as const;
+  expect(sieveRead(all[1], [...all])).toEqual({ view: "Markdown", note: "second independent read" });
+  expect(sieveRead(all[0], [all[0]])).toEqual({ view: "original PDF", note: "every Field in one pass" });
 });

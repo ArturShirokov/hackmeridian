@@ -50,7 +50,9 @@ test("Copy Supplier Request opens the message and copies it", async () => {
   const writeText = vi.fn().mockResolvedValue(undefined);
   Object.assign(navigator, { clipboard: { writeText } });
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
-  expect(screen.getByText("Not stated · 1")).toBeTruthy();
+  expect(screen.getByText("Not stated · 1 Field")).toBeTruthy();
+  expect(screen.getByText("1 from the Supplier · 0 Brand to provide")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Copy Supplier Request · 1 Field" })).toBeTruthy();
   fireEvent.click(screen.getByText("Copy Supplier Request"));
   expect(screen.getByRole("dialog", { name: "Supplier Request · Voltaris Mobility" })).toBeTruthy();
   fireEvent.click(screen.getByText("Copy message"));
@@ -66,8 +68,8 @@ test("rows sit under their Template section; a Brand-authored Not stated Field i
   render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
   expect(screen.getByText("Performance and durability · 3")).toBeTruthy();
   expect(document.querySelector('[data-field="rated_capacity_ah"] [data-author]')!.textContent).toBe("Supplier");
-  expect(screen.getByText("Brand to provide · 1")).toBeTruthy();
-  expect(screen.getByText("Author: Brand")).toBeTruthy();
+  expect(screen.getByText("0 from the Supplier · 1 Brand to provide")).toBeTruthy();
+  expect(document.querySelector(`[data-field="${ns.name}"] [data-author]`)!.textContent).toBe("Brand");
   expect(screen.queryByText("Copy Supplier Request")).toBeNull();
 });
 
@@ -221,4 +223,25 @@ test("a closed Challenge Window offers no Challenge, from any route", () => {
   expect(screen.queryAllByRole("button", { name: /^Challenge/ })).toHaveLength(0);
   fireEvent.click(screen.getByRole("tab", { name: /Compare/ }));
   expect(screen.queryAllByRole("button", { name: /^Challenge/ })).toHaveLength(0);
+});
+
+test("Field rows carry the Template's number and a High-stake mark", () => {
+  const tpl = structuredClone((respond("/api/templates") as { name: string; fields: { name: string; highStake?: boolean }[] }[]).find((t) => t.name === "battery")!);
+  tpl.fields = tpl.fields.map((f) => (f.name === "rated_capacity_ah" ? { ...f, highStake: true } : f));
+  render(<ReviewView d={doc()} config={config} offset={0} template={tpl as never} file={vi.fn()} />);
+  const row = document.querySelector('[data-field="rated_capacity_ah"]')!;
+  expect(row.querySelector("[data-no]")!.textContent).toBe("51");
+  expect(row.textContent).toContain("★ High-stake");
+  expect(document.querySelector('[data-field="nominal_voltage_v"]')!.textContent).not.toContain("High-stake");
+  expect(document.querySelector('[data-field="initial_internal_resistance_ohm"] [data-no]')!.textContent).toBe("68");
+});
+
+test("a rejected Challenge shows the Arbiter's note and the challenged quote struck through", () => {
+  const d = doc();
+  Object.assign(d.views[0]!.fields.find((f) => f.name === "nominal_voltage_v")!, {
+    challenge: { id: "c3", status: "rejected", value: "36 V", page: 2, quote: "Module voltage 36 V", note: "That line is one module, not the pack." },
+  });
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  expect(screen.getByText("Rejected by the Arbiter: That line is one module, not the pack.")).toBeTruthy();
+  expect(screen.getByText("p. 2 · “Module voltage 36 V”").style.textDecoration).toBe("line-through");
 });

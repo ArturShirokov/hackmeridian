@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, usePoll, ApiFailure, type ApiConfig, type ApiDocument, type ApiField, type ApiPipelineView, type ApiTemplate, type ChallengeBody } from "../../api.ts";
 import { shortHash, splitMark, usdc } from "../../format.ts";
-import { FieldRow, pageOf } from "../../components/FieldRow.tsx";
+import { FieldNo, FieldRow, FieldTags, pageOf } from "../../components/FieldRow.tsx";
 import { DocumentViewer } from "../../components/DocumentViewer.tsx";
 import { spanTree } from "../../components/SieveTrack.tsx";
-import { clamp2, Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel } from "../../components/ui.tsx";
+import { clamp2, Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel, StatusBadge } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, useDocument } from "./common.tsx";
 import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, shown, windowLabel, withShown } from "./derive.ts";
@@ -56,6 +56,7 @@ export function ReviewView({ d, config, offset, template, file }: {
   const view = d.views.find((v) => v.pipeline === tab) ?? d.views[0]!;
   const fields = view.fields;
   const groups = reviewGroups(fields);
+  const tf = (name: string) => template?.fields.find((f) => f.name === name);
   const order = isCompare ? fields.map((f) => f.name) : groups.order;
   const brand = config?.brand.name ?? "the Brand";
   const e = view.escrow;
@@ -219,24 +220,37 @@ export function ReviewView({ d, config, offset, template, file }: {
             : isCompare ? <CompareTab d={d} sel={sel} onSelect={(n) => select(n)} canChallenge={(v, f) => windowOpen(v, offset) && challengeable(f)} onChallenge={openPanel} /> : (
               <>
                 {/* Supplier-authored Not stated Fields share one Supplier Request; the Brand's are "Brand to provide". */}
-                {([["Not stated", groups.supplier], ["Brand to provide", groups.brand]] as const).map(([title, list]) => list.length > 0 && (
-                  <div key={title}>
-                    <div style={{ padding: "14px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: AMBER }}>{title} · {list.length}</div>
-                    {list.map((f) => {
-                      const text = view.supplierRequest ?? (f as NotStated).supplierRequest;
+                {groups.notStated.length > 0 && (
+                  <div style={{ margin: "14px 20px 6px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", border: "1px solid var(--amber-bd)", background: "var(--hatch)" }}>
+                      <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <span style={{ font: "600 14px/1.2 var(--sans)", color: INK }}>Not stated · {fieldCount(groups.notStated.length)}</span>
+                        <span style={{ font: "500 12px/1.2 var(--sans)", color: "#3A2600" }}>{groups.supplier.length} from the Supplier · {groups.brand.length} Brand to provide</span>
+                      </span>
+                      {groups.supplier.length > 0 && view.supplierRequest && (
+                        <button className="om-btn primary" style={{ marginLeft: "auto", height: 36, padding: "0 12px", fontSize: 13 }} onClick={() => setModal({ kind: "sr", text: view.supplierRequest! })}>
+                          Copy Supplier Request · {fieldCount(groups.supplier.length)}
+                        </button>
+                      )}
+                    </div>
+                    {/* Supplier-authored Not stated Fields first; the Brand's are "Brand to provide". */}
+                    {[...groups.supplier, ...groups.brand].map((f) => {
+                      const text = (f as NotStated).supplierRequest ?? view.supplierRequest;
+                      const t = tf(f.name);
                       return (
-                        <NotStatedCard key={f.name} field={f as NotStated} selected={sel === f.name} onSelect={() => select(f.name, true)}
+                        <NotStatedRow key={f.name} field={f as NotStated} no={t?.no} highStake={t?.highStake} selected={sel === f.name} expanded={exp === f.name}
+                          onSelect={() => (sel === f.name ? setExp(exp === f.name ? undefined : f.name) : select(f.name, true))}
                           onChallenge={open && challengeable(f) ? () => openPanel(f.name) : undefined} operator={view.label}
                           onQuote={(p) => { setSel(f.name); setPage(p); }} onRequest={f.author === "Brand" || !text ? undefined : () => setModal({ kind: "sr", text })} />
                       );
                     })}
                   </div>
-                ))}
+                )}
                 {groups.sections.map((s) => (
                   <div key={s.section}>
-                    <div style={{ padding: "10px 20px 6px", font: "600 11px/1 var(--sans)", letterSpacing: ".07em", textTransform: "uppercase", color: "#2A2723" }}>{s.section} · {s.fields.length}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 10, padding: "18px 20px 8px", borderBottom: `1px solid ${INK}`, font: "600 14px/1.2 var(--sans)" }}>{s.section} · {s.fields.length}</div>
                     {s.fields.map((f) => (
-                      <FieldRow key={f.name} field={withShown(f)} selected={sel === f.name} expanded={exp === f.name} tieBreak={f.tieBreak}
+                      <FieldRow key={f.name} field={withShown(f)} no={tf(f.name)?.no} highStake={tf(f.name)?.highStake} selected={sel === f.name} expanded={exp === f.name} tieBreak={f.tieBreak}
                         canChallenge={open && challengeable(f)} upheldNote={upheldNote(view)}
                         onSelect={() => select(f.name, true)} onToggle={() => setExp(exp === f.name ? undefined : f.name)} onChallenge={() => openPanel(f.name)} />
                     ))}
@@ -313,40 +327,49 @@ function CompareTab({ d, sel, onSelect, canChallenge, onChallenge }: {
   );
 }
 
-export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest, onChallenge, operator }: {
-  field: NotStated; selected: boolean; onSelect(): void; onQuote(page: number): void;
+const compact = { height: 30, padding: "0 8px", fontSize: 12 } as const;
+const fieldCount = (n: number) => `${n} Field${n === 1 ? "" : "s"}`;
+
+/** One Not stated Field as a compact row; expanded it shows the competing statements the Sieves found. */
+export function NotStatedRow({ field, no, highStake, selected, expanded, onSelect, onQuote, onRequest, onChallenge, operator }: {
+  field: NotStated; no?: string; highStake?: boolean; selected: boolean; expanded: boolean; onSelect(): void; onQuote(page: number): void;
   /** Absent for a Brand-authored Field: the Brand provides it itself. */
   onRequest?(): void;
   /** Present while it can be Challenged ("the Document does state it"). */
   onChallenge?(): void;
   operator?: string;
 }) {
+  const stop = (f: () => void) => (e: { stopPropagation(): void }) => { e.stopPropagation(); f(); };
+  const page = field.quotes[0]?.page;
   return (
-    <div onClick={onSelect} data-field={field.name} style={{ margin: "6px 20px 14px", border: "1px solid var(--amber-bd)", background: "var(--amber-card)", cursor: "pointer", outline: selected ? `2px solid ${AMBER}` : "none" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--hatch)", borderBottom: "1px solid var(--amber-bd)" }}>
-        <span style={{ font: "600 15px/1.2 var(--sans)", color: INK }}>{field.label}</span>
-        <span style={{ marginLeft: "auto", flex: "none", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 9px 0 5px", border: `1px solid ${AMBER}`, background: "var(--amber-bg)", color: AMBER, font: "600 11.5px/1 var(--sans)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-          <span aria-hidden style={{ width: 16, height: 16, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: AMBER, color: "var(--amber-bg)", font: "700 10px/1 var(--mono)" }}>–</span>{onRequest ? "Not stated" : "Brand to provide"}
+    <div onClick={onSelect} data-field={field.name} style={{ border: "1px solid #D9C08A", borderTop: 0, background: selected ? "var(--amber-bg)" : "var(--amber-card)", outline: selected ? `2px solid ${AMBER}` : "none", outlineOffset: -2, cursor: "pointer" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 116px 214px 34px", gap: 8, alignItems: "center", padding: "6px 12px", minHeight: 46 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap" }}>
+          <span style={{ font: "500 14px/1.25 var(--sans)", minWidth: 0, overflowWrap: "anywhere" }}><FieldNo no={no} />{field.label}</span>
+          <FieldTags author={field.author} highStake={highStake} />
         </span>
-      </div>
-      <div style={{ padding: "10px 14px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-        <span style={{ font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>
-          {field.quotes.length ? "The Sieves found competing statements and no single value:" : "Not stated in this Document."}
-        </span>
-        {field.quotes.map((q, i) => (
-          <div key={i} onClick={(e) => { e.stopPropagation(); onQuote(q.page); }}
-            style={{ display: "grid", gridTemplateColumns: "42px minmax(0,1fr)", gap: 10, font: "400 14px/1.45 var(--sans)", color: INK, cursor: "pointer" }}>
-            <span style={{ font: "500 12px/1.6 var(--mono)", color: AMBER }}>p. {q.page}</span><span>“{q.quote}”</span>
-          </div>
-        ))}
-        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, marginTop: 4 }}>
-          <span style={{ marginRight: "auto", font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>Author: {field.author}</span>
-          {onChallenge && <button className="om-btn ghost" aria-label={`Challenge ${operator}: ${field.label}`} style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onChallenge(); }}>Challenge</button>}
+        <StatusBadge status="not stated" />
+        <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {onRequest
-            ? <button className="om-btn primary" style={{ height: 38, padding: "0 14px", fontSize: 13 }} onClick={(e) => { e.stopPropagation(); onRequest(); }}>Copy Supplier Request</button>
-            : <span style={{ font: "600 13px/1 var(--sans)", color: AMBER }}>Brand to provide</span>}
-        </div>
+            ? <button className="om-btn ghost row" style={compact} onClick={stop(onRequest)}>Copy Supplier Request</button>
+            : <span style={{ font: "600 12.5px/1 var(--sans)", color: AMBER, whiteSpace: "nowrap" }}>Brand to provide</span>}
+          {onChallenge && <button className="om-btn ghost row" style={compact} aria-label={`Challenge ${operator}: ${field.label}`} title="The Document does state it" onClick={stop(onChallenge)}>Challenge</button>}
+        </span>
+        <span style={{ font: "500 12.5px/1 var(--mono)", color: "#2A2723" }}>{page ? `p. ${page}` : ""}</span>
       </div>
+      {expanded && (
+        <div className="om-motion" style={{ padding: "2px 12px 12px", display: "flex", flexDirection: "column", gap: 6, animation: "om-in .2s ease-out" }}>
+          <span style={{ font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>
+            {field.quotes.length ? "The Sieves found competing statements and no single value:" : "Not stated in this Document."}
+          </span>
+          {field.quotes.map((q, i) => (
+            <div key={i} onClick={stop(() => onQuote(q.page))}
+              style={{ display: "grid", gridTemplateColumns: "40px minmax(0,1fr)", gap: 8, font: "400 13.5px/1.45 var(--doc)", color: INK, cursor: "pointer" }}>
+              <span style={{ font: "500 12px/1.6 var(--mono)", color: AMBER }}>p. {q.page}</span><span>“{q.quote}”</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

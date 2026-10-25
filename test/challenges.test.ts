@@ -78,20 +78,21 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
 
   expect((await arbiter.decide(open[0]!.id, "upheld", "p. 1 says 220 Ah")).status).toBe(200);
   board.clock.advance(1000);
-  expect((await arbiter.decide(open[1]!.id, "rejected")).status).toBe(200);
+  expect((await arbiter.decide(open[1]!.id, "rejected", "p. 2 is the pack, not this cell")).status).toBe(200);
   expect(await arbiter.challenges()).toHaveLength(0);
   expect((await arbiter.decide(open[0]!.id, "rejected")).status).toBe(409);
   const desk = await arbiter.desk();
   expect(desk.record).toEqual({ decided: 2, upheld: 1, rejected: 1, earned: "1.1" });
   expect(desk.decided).toMatchObject([
-    { id: open[1]!.id, status: "rejected", decidedAt: 1000 },
+    { id: open[1]!.id, status: "rejected", decidedAt: 1000, note: "p. 2 is the pack, not this cell" },
     { id: open[0]!.id, status: "upheld", decidedAt: 0, note: "p. 1 says 220 Ah" },
   ]);
 
   const doc = await brand.document(docId);
   expect(doc.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ value: 220, unit: "Ah", corrected: { was: "22 Ah (rated)" } });
   expect(doc.escrow).toMatchObject({ upheld: 1, bondLeft: "9" });
-  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ status: "not stated" });
+  // The Brand sees why on its Field.
+  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ status: "not stated", challenge: { status: "rejected", note: "p. 2 is the pack, not this cell" } });
   expect((await brand.page(`/documents/${docId}`)).text).toContain("corrected by Challenge");
 
   board.clock.advance(60_000);

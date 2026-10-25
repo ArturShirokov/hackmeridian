@@ -25,9 +25,11 @@ export function pageOf(field: ApiField): number | undefined {
   if ("quotes" in field) return field.quotes[0]?.page;
 }
 
-export function FieldRow({ field, challenge = field.challenge, selected, expanded, tieBreak, canChallenge, onSelect, onToggle, onChallenge, dense, upheldNote }: {
+export function FieldRow({ field, challenge = field.challenge, selected, expanded, tieBreak, canChallenge, onSelect, onToggle, onChallenge, dense, upheldNote, no, highStake }: {
   field: ApiField; challenge?: ApiChallengeSummary; selected: boolean; expanded: boolean; tieBreak: boolean; canChallenge: boolean;
   onSelect(): void; onToggle(): void; onChallenge(): void; dense?: boolean;
+  /** From the Template: the Field's number in the source list, and whether it is High-stake. */
+  no?: string; highStake?: boolean;
   /** Under an upheld row: "Slash 5.00 USDC paid to Voltaris when the Window closes" + link. */
   upheldNote?: ReactNode;
 }) {
@@ -43,7 +45,7 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
           display: "grid", gridTemplateColumns: "260px minmax(0,1fr) 170px 70px 110px", gap: 16, alignItems: "center", padding: "0 32px", height: 48,
           borderBottom: "1px solid var(--rule-row)", background: field.status === "not stated" ? "var(--amber-bg)" : "transparent", transition: "background .4s",
         }}>
-        <span style={{ font: "500 15px/1.2 var(--sans)" }}>{field.label}</span>
+        <span title={field.label} style={{ font: "500 15px/1.2 var(--sans)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{field.label}</span>
         <span title={v.text} style={{ font: "500 15px/1.2 var(--mono)", color: v.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.text}</span>
         <StatusBadge status={badge} size="md" />
         <span style={{ font: "500 13px/1 var(--mono)", color: "#3D3A34" }}>{pageLbl}</span>
@@ -58,11 +60,8 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
       <div onClick={() => (selected ? onToggle() : onSelect())}
         style={{ display: "grid", gridTemplateColumns: "minmax(0,1.8fr) minmax(0,1fr) 120px 34px 88px", alignItems: "center", gap: 8, padding: "0 16px", minHeight: 52, cursor: "pointer" }}>
         <span style={{ font: "500 14.5px/1.25 var(--sans)", display: "flex", flexDirection: "column", gap: 3 }}>
-          {field.label}
-          <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {field.author && <span data-author style={{ font: "500 11px/1 var(--mono)", color: "#3D3A34", border: "1px solid var(--rule)", padding: "2px 5px" }}>{field.author}</span>}
-            {tieBreak && <TieBreakTag small />}
-          </span>
+          <span><FieldNo no={no} />{field.label}</span>
+          <FieldTags author={field.author} highStake={highStake} tieBreak={tieBreak} />
         </span>
         <span style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
           {badge === "upheld" && final?.corrected && <span title={final.corrected.was} style={{ font: "500 13px/1.2 var(--mono)", color: "#5E594F", textDecoration: "line-through", ...clamp2 }}>{final.corrected.was}</span>}
@@ -98,9 +97,32 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
           Under review by Arbiter · challenged value <span style={{ fontFamily: "var(--mono)" }}>{challenge.value}</span>
         </div>
       )}
+      {badge === "rejected" && challenge?.note && (
+        <div className="om-motion" style={{ margin: "0 20px 12px", padding: "9px 12px", border: "1px dashed var(--grey-5)", background: "var(--band)", display: "flex", flexDirection: "column", gap: 4, animation: "om-in .2s ease-out" }}>
+          <span style={{ font: "600 13px/1.35 var(--sans)" }}>Rejected by the Arbiter: {challenge.note}</span>
+          <span style={{ font: "400 12.5px/1.4 var(--doc)", color: "#2A2723", textDecoration: "line-through" }}>p. {challenge.page} · “{challenge.quote}”</span>
+        </div>
+      )}
       {badge === "upheld" && upheldNote && (
         <div style={{ padding: "0 20px 12px", display: "flex", alignItems: "center", gap: 14, font: "600 13px/1.3 var(--mono)", color: "var(--money)" }}>{upheldNote}</div>
       )}
     </div>
+  );
+}
+
+/** "51" before a Field name: its number in the Template's source list. */
+export const FieldNo = ({ no }: { no?: string }) =>
+  no ? <span data-no style={{ font: "500 11.5px/1 var(--mono)", color: "#2A2723", marginRight: 6 }}>{no}</span> : null;
+
+const tag = { padding: "2px 5px", font: "500 9.5px/1 var(--sans)", letterSpacing: ".05em", textTransform: "uppercase" } as const;
+
+/** The Author chip, ★ High-stake and Tie-break under a Field name. */
+export function FieldTags({ author, highStake, tieBreak }: { author?: string; highStake?: boolean; tieBreak?: boolean }) {
+  return (
+    <span style={{ display: "flex", gap: 5, alignItems: "center", flexWrap: "wrap" }}>
+      {author && <span data-author style={{ ...tag, border: "1px solid var(--rule)", color: "#2A2723" }}>{author}</span>}
+      {highStake && <span title="Original and Markdown extraction must agree" style={{ ...tag, border: "1px solid var(--ink)", color: "var(--ink)", fontWeight: 600 }}>★ High-stake</span>}
+      {tieBreak && <TieBreakTag small />}
+    </span>
   );
 }

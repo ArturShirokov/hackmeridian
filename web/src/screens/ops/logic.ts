@@ -1,5 +1,5 @@
 // Pure display logic for the Operator and Arbiter screens (Arbiter desk, Leaderboard, Job Board).
-import type { ApiChallenge, ApiJob, ApiLeaderRow } from "../../api.ts";
+import type { ApiChallenge, ApiConfig, ApiJob, ApiLeaderRow } from "../../api.ts";
 import type { ViewerBox } from "../../components/DocumentViewer.tsx";
 
 /** "just now", "2 min ago", "3 h ago". */
@@ -71,4 +71,31 @@ export function bondChart(rows: SeriesRow[], bondOf: Record<string, string>) {
     return { operator: r.operator, bond, balances, steps };
   });
   return { docs: ids.map((id) => short.get(id)!), lines };
+}
+
+type RankRow = Pick<ApiLeaderRow, "documents" | "challengesUpheld" | "accuracy">;
+const acc = (r: RankRow) => (r.accuracy ? r.accuracy.correct / r.accuracy.fields : -1);
+const slashRate = (r: RankRow) => (r.documents ? r.challengesUpheld / r.documents : Infinity);
+
+/** Leaderboard order: higher test-set accuracy first, then fewer upheld Challenges per Document; no Documents yet, last. */
+export const ranked = <T extends RankRow>(rows: T[]) => [...rows].sort((a, b) => acc(b) - acc(a) || slashRate(a) - slashRate(b));
+
+type Sieve = ApiConfig["operators"][number]["sieves"][number];
+const VIEW: Record<Sieve["view"], string> = { original: "original PDF", markdown: "Markdown", mix: "Markdown vs PDF" };
+
+/** What a Sieve reads and why it is there, for the Pipelines screen ("original PDF", "first independent read of every Field"). */
+export function sieveRead(s: Sieve, all: Sieve[]): { view: string; note: string } {
+  if (all.length === 1) return { view: VIEW[s.view], note: "every Field in one pass" };
+  if (s.kind === "markdown") return { view: "original PDF → Markdown", note: "normalises pages and tables" };
+  if (s.kind === "faithfulness") return { view: VIEW.mix, note: "on failure the Markdown is redone once" };
+  if (s.kind === "tiebreak") return { view: "PDF, Fields still apart", note: "never for ★ High-stake Fields" };
+  const first = all.find((x) => x.kind === "extract") === s;
+  return { view: VIEW[s.view], note: first ? "first independent read of every Field" : "second independent read" };
+}
+
+/** The Worker that took the newest Job of each Sieve (jobs come newest first), keyed "pipeline/Sieve label". */
+export function lastWorkers(jobs: Pick<ApiJob, "pipeline" | "sieve" | "worker">[]) {
+  const by = new Map<string, string>();
+  for (const j of jobs) if (j.worker && !by.has(`${j.pipeline}/${j.sieve}`)) by.set(`${j.pipeline}/${j.sieve}`, j.worker);
+  return by;
 }

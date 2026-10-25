@@ -1,4 +1,5 @@
-// The app shell: "Sign in as" a seeded user, the sidebar and routes of that user's role, and the ?demo story dock.
+// The app shell: Landing and the public Leaderboard when signed out, "Sign in as" a seeded user, the sidebar and routes of
+// that user's role, and the ?demo story dock.
 import { useEffect, useState } from "react";
 import { api, usePoll, type ApiUser, type Role } from "./api.ts";
 import { ConnectAgent } from "./components/ConnectAgent.tsx";
@@ -13,11 +14,13 @@ import { BrandReview } from "./screens/brand/Review.tsx";
 import { Arbiter } from "./screens/ops/Arbiter.tsx";
 import { Jobs } from "./screens/ops/Jobs.tsx";
 import { Leaderboard } from "./screens/ops/Leaderboard.tsx";
+import { Pipelines } from "./screens/ops/Pipelines.tsx";
+import { Landing, PublicHeader } from "./screens/Landing.tsx";
 
 const NAV: Record<Role, [string, string][]> = {
   brand: [["Documents", "/documents"], ["Upload", "/upload"], ["Leaderboard", "/leaderboard"]],
   arbiter: [["Challenges", "/arbiter"]],
-  operator: [["Job Board", "/jobs"], ["Pipelines", "/jobs#pipelines"], ["Leaderboard", "/leaderboard"]],
+  operator: [["Job Board", "/jobs"], ["Pipelines", "/pipelines"], ["Leaderboard", "/leaderboard"]],
 };
 const HOME: Record<Role, string> = { brand: "/documents", arbiter: "/arbiter", operator: "/jobs" };
 /** A role sees the screens its sidebar lists (matched on the first path segment); anything else sends it home. */
@@ -53,6 +56,7 @@ function route(path: string, role: Role) {
   if (match("/arbiter", path)) return { nav: "/arbiter", el: <Arbiter /> };
   if (match("/leaderboard", path)) return { nav: "/leaderboard", el: <Leaderboard /> };
   if (match("/jobs", path)) return { nav: "/jobs", el: <Jobs /> };
+  if (match("/pipelines", path)) return { nav: "/pipelines", el: <Pipelines /> };
   return { nav: "", el: <NotFound /> };
 }
 
@@ -66,17 +70,25 @@ export function App() {
   const { user, signIn, signOut } = useSession();
   const demo = useDemoFlag(url);
   if (user === undefined) return null;
-  if (!user) return <SignIn onPick={(id) => signIn(id)} />;
+  const asRole = (r: Role | null, to: string) => (r ? signIn(SEATS[r], to) : signOut(to));
+  const dock = demo && <StoryDock path={url.pathname} role={user?.role ?? null} onRole={asRole} />;
+  if (!user) {
+    // Signed out: Landing at /, the Leaderboard is public (read-only), every other path asks who you are.
+    const page = url.pathname === "/" ? <Landing />
+      : match("/leaderboard", url.pathname)
+        ? <div className="om-app" style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}><PublicHeader wide /><Leaderboard /></div>
+        : <SignIn onPick={(id) => signIn(id)} />;
+    return dock ? <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}><div style={{ flex: 1, minHeight: 0 }}>{page}</div>{dock}</div> : page;
+  }
   const role = user.role;
   const { nav, el } = allows(role, url.pathname) ? route(url.pathname, role) : { nav: "", el: <Redirect to={HOME[role]} /> };
-  const asRole = (r: Role, to: string) => signIn(SEATS[r], to);
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative" }}>
-        <Sidebar user={user} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onSwitch={() => signOut()} onSignOut={() => signOut("/")} />
+        <Sidebar user={user} active={nav} onSwitch={() => signOut("/sign-in")} onSignOut={() => signOut("/")} />
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative" }}>{el}</main>
       </div>
-      {demo && <StoryDock path={url.pathname} role={role} onRole={asRole} />}
+      {dock}
     </div>
   );
 }
@@ -90,7 +102,7 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
   return (
     <main className="om-app" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 10 }}>doc2dpp</div>
+        <Link to="/" style={{ display: "block", font: "500 30px/1 var(--serif)", marginBottom: 10, color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
         <div style={{ font: "400 17px/1.4 var(--sans)", color: "var(--ink)", marginBottom: 6 }}>
           Supplier documents in, passport data out — a Bond in USDC behind every Field.
         </div>
@@ -119,13 +131,13 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
 }
 
 /** The USDC the Job Board holds for the Brand; Fees and Deposits come out of it, Slashes go in. */
-function Balance() {
+function Balance({ org }: { org: string }) {
   const { data } = usePoll(api.balance, 5000);
   if (!data) return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--rule)" }}>
-      <span style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>Balance</span>
-      <span style={{ font: "600 16px/1 var(--mono)", color: "var(--money)" }}>{usdc(data.usdc)} USDC</span>
+      <span style={{ font: "500 12px/1.3 var(--sans)", color: "#2A2723" }}>USDC balance held for {org}</span>
+      <span style={{ font: "600 22px/1 var(--mono)", color: "var(--money)" }}>{usdc(data.usdc)} USDC</span>
       <ProofLink href={data.link} hash="" />
     </div>
   );
@@ -136,7 +148,7 @@ function Sidebar({ user, active, onSwitch, onSignOut }: { user: ApiUser; active:
   const lit = NAV[role].find(([, to]) => to === active)?.[1];
   return (
     <aside className="om-desktop-only" style={{ width: 228, flex: "none", borderRight: "1px solid var(--rule)", display: "flex", flexDirection: "column", background: "var(--sidebar)" }}>
-      {/* Landing is the sign-in screen, so the wordmark signs out on the way there. */}
+      {/* Landing is for the signed out, so the wordmark signs out on the way there. */}
       <Link to="/" onClick={(e) => { e.preventDefault(); onSignOut(); }} style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
       <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{user.org}</div>
       <nav style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--rule)" }}>
@@ -150,7 +162,7 @@ function Sidebar({ user, active, onSwitch, onSignOut }: { user: ApiUser; active:
       <div style={{ marginTop: "auto", padding: "18px 22px", borderTop: "1px solid var(--rule)", display: "flex", flexDirection: "column", gap: 4 }}>
         <span style={{ font: "600 14px/1.3 var(--sans)" }}>{user.name}</span>
         <span style={{ font: "400 13px/1.3 var(--sans)", color: "#3D3A34" }}>{user.sub}</span>
-        {role === "brand" && <Balance />}
+        {role === "brand" && <Balance org={user.org} />}
         <button onClick={onSwitch}
           style={{ marginTop: 12, height: 28, border: "1px solid var(--ink)", background: "transparent", color: "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer" }}>
           Switch user
@@ -172,13 +184,15 @@ function useDemoFlag(url: URL) {
 }
 
 /** The projector's story: links to the real routes of the newest Document. */
-function StoryDock({ path, role: current, onRole }: { path: string; role: Role; onRole(r: Role, to: string): void }) {
+function StoryDock({ path, role: current, onRole }: { path: string; role: Role | null; onRole(r: Role | null, to: string): void }) {
   const { data: docs } = usePoll(api.documents, 5000);
   const id = docs?.[0]?.id;
   const doc = id ? `/documents/${id}` : "/documents";
-  const story: [string, string, string, Role][] = [
-    ["01", "Landing", "/", "brand"],
+  // Landing is signed out (role null).
+  const story: [string, string, string, Role | null][] = [
+    ["01", "Landing", "/", null],
     ["02", "Upload", "/upload", "brand"],
+    ["02b", "Documents", "/documents", "brand"],
     ["03", "Pipeline", id ? `${doc}/pipeline` : doc, "brand"],
     ["04", "Review", doc, "brand"],
     ["05", "Challenge", id ? `${doc}?challenge=1` : doc, "brand"],
