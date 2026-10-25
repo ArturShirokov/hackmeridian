@@ -79,7 +79,7 @@ One Sieve pass over one Document, which a Worker takes, completes, and hands bac
 _Avoid_: Task, ticket, request
 
 **Worker**:
-A sub-agent inside an Operator: an AI session, in any harness and with any model, doing one Sieve. Workers are the Operator's own cost and never hold money.
+A sub-agent inside an Operator: an AI session, in any harness and with any model, doing one Sieve. Workers are the Operator's own cost and never hold money. Each has a Worker id (e.g. "w3") that the Job Board assigns when it calls `register_worker`.
 _Avoid_: Agent, bot
 
 **Trace**:

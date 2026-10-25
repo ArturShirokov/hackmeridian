@@ -58,11 +58,25 @@ export function startBoard(
   const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, setTimer, ...boardOpts });
   const web = webApp(board, webOpts);
 
-  async function worker(name: string) {
+  async function mcpClient(name: string) {
     const [clientT, serverT] = InMemoryTransport.createLinkedPair();
     await buildMcpServer(board).connect(serverT);
     const client = new Client({ name, version: "0" });
     await client.connect(clientT);
+    return client;
+  }
+
+  /** A Worker that calls register_worker first and works under the id it is given (or keeps, with `worker`). */
+  async function register(args: { harness?: string; label?: string; worker?: string } = {}) {
+    const client = await mcpClient("registering");
+    const r = await client.callTool({ name: "register_worker", arguments: args });
+    if (r.isError) throw new Error(JSON.stringify(r.content));
+    const { worker: id } = r.structuredContent as { worker: string };
+    return { id, ...(await worker(id, client)) };
+  }
+
+  async function worker(name: string, client?: Client) {
+    client ??= await mcpClient(name);
     return {
       /** wait: long-poll for up to that many seconds; signal: abandon the call. */
       async nextJob({ wait, signal }: { wait?: number; signal?: AbortSignal } = {}): Promise<Job | null> {
@@ -211,7 +225,7 @@ export function startBoard(
   /** Run what main.ts runs every 5 s: pick up Documents other uploaders put in Storage. */
   const poll = () => board.poll();
 
-  return { web, worker, outsideOperator, brand, arbiter, users, ledger, clock, tick, poll };
+  return { web, worker, register, outsideOperator, brand, arbiter, users, ledger, clock, tick, poll };
 }
 
 /** A fixture PDF: one array of text lines per page. */

@@ -2,7 +2,7 @@
 // and "Connect an agent" (the modal takes the real MCP URL from /api/config).
 import { useEffect } from "react";
 import { api, usePoll, type ApiConfig } from "../../api.ts";
-import { ConnectAgent } from "../../components/ConnectAgent.tsx";
+import { ConnectAgent, workerName } from "../../components/ConnectAgent.tsx";
 import { useLocation } from "../../router.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, th, useNow } from "./common.tsx";
@@ -51,7 +51,7 @@ export function Jobs() {
               <div key={w.name} style={{ ...card, padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span className="om-motion" style={{ width: 9, height: 9, borderRadius: "50%", background: "var(--live)", animation: "om-pulse 1.4s ease-in-out infinite" }} />
-                  <span style={{ font: "600 18px/1 var(--sans)" }}>{w.name}</span>
+                  <span style={{ font: "600 18px/1 var(--sans)" }}>{workerName(w)}</span>
                   <span style={{ marginLeft: "auto", font: "500 12px/1 var(--mono)", color: "#2A2723" }}>live</span>
                 </div>
                 <div style={{ font: "500 13px/1.4 var(--mono)" }}>{w.current ? `${w.current.sieve} · ${w.current.documentName}` : "idle · waiting for a Job"}</div>

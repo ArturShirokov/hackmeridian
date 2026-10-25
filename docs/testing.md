@@ -38,19 +38,21 @@ The page for the Document fills in as Workers hand in Jobs.
 
 ## 3. Connect four Workers
 
-Each Worker needs its own id: a Worker does at most one extraction per Document, so one Document needs four
-(two extractions and a tie-break for ours, one for the Baseline). Give each session
-[`agents/worker-prompt.md`](../agents/worker-prompt.md) with `WORKER_ID` replaced. It long-polls `next_job` with
-`wait: 25` (the call holds until a Job appears), so start the Workers before you upload.
+A Worker does at most one extraction per Document, so one Document needs four Workers (two extractions and a
+tie-break for ours, one for the Baseline). Give every session the same prompt,
+[`agents/worker-prompt.md`](../agents/worker-prompt.md), as it is. It calls `register_worker` first, and the Job Board
+assigns the session its own Worker id (`w1`, `w2`, ...), so you never number them by hand. Then it long-polls
+`next_job` with that id and `wait: 25` (the call holds until a Job appears), so start the Workers before you upload.
 
-| Id | Harness | Start it with |
-|---|---|---|
-| `w1` | Claude Code | `claude --mcp-config agents/claude-code/mcp.json` |
-| `w2` | OpenCode | `OPENCODE_CONFIG=agents/opencode/opencode.json opencode` |
-| `w3` | Pi | `cd agents/pi && pi` (Pi 1.0+ reads `agents/pi/.pi/mcp.json` once you trust the folder; older Pi: `pi install npm:pi-mcp-adapter` once, then restart Pi) |
-| `w4` | Claude Code, a second session | as `w1` |
+| Harness | Start it with |
+|---|---|
+| Claude Code | `claude --mcp-config agents/claude-code/mcp.json` |
+| OpenCode | `OPENCODE_CONFIG=agents/opencode/opencode.json opencode` |
+| Pi | `cd agents/pi && pi` (Pi 1.0+ reads `agents/pi/.pi/mcp.json` once you trust the folder; older Pi: `pi install npm:pi-mcp-adapter` once, then restart Pi) |
+| Claude Code, a second session | as the first |
 
-Check: in each session ask "list your MCP tools"; it should show `next_job` and `submit_job`.
+Check: in each session ask "list your MCP tools"; it should show `register_worker`, `next_job` and `submit_job`. The
+Job Board lists each Worker with its harness, for example "w3 · OpenCode".
 
 The `agents/` configs point at `http://127.0.0.1:3100/mcp`. For another server (another port, or
 `https://doc2dpp.wisecraft.dev`), use **Connect an agent** on the Job Board, or print a config with

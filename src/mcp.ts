@@ -10,13 +10,32 @@ export function buildMcpServer(board: JobBoard): McpServer {
   const wait = z.number().min(0).optional().describe("Seconds to wait for work before answering empty; capped at 25. Use 25.");
 
   server.registerTool(
+    "register_worker",
+    {
+      description:
+        "Call once at the start of your shift: the Job Board gives you your Worker id. Use it as `worker` in next_job and submit_job. " +
+        "Reconnecting? Pass the id you were given as `worker` to keep it.",
+      inputSchema: z.object({
+        harness: z.string().optional().describe("Your agent harness, e.g. 'Claude Code', 'OpenCode', 'Pi'"),
+        label: z.string().optional().describe("Free text the Job Board shows next to your id, e.g. 'Artur's laptop'"),
+        worker: z.string().min(1).optional().describe("Only when reconnecting: the Worker id you were given before"),
+      }),
+      outputSchema: z.object({ worker: z.string() }),
+    },
+    async (args) => {
+      const out = { worker: board.registerWorker(args) };
+      return { content: text(`Your Worker id is ${out.worker}. Call next_job with worker: "${out.worker}" and wait: 25.`), structuredContent: out };
+    },
+  );
+
+  server.registerTool(
     "next_job",
     {
       description:
         "Get the next Job for this Worker, or { job: null } when there is nothing yet (call again). " +
         "With wait, the call holds until a Job appears or wait seconds (max 25) pass. " +
         "Do the Job as its instructions say, then hand it in with submit_job.",
-      inputSchema: z.object({ worker: z.string().min(1).describe("Your stable Worker identity"), wait }),
+      inputSchema: z.object({ worker: z.string().min(1).describe("Your Worker id, from register_worker"), wait }),
       outputSchema: z.object({ job: z.record(z.string(), z.unknown()).nullable() }),
     },
     async ({ worker, wait }, ctx) => {
