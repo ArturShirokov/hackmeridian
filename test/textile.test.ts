@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import { ours } from "../src/pipelines.js";
-import { extraction, makePdf, startBoard } from "./seam.js";
+import { checkedMarkdown, extraction, makePdf, startBoard } from "./seam.js";
 
 const quote = "Cotton 60 % Polyester 35 % Elastane 5 %";
 const sheet = () => makePdf([["Style Lumen Everyday Tee", quote, "Recycled content: 35 % of garment mass"]]);
@@ -15,6 +15,7 @@ async function twoExtractions(first: Record<string, number>, second: Record<stri
   const j1 = (await w1.nextJob())!;
   expect(j1.template.name).toBe("textile");
   expect(await w1.submitJob(j1.id, extraction(j1, { fibre_composition: composition(first) }))).toMatchObject({ ok: true });
+  await checkedMarkdown(w1);
   const j2 = (await w2.nextJob())!;
   expect(await w2.submitJob(j2.id, extraction(j2, { fibre_composition: composition(second) }))).toMatchObject({ ok: true });
   const doc = await brand.document(docId);
