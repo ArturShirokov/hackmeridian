@@ -63,7 +63,7 @@ export function App() {
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative" }}>
-        <Sidebar role={role} active={nav} onRole={switchRole} />
+        <Sidebar role={role} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onRole={switchRole} />
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative" }}>{el}</main>
       </div>
       {demo && <StoryDock path={url.pathname} onRole={setRole} />}

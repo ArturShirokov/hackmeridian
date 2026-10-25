@@ -65,6 +65,68 @@ test("the Compare tab counts the differences and marks them", () => {
   expect(screen.getAllByText("≠ Differs")).toHaveLength(2);
 });
 
+test("all four view tabs render for a delivered Document, for each Operator", () => {
+  const d = doc();
+  d.views[0]!.markdown = "# Voltaris NMC-800\n\n| Rated capacity | 220 Ah |";
+  render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  for (const op of ["Origyn Pipeline", "Baseline"]) {
+    fireEvent.click(screen.getByRole("tab", { name: new RegExp(op) }));
+    fireEvent.click(screen.getByRole("tab", { name: "JSON" }));
+    expect(screen.getByTestId("json").textContent).toContain('"rated_capacity_ah"');
+    expect(screen.getByText("Download .json").getAttribute("download")).toBe(`battery-01-voltaris-pack-spec.${op === "Baseline" ? "baseline" : "ours"}.passport.json`);
+    fireEvent.click(screen.getByRole("tab", { name: "Markdown" }));
+    expect(screen.getByTestId("markdown").textContent).toContain("| Rated capacity |");
+    expect(screen.getByText("Download .md").getAttribute("href")).toMatch(/^data:text\/markdown/);
+    fireEvent.click(screen.getByRole("tab", { name: "Source Markdown" }));
+    if (op === "Baseline") expect(screen.getByText(/Source Markdown is not available for Baseline/)).toBeTruthy();
+    else expect(screen.getByTestId("source-markdown").textContent).toContain("# Voltaris NMC-800");
+    fireEvent.click(screen.getByRole("tab", { name: "Trace" }));
+    expect(screen.getByText("No Trace reported.")).toBeTruthy();
+    expect(screen.getByText("Self-reported; the Bond is the guarantee.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("tab", { name: "Review" }));
+  }
+});
+
+test("every Field row responds to a click, whatever its status", () => {
+  const d = doc();
+  const f = d.views[0]!.fields;
+  f[0] = { name: f[0]!.name, label: f[0]!.label, tieBreak: false, status: "converging" };
+  const scan = f[1]!;
+  if ("evidence" in scan) scan.evidence = { ...scan.evidence, rects: [] };
+  const volt = f.find((x) => x.name === "nominal_voltage_v")!;
+  Object.assign(volt, { challenge: { id: "c2", status: "upheld", value: "360 V", page: 1, quote: "Nominal voltage 360 V" }, corrected: { was: "36 V" } });
+  f.push({ name: "hazardous_substances", label: "Hazardous substances", tieBreak: false, status: "not stated", quotes: [], supplierRequest: "Hello" });
+  const { container } = render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
+  const click = (name: string) => fireEvent.click(container.querySelector(`[data-field="${name}"] > div`)!);
+
+  click("name");
+  expect(screen.getByText("Still converging")).toBeTruthy();
+  click("battery_identifier");
+  expect(screen.getByText("quote not found in the PDF text (scan)")).toBeTruthy();
+  expect(container.querySelector('[data-field="battery_identifier"]')!.textContent).toContain("Battery identifier BAT-EU-2027-000214");
+  click("rated_capacity_ah");
+  expect(screen.getByText(/Highlighted: Rated capacity/)).toBeTruthy();
+  click("nominal_voltage_v");
+  expect(screen.getByText(/Highlighted: Nominal voltage/)).toBeTruthy();
+  fireEvent.click(container.querySelector('[data-field="hazardous_substances"]')!);
+  expect(screen.getByText("Not stated in this Document.")).toBeTruthy();
+  fireEvent.click(container.querySelector('[data-field="initial_internal_resistance_ohm"]')!);
+  expect(screen.getByText(/Highlighted: Initial internal resistance/)).toBeTruthy();
+
+  // The Baseline's Challenged row.
+  fireEvent.click(screen.getByRole("tab", { name: /Baseline/ }));
+  click("rated_capacity_ah");
+  expect(screen.getByText(/Highlighted: Rated capacity — “80”/)).toBeTruthy();
+});
+
+test("a Not stated Field the Brand provides says so instead of offering a Supplier Request", () => {
+  const tpl = structuredClone((respond("/api/templates") as { name: string; fields: { name: string }[] }[]).find((t) => t.name === "battery")!);
+  tpl.fields = tpl.fields.map((f) => (f.name === "initial_internal_resistance_ohm" ? { ...f, author: "Brand" } : f));
+  render(<ReviewView d={doc()} config={config} offset={0} template={tpl as never} file={vi.fn()} />);
+  expect(screen.getByText("Brand to provide")).toBeTruthy();
+  expect(screen.queryByText("Copy Supplier Request")).toBeNull();
+});
+
 test("arrow keys move between rows and C opens a Challenge on the selected Field", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.keyDown(window, { key: "ArrowDown" });

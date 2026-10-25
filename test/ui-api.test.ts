@@ -195,3 +195,16 @@ test("a Worker on our second extraction cannot read the Baseline's delivered val
   });
   expect(after.differs).toEqual(["rated_capacity_ah"]);
 });
+
+test("Source Markdown: our Pipeline's checked Markdown, only once every Pipeline has delivered; none for the Baseline", async () => {
+  const b = await twoPipelines();
+  const j2 = (await b.w3.nextJob())!;
+  const before = await b.brand.document(b.docId);
+  expect(JSON.stringify(before)).not.toContain("# Document");
+  expect(before.view("ours").markdown).toBeUndefined();
+
+  await b.w3.submitJob(j2.id, extraction(j2, { rated_capacity_ah: capacity }));
+  const after = await b.brand.document(b.docId);
+  expect(after.view("ours").markdown).toBe("# Document");
+  expect(after.view("baseline").markdown).toBeUndefined();
+});

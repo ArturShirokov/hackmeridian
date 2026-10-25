@@ -16,6 +16,10 @@ export function valueOf(field: ApiField): { text: string; color: string } {
   return { text: field.display, color: "#141414" };
 }
 
+/** What an expanded row without a quote says. */
+const unquoted = (f: ApiField) =>
+  "withheld" in f ? "Shown once every Operator has delivered this Document." : f.status === "converging" ? "Still converging" : "Not stated in this Document.";
+
 export function pageOf(field: ApiField): number | undefined {
   if ("evidence" in field) return field.evidence.page;
   if ("quotes" in field) return field.quotes[0]?.page;
@@ -74,9 +78,16 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
           )}
         </span>
       </div>
-      {expanded && final && (
+      {expanded && (
         <div className="om-motion" style={{ padding: "0 20px 14px", animation: "om-in .2s ease-out" }}>
-          <Quote page={final.evidence.page} quote={final.evidence.quote} mark={final.evidence.mark} style={{ borderTop: "1px dashed #B5AE9F", paddingTop: 10 }} />
+          {final ? (
+            <>
+              <Quote page={final.evidence.page} quote={final.evidence.quote} mark={final.evidence.mark} style={{ borderTop: "1px dashed #B5AE9F", paddingTop: 10 }} />
+              {!final.evidence.rects.length && <div style={{ marginTop: 6, font: "500 12px/1.3 var(--mono)", color: "#5E594F" }}>quote not found in the PDF text (scan)</div>}
+            </>
+          ) : (
+            <div style={{ borderTop: "1px dashed #B5AE9F", paddingTop: 10, font: "500 13px/1.4 var(--sans)", color: "#3D3A34" }}>{unquoted(field)}</div>
+          )}
         </div>
       )}
       {badge === "challenged" && challenge && (
