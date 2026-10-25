@@ -120,9 +120,10 @@ Every link opens on stellar.expert (Stellar testnet).
 | What | Link |
 |---|---|
 | Plain-payments fallback: a transaction from the smoke run (`LEDGER=payments npx tsx scripts/smoke-ledger.ts`) | https://stellar.expert/explorer/testnet/tx/6e3015f7a996196b533659944a3d813edf68d281eedeaee5a9e2569b77a600fa |
-| Trustless Work escrow (Bond + Fee, output hash in the milestone) | _TODO: link from `LEDGER=trustless-work npx tsx scripts/smoke-ledger.ts`_ |
-| Trustless Work clean settle (approve, release) | _TODO_ |
-| Trustless Work Slashed settle (dispute, resolve with the Slash to the Brand) | _TODO_ |
+| Trustless Work escrow (Bond + Fee, output hash in the milestone) | https://stellar.expert/explorer/testnet/contract/CA37O2SCL37MV2GGULIUCKPT7M7DJW73UCWG762A3W3KIELQ3VZJ4EC2 |
+| Trustless Work clean settle (release to the Operator) | https://stellar.expert/explorer/testnet/tx/a0be21690885e29fc329bf351caeef1c834031ddc6f79c7c55490d33d45dc923 |
+| Trustless Work Slashed escrow | https://stellar.expert/explorer/testnet/contract/CAMNN6FN5RUHJJRIGWXYS7LHLJ4QBKWA3MNHWMZD4WK7MC5MRP5WEXXQ |
+| Trustless Work Slashed settle (resolve: the Slash to the Brand, the rest to the Operator) | https://stellar.expert/explorer/testnet/tx/918d8b13f9261aeb1de84e738e4c92e27d91ce5563cebdc5ff278a811d0e3213 |
 
 The demo wallets (Brand, our Operator, the Baseline's Operator, Arbiter, fallback escrow account) are testnet
 accounts the Job Board holds. In a real product the Brand never holds crypto.
@@ -169,8 +170,18 @@ The leaderboard reads each Operator's record through the Ledger. The fallback re
 payment history on Horizon, so it is read from Stellar. The Trustless Work adapter keeps it in memory for now: its
 escrow query endpoints hold milestone flags, not the dispute split, so they can't give the Slashes.
 
-**Decision: pending.** Trustless Work or the fallback is decided by Artur's 30-minute spike with a real API key. The
-fallback has run end to end on testnet; the Trustless Work adapter is tested only against a mocked API.
+**Decision: Trustless Work.** The spike on 25 Oct 2026 ran both settlements end to end on testnet on the first try
+(links above), so the fallback is not needed. It stays as a working backup (`LEDGER=payments`).
+
+What the spike settled:
+
+- `milestoneIndex` is `"0"`. Signing each returned XDR as the role's account is enough; no separate Soroban auth
+  entries. The Arbiter can be both release signer and dispute resolver.
+- Resolve accepts the gross split (Slashes plus the rest, adding up to Bond + Fee).
+- **Trustless Work takes 0.3% on testnet too**, from every release and every resolve. On a 2.5 USDC escrow, 0.0075
+  went to Trustless Work. With a 0.75 Slash the Brand received 0.74775 and the Operator 1.74475. So the Brand gets
+  the Slash minus 0.3%, not the full Slash as issue #1 says. To pay the Brand the full Slash, the Operator's share
+  would have to cover the fee; that is not done yet.
 
 ### Wallets
 
@@ -193,6 +204,4 @@ LEDGER=payments       npx tsx scripts/smoke-ledger.ts   # plain-payments fallbac
 
 It opens two escrows, settles one clean and one with a Slash, and prints stellar.expert links.
 
-Check in the Trustless Work spike: `milestoneIndex` "0" vs "1"; that signing each XDR as the role's account is enough
-(no separate Soroban auth entries); that one address may be both release signer and dispute resolver; the 0.3% fee on
-testnet. If the testnet resets, run the setup script again.
+If the testnet resets, run the setup script again.
