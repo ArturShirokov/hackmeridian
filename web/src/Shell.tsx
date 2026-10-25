@@ -2,11 +2,14 @@
 import { useEffect, useState } from "react";
 import { api, usePoll } from "./api.ts";
 import { Link, match, navigate, useLocation } from "./router.tsx";
-import { Arbiter, DocumentsList, Jobs, Leaderboard, NotFound, Pipeline, Review, Upload } from "./screens.tsx";
+import { NotFound } from "./screens.tsx";
 import { BrandDocuments } from "./screens/brand/Documents.tsx";
 import { BrandUpload } from "./screens/brand/Upload.tsx";
 import { BrandPipeline } from "./screens/brand/Pipeline.tsx";
 import { BrandReview } from "./screens/brand/Review.tsx";
+import { Arbiter } from "./screens/ops/Arbiter.tsx";
+import { Jobs } from "./screens/ops/Jobs.tsx";
+import { Leaderboard } from "./screens/ops/Leaderboard.tsx";
 
 export type Role = "brand" | "arbiter" | "operator";
 

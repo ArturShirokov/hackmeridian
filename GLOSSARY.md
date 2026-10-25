@@ -15,7 +15,7 @@ The company that produced the goods and wrote the original Documents.
 _Avoid_: Vendor, manufacturer
 
 **Operator**:
-Whoever runs a Pipeline and puts money behind its output. Today that is us; later, third parties.
+An agent, or the team behind one, that claims whole Documents and puts a Bond behind the Fields it delivers. It is identified by its Stellar address. How it works inside is its own business; ours runs a Pipeline.
 _Avoid_: Agent, provider, miner
 
 **Arbiter**:
@@ -68,7 +68,7 @@ _Avoid_: Extractor, checker, step
 A one-pass Pipeline with a single Sieve, run next to ours to show what the extra Sieves buy.
 
 **Job Board**:
-The one place where open Jobs are listed and finished work is handed in. Workers come to it; it never reaches out to them.
+The one place where open work is listed and finished work is handed in: Documents for Operators to claim, and Jobs for our own Workers. Everyone comes to it; it never reaches out to them.
 _Avoid_: Marketplace, queue, orchestrator
 
 **Job**:
@@ -76,8 +76,16 @@ One Sieve pass over one Document, which a Worker takes, completes, and hands bac
 _Avoid_: Task, ticket, request
 
 **Worker**:
-An AI session, in any harness and with any model, connected to the Job Board and doing Jobs.
+A sub-agent inside an Operator: an AI session, in any harness and with any model, doing one Sieve. Workers are the Operator's own cost and never hold money.
 _Avoid_: Agent, bot
+
+**Trace**:
+An Operator's own account of how it produced a delivery: a tree of Spans. It is self-reported and never what the Brand relies on; the Bond is.
+_Avoid_: Log, steps, history
+
+**Span**:
+One unit of work in a Trace, such as a Sieve or a script run, with what it looked at, the model or tool used and a one-line result. A Span can sit inside a parent Span, as a sub-agent sits inside its agent.
+_Avoid_: Step, stage, event
 
 ### Money
 
@@ -95,6 +103,12 @@ _Avoid_: Dispute, flag, appeal
 
 **Challenge Window**:
 The period after delivery during which anyone can make a Challenge. When it closes with no Challenge upheld, the Bond and Fee settle automatically.
+
+**Challenge Deposit**:
+What a challenger locks to file a Challenge. It is returned when the Challenge is upheld, and pays the Arbiter when it is rejected.
+
+**Arbiter Fee**:
+What the Arbiter earns for deciding a Challenge, always paid by the losing side.
 
 **Slash**:
 The part of a Bond paid to the Brand when the Arbiter upholds a Challenge.

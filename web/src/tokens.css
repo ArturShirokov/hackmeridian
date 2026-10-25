@@ -51,6 +51,15 @@ button, input, textarea, select { font-family: inherit; }
 .om-sugg:hover { background: var(--hover); }
 .om-nav.active { background: var(--nav-active); font-weight: 600; }
 
+/* Arbiter desk: queue rows and the two decision buttons (64px / 20px) */
+.om-qrow:hover { background: var(--row-selected); }
+.om-decide { height: 64px; font: 600 20px/1 var(--sans); cursor: pointer; }
+.om-decide:disabled { cursor: progress; opacity: .6; }
+.om-decide.uphold { background: var(--red); color: #FFFFFF; border: 0; }
+.om-decide.uphold:hover:not(:disabled) { background: var(--red-hover); }
+.om-decide.reject { background: transparent; color: var(--ink); border: 2px solid var(--ink); }
+.om-decide.reject:hover:not(:disabled) { background: var(--hover); }
+
 /* pdf.js text layer (pick mode), trimmed from pdfjs-dist/web/pdf_viewer.css */
 .textLayer { position: absolute; inset: 0; overflow: clip; line-height: 1; text-align: initial; transform-origin: 0 0; z-index: 3;
   --min-font-size: 1; --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size)); --min-font-size-inv: calc(1 / var(--min-font-size)); }
