@@ -21,11 +21,13 @@ export interface Job {
   id: string;
   documentId: string;
   sieve: SieveKind;
+  /** The Sieve's label, e.g. "Markdown extraction". */
+  label: string;
   view: View;
   instructions: string;
   template: Template;
-  /** markdown: the Markdown to check (faithfulness Sieve) or the checked Markdown (Sieves that read Markdown). */
-  document: { url: string; text: string[]; markdown?: string };
+  /** name: the uploaded file name. markdown: the Markdown to check (faithfulness Sieve) or the checked Markdown (Sieves that read Markdown). */
+  document: { url: string; name: string; text: string[]; markdown?: string };
 }
 
 const stated = z.strictObject({ field: z.string(), ...statedValue, page: z.number().int().positive() });
@@ -336,10 +338,11 @@ export class JobBoard {
         id: randomUUID(),
         documentId,
         sieve: sieve.kind,
+        label: sieve.label,
         view: sieve.view,
         instructions: sieve.instructions,
         template: fields ? { ...d.template, fields: d.template.fields.filter((f) => fields.includes(f.name)) } : d.template,
-        document: { url: d.meta.link ?? `${this.baseUrl}/documents/${documentId}/file`, text: d.text, ...(markdown !== undefined && { markdown }) },
+        document: { url: d.meta.link ?? `${this.baseUrl}/documents/${documentId}/file`, name: d.meta.name, text: d.text, ...(markdown !== undefined && { markdown }) },
       },
     });
     this.notify();
