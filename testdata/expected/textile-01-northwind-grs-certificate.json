@@ -1,0 +1,24 @@
+{
+  "document": "textile-01-northwind-grs-certificate.pdf",
+  "template": "textile",
+  "fields": {
+    "product_name": { "value": "Harbour Fleece Hoodie", "page": 1, "quote": "Product Harbour Fleece Hoodie" },
+    "gtin": { "value": "5609876543212", "page": 1, "quote": "Article number (GTIN) 5609876543212" },
+    "manufacturer_name": { "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal", "page": 1, "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal" },
+    "country_of_manufacture": { "value": "PT", "page": 1, "quote": "Country: Portugal" },
+    "production_date": { "value": "2026-09-01", "page": 1, "quote": "Issue date: 2026-09-01" },
+    "product_category": { "value": "Hooded sweatshirt", "page": 1, "quote": "Product category Hooded sweatshirt" },
+    "fibre_composition": { "value": { "polyester": 80, "cotton": 20 }, "unit": "%", "page": 1, "quote": "Composition 80% polyester, 20% cotton" },
+    "recycled_content_percent": { "value": 80, "unit": "%", "qualifier": null, "page": 1, "quote": "Recycled content 80 % of total product mass" },
+    "recycled_fibre_type": { "value": "post-consumer recycled polyester from PET bottles", "page": 1, "quote": "Recycled material post-consumer recycled polyester from PET bottles" },
+    "carbon_footprint": "Not stated",
+    "water_usage": "Not stated",
+    "fabric_weight": "Not stated",
+    "certification_scheme": { "value": "GRS", "page": 1, "quote": "Product Certificate - Global Recycled Standard (GRS)" },
+    "certificate_number": { "value": "NWC-GRS-2026-01187", "page": 1, "quote": "Certificate number: NWC-GRS-2026-01187" },
+    "certificate_valid_until": { "value": "2027-08-31", "page": 1, "quote": "Valid until: 2027-08-31" },
+    "chemical_compliance": { "value": "complies with the GRS chemical restrictions (ZDHC MRSL)", "page": 1, "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)." },
+    "care_instructions": "Not stated",
+    "durability_rating": "Not stated"
+  }
+}

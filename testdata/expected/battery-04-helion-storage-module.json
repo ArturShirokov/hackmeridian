@@ -1,0 +1,32 @@
+{
+  "document": "battery-04-helion-storage-module.pdf",
+  "template": "battery",
+  "plantedError": "Page 1 shows '16 % recycled lithium' in large type inside a highlight box; the small line under it says it is a 2031 roadmap target. The share the Document actually states for this product is the page-2 table row: 6 %. A one-pass extraction is likely to return 16 %.",
+  "fields": {
+    "name": { "value": "Helion HX-280 LFP storage module", "page": 1, "quote": "Helion HX-280 LFP storage module" },
+    "battery_identifier": { "value": "HX280-26-004417", "page": 2, "quote": "Module serial number HX280-26-004417" },
+    "manufacturer_identifier_information": { "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands", "page": 1, "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands." },
+    "manufacturing_place": { "value": "Eindhoven, Netherlands", "page": 2, "quote": "Place of manufacture Eindhoven, Netherlands" },
+    "manufacturing_date": { "value": "2026-06", "page": 2, "quote": "Date of manufacture 2026-06" },
+    "battery_category": { "value": "industrial", "page": 2, "quote": "Battery category Industrial battery" },
+    "battery_chemistry": { "value": "LFP", "page": 2, "quote": "Cell chemistry LFP (LiFePO4)" },
+    "battery_mass_kg": { "value": 128, "unit": "kg", "qualifier": "nominal", "page": 2, "quote": "Nominal mass 128 kg" },
+    "critical_raw_materials": { "value": "lithium, natural graphite", "page": 2, "quote": "Critical raw materials lithium, natural graphite" },
+    "hazardous_substances": "Not stated",
+    "rated_capacity_ah": { "value": 280, "unit": "Ah", "qualifier": "rated", "page": 2, "quote": "Rated capacity 280 Ah" },
+    "nominal_voltage_v": { "value": 51.2, "unit": "V", "qualifier": "nominal", "page": 2, "quote": "Nominal voltage 51.2 V" },
+    "minimum_voltage_v": { "value": 44.8, "unit": "V", "qualifier": "minimum", "page": 2, "quote": "Voltage range (min / max) 44.8 V / 57.6 V" },
+    "maximum_voltage_v": { "value": 57.6, "unit": "V", "qualifier": "maximum", "page": 2, "quote": "Voltage range (min / max) 44.8 V / 57.6 V" },
+    "original_power_capability_w": { "value": 14300, "unit": "W", "qualifier": "maximum", "page": 2, "quote": "Maximum power 14.3 kW" },
+    "initial_round_trip_efficiency_percent": { "value": 95.5, "unit": "%", "qualifier": "typical", "page": 1, "quote": "typical round-trip energy efficiency of 95.5 %" },
+    "initial_internal_resistance_ohm": "Not stated",
+    "expected_lifetime_cycles": { "value": 6000, "unit": "cycles", "qualifier": "nominal", "page": 1, "quote": "6000 cycles nominal" },
+    "idle_temperature_lower_c": { "value": -10, "unit": "°C", "qualifier": "minimum", "page": 2, "quote": "Idle (storage) temperature min -10 °C, max 45 °C" },
+    "idle_temperature_upper_c": { "value": 45, "unit": "°C", "qualifier": "maximum", "page": 2, "quote": "Idle (storage) temperature min -10 °C, max 45 °C" },
+    "carbon_footprint_functional_unit": { "value": 58.3, "unit": "kg CO2e/kWh", "qualifier": null, "page": 2, "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh" },
+    "recycled_content_cobalt": "Not stated",
+    "recycled_content_lithium": { "value": 6, "unit": "%", "qualifier": null, "page": 2, "quote": "Recycled lithium, this production lot (pre + post consumer) 6 %" },
+    "recycled_content_nickel": "Not stated",
+    "recycled_content_lead": "Not stated"
+  }
+}

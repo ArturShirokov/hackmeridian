@@ -1,0 +1,13 @@
+{
+  "name": "hackmeridian-testdata",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.mjs",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "pdf-lib": "^1.17.1",
+    "unpdf": "^1.9.1"
+  }
+}
