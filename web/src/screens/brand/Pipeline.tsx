@@ -109,7 +109,7 @@ function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset
             {e && windowMs !== undefined && (
               <span style={{ font: "500 17px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline", whiteSpace: "nowrap" }}>
                 Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
-                {note && e.status !== "settled" && <span style={{ font: "500 13px/1.3 var(--sans)", color: "#2A2723" }}>{note}</span>}
+                {note && e.status !== "settled" && <span style={{ font: "500 12px/1.25 var(--sans)", color: "#2A2723", whiteSpace: "normal", maxWidth: 110, alignSelf: "center" }}>{note}</span>}
               </span>
             )}
             {e && <ProofLink href={e.link} hash={e.outputHash} />}

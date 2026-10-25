@@ -327,6 +327,7 @@ function CompareTab({ d, sel, onSelect, canChallenge, onChallenge }: {
   );
 }
 
+const compact = { height: 30, padding: "0 8px", fontSize: 12 } as const;
 const fieldCount = (n: number) => `${n} Field${n === 1 ? "" : "s"}`;
 
 /** One Not stated Field as a compact row; expanded it shows the competing statements the Sieves found. */
@@ -342,17 +343,17 @@ export function NotStatedRow({ field, no, highStake, selected, expanded, onSelec
   const page = field.quotes[0]?.page;
   return (
     <div onClick={onSelect} data-field={field.name} style={{ border: "1px solid #D9C08A", borderTop: 0, background: selected ? "var(--amber-bg)" : "var(--amber-card)", outline: selected ? `2px solid ${AMBER}` : "none", outlineOffset: -2, cursor: "pointer" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto auto 40px", gap: 10, alignItems: "center", padding: "6px 12px", minHeight: 46 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) 116px 214px 34px", gap: 8, alignItems: "center", padding: "6px 12px", minHeight: 46 }}>
         <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flexWrap: "wrap" }}>
-          <span style={{ font: "500 14px/1.25 var(--sans)" }}><FieldNo no={no} />{field.label}</span>
+          <span style={{ font: "500 14px/1.25 var(--sans)", minWidth: 0, overflowWrap: "anywhere" }}><FieldNo no={no} />{field.label}</span>
           <FieldTags author={field.author} highStake={highStake} />
         </span>
         <StatusBadge status="not stated" />
         <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {onRequest
-            ? <button className="om-btn ghost row" onClick={stop(onRequest)}>Copy Supplier Request</button>
+            ? <button className="om-btn ghost row" style={compact} onClick={stop(onRequest)}>Copy Supplier Request</button>
             : <span style={{ font: "600 12.5px/1 var(--sans)", color: AMBER, whiteSpace: "nowrap" }}>Brand to provide</span>}
-          {onChallenge && <button className="om-btn ghost row" aria-label={`Challenge ${operator}: ${field.label}`} title="The Document does state it" onClick={stop(onChallenge)}>Challenge</button>}
+          {onChallenge && <button className="om-btn ghost row" style={compact} aria-label={`Challenge ${operator}: ${field.label}`} title="The Document does state it" onClick={stop(onChallenge)}>Challenge</button>}
         </span>
         <span style={{ font: "500 12.5px/1 var(--mono)", color: "#2A2723" }}>{page ? `p. ${page}` : ""}</span>
       </div>

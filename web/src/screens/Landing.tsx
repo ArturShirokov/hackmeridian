@@ -16,10 +16,10 @@ const h2: CSSProperties = { margin: "0 0 36px", font: "400 36px/1.1 var(--serif)
 const LIVE_MS = 48 * 3_600_000;
 
 /** The header and footer of the public pages (Landing, and the Leaderboard when signed out). */
-export function PublicHeader() {
+export function PublicHeader({ wide }: { wide?: boolean }) {
   return (
     <>
-      <header className="om-land-head" style={{ ...wrap, paddingTop: 22, paddingBottom: 22, display: "flex", alignItems: "center", gap: 36 }}>
+      <header className="om-land-head" style={{ ...wrap, ...(wide && { maxWidth: "none", margin: 0, padding: "0 40px" }), paddingTop: 22, paddingBottom: 22, display: "flex", alignItems: "center", gap: 36 }}>
         <Link to="/" style={{ font: "500 28px/1 var(--serif)", letterSpacing: "-0.01em", color: INK, textDecoration: "none" }}>doc2dpp</Link>
         <nav aria-label="Public" style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 28, font: "500 15px/1 var(--sans)", flexWrap: "wrap" }}>
           <a href="/#how" style={{ color: INK, textDecoration: "none" }}>How it works</a>

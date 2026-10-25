@@ -76,7 +76,7 @@ export function App() {
     // Signed out: Landing at /, the Leaderboard is public (read-only), every other path asks who you are.
     const page = url.pathname === "/" ? <Landing />
       : match("/leaderboard", url.pathname)
-        ? <div className="om-app" style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}><PublicHeader /><Leaderboard /></div>
+        ? <div className="om-app" style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}><PublicHeader wide /><Leaderboard /></div>
         : <SignIn onPick={(id) => signIn(id)} />;
     return dock ? <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}><div style={{ flex: 1, minHeight: 0 }}>{page}</div>{dock}</div> : page;
   }
