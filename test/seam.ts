@@ -90,7 +90,9 @@ export function startBoard(
         return r.data!.documents as { id: string; template: { name: string; fields: { name: string }[] }; bond: string; fee: string }[];
       },
       claim: (documentId: string, signer = kp) => signed("claim_document", { documentId }, signer),
-      deliver: (documentId: string, fields: unknown, signer = kp) => signed("deliver", { documentId, fields }, signer),
+      deliver: (documentId: string, fields: unknown, { signer = kp, trace }: { signer?: Keypair; trace?: unknown } = {}) =>
+        signed("deliver", { documentId, fields, ...(trace !== undefined && { trace }) }, signer),
+      reportSpan: (documentId: string, span: unknown) => call("report_span", { documentId, span }),
       call,
     };
   }

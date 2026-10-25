@@ -83,11 +83,30 @@ export function buildMcpServer(board: JobBoard): McpServer {
       description:
         "Deliver your Fields for a Document you claimed: one entry per Template Field, { field, value, unit, qualifier, page, quote } " +
         "or { field, notStated: true }. Each quote must be words found in the Document. A malformed delivery is rejected with what is wrong. " +
-        "Returns a transaction (xdr) recording your output hash on Stellar; sign it and hand it in with submit_signed to open the Challenge Window.",
-      inputSchema: z.object({ operator, documentId, fields: z.array(z.unknown()) }),
+        "Returns a transaction (xdr) recording your output hash on Stellar; sign it and hand it in with submit_signed to open the Challenge Window. " +
+        "Optional trace: how you produced it, as Spans (see report_span), each with an end; it replaces the Spans you reported.",
+      inputSchema: z.object({ operator, documentId, fields: z.array(z.unknown()), trace: z.array(z.unknown()).optional() }),
       outputSchema: z.object({ xdr: z.string() }),
     },
-    async ({ operator, documentId, fields }) => toSign(await board.deliverOutside(operator, documentId, { fields }), "records your output hash"),
+    async ({ operator, documentId, fields, trace }) =>
+      toSign(await board.deliverOutside(operator, documentId, { fields }, trace), "records your output hash"),
+  );
+
+  server.registerTool(
+    "report_span",
+    {
+      description:
+        "Optional, for outside Operators: show the Brand your work live as a Trace of Spans while you work on a claimed Document. " +
+        "A Span is { id, parent?, label, view, model, result, start, end? }: view is what it looked at (original, markdown, a script's output), " +
+        "model the model or tool used, result one line, start/end ms since the epoch (leave end out while it runs), parent the id of an " +
+        "earlier Span it sits inside (a sub-agent). Report the same id again to update it. Never put Field values in a Span. " +
+        "The Trace is self-reported; the Bond is the guarantee.",
+      inputSchema: z.object({ operator, documentId, span: z.unknown() }),
+    },
+    async ({ operator, documentId, span }) => {
+      const r = board.reportSpan(operator, documentId, span);
+      return r.ok ? { content: text("reported") } : { isError: true, content: text(`rejected: ${r.error}`) };
+    },
   );
 
   server.registerTool(
