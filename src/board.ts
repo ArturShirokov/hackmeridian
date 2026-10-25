@@ -9,7 +9,7 @@ import type {
 } from "./api.js";
 import type { Challenge } from "./challenges.js";
 import { compositionSum, converge, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
-import { addUsdc, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
+import { addUsdc, minUsdc, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
 import { quoteRects, readPdf, type TextItem } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
@@ -166,6 +166,8 @@ export class JobBoard {
   private jobTimeoutMs: number;
   private operators: Record<string, OperatorTerms>;
   private challengeWindowMs: number;
+  private challengeDeposit: string;
+  private arbiterFee: string;
   /** Keyed by escrowKey(documentId, pipeline). */
   private escrows = new Map<string, Escrow>();
   readonly challenges: Challenges;
@@ -185,6 +187,10 @@ export class JobBoard {
     /** Bond and Fee by Pipeline name. A Pipeline not listed is run by an Operator of the same name for 10 + 1 USDC. */
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
+    /** What a challenger locks to file a Challenge, USDC. Default 1. */
+    challengeDeposit?: string;
+    /** What the Arbiter earns per decision, out of the Slash when upheld (at most the Slash), USDC. Default 0.1. */
+    arbiterFee?: string;
     brand?: Brand;
   }) {
     this.now = opts.now ?? Date.now;
@@ -193,6 +199,8 @@ export class JobBoard {
     this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
     this.operators = opts.operators ?? {};
     this.challengeWindowMs = opts.challengeWindowMs ?? 5 * 60_000;
+    this.challengeDeposit = addUsdc(opts.challengeDeposit ?? "1");
+    this.arbiterFee = addUsdc(opts.arbiterFee ?? "0.1");
     this.storage = opts.storage;
     this.ledger = opts.ledger;
     this.baseUrl = opts.baseUrl;
@@ -404,9 +412,12 @@ export class JobBoard {
       const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
+      const deposits = this.challenges.of(documentId, pipeline).map((c) => ({ challenger: c.challenger, amount: c.deposit, upheld: c.decision === "upheld" }));
       e.status = "settling";
       try {
-        const { link } = s.length ? await this.ledger.settleWithSlashes(e.escrowId, s) : await this.ledger.settleClean(e.escrowId);
+        const { link } = deposits.length
+          ? await this.ledger.settleWithSlashes(e.escrowId, s, deposits, this.arbiterFee)
+          : await this.ledger.settleClean(e.escrowId);
         e.status = "settled";
         if (link) e.settlementLink = link;
         if (s.length) e.slashes = s;
@@ -417,8 +428,8 @@ export class JobBoard {
     }
   }
 
-  /** File a Challenge against a delivered Field, only while its Challenge Window is open. */
-  challenge(documentId: string, raw: unknown, pipeline = this.pipelines[0]!.name) {
+  /** The open escrow a Challenge can be filed against, or why not. */
+  private challengeable(documentId: string, pipeline: string) {
     const d = this.docs.get(documentId);
     const e = this.escrows.get(escrowKey(documentId, pipeline));
     const delivered = d?.delivered.get(pipeline);
@@ -427,8 +438,45 @@ export class JobBoard {
       return { ok: false as const, reason: "closed" as const, error: "the Challenge Window has closed" };
     // The values are not shown yet, and the Arbiter's view would show them.
     if (this.withheld(d)) return { ok: false as const, reason: "closed" as const, error: "another Pipeline is still extracting this Document" };
-    const r = this.challenges.fileChallenge({ documentId, pipeline, template: d.template, text: d.text, delivered }, raw);
-    return r.ok ? r : { ...r, reason: "invalid" as const };
+    return { ok: true as const, d, e, delivered };
+  }
+
+  /**
+   * File a Challenge against a delivered Field, only while its Challenge Window is open, once its Challenge Deposit
+   * is locked. `challenger` defaults to the Brand, whose key the Ledger holds; any other challenger is a Stellar
+   * address and passes `depositXdr`: the transaction from prepareDeposit, signed with its key.
+   */
+  async challenge(documentId: string, raw: unknown, pipeline = this.pipelines[0]!.name) {
+    const t = this.challengeable(documentId, pipeline);
+    if (!t.ok) return t;
+    const { challenger = t.d.meta.uploader, depositXdr, ...rest } = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+    if (typeof challenger !== "string" || !challenger || (depositXdr !== undefined && typeof depositXdr !== "string"))
+      return { ok: false as const, reason: "invalid" as const, error: "challenger and depositXdr must be strings" };
+    const deposit = this.challengeDeposit;
+    const r = this.challenges.check({ documentId, pipeline, template: t.d.template, text: t.d.text, delivered: t.delivered }, rest, { challenger, deposit });
+    if (!r.ok) return { ...r, reason: "invalid" as const };
+    // Filed first, so settlement waits for it (and returns its Deposit) even if the Window closes while it locks.
+    this.challenges.add(r.challenge);
+    try {
+      await this.ledger.lockDeposit(t.e.escrowId, { challenger, amount: deposit, ...(depositXdr && { signedXdr: depositXdr }) });
+    } catch (err) {
+      this.challenges.remove(r.challenge.id);
+      return { ok: false as const, reason: "deposit" as const, error: `the Challenge Deposit of ${deposit} USDC was not locked: ${(err as Error).message}` };
+    }
+    return r;
+  }
+
+  /** For a challenger that signs its own Deposit: the unsigned transaction to sign and pass as depositXdr. */
+  async prepareDeposit(documentId: string, challenger: unknown, pipeline = this.pipelines[0]!.name) {
+    const t = this.challengeable(documentId, pipeline);
+    if (!t.ok) return t;
+    if (typeof challenger !== "string" || !challenger) return { ok: false as const, reason: "invalid" as const, error: "challenger must be a Stellar address" };
+    try {
+      const { xdr } = await this.ledger.prepareDeposit(t.e.escrowId, challenger, this.challengeDeposit);
+      return { ok: true as const, xdr, amount: this.challengeDeposit };
+    } catch (err) {
+      return { ok: false as const, reason: "invalid" as const, error: (err as Error).message };
+    }
   }
 
   documents(): DocumentMeta[] {
@@ -628,6 +676,8 @@ export class JobBoard {
       now: this.now(),
       baseUrl: this.baseUrl,
       challengeWindowMs: this.challengeWindowMs,
+      challengeDeposit: this.challengeDeposit,
+      arbiterFee: this.arbiterFee,
       brand: this.brand,
       operators: this.pipelines.map((p) => ({
         pipeline: p.name,
@@ -665,7 +715,16 @@ export class JobBoard {
           : { display: was.status === "not stated" ? "Not stated" : "Sieves disagree" },
       claim: { display: formatValue(c), evidence: this.quote(d, c.page, c.quote, c) },
       slash: slashes(e.bond, 1)[0]!,
+      challenger: c.challenger,
+      deposit: c.deposit,
+      ...(c.decision && { arbiterFee: this.earned(c) }),
     };
+  }
+
+  /** What the Arbiter earns for deciding c: the Deposit if rejected, the Arbiter Fee (at most the Slash) if upheld. */
+  private earned(c: Challenge): string {
+    // ponytail: assumes the Slash of one tenth; Slashes past the cap (10 upheld) are 0 and so is their fee at settlement.
+    return c.decision === "rejected" ? c.deposit : minUsdc(this.arbiterFee, slashes(this.escrows.get(escrowKey(c.documentId, c.pipeline))!.bond, 1)[0]!);
   }
 
   /** The Arbiter's desk: open Challenges oldest first, decided ones newest first. */
@@ -675,7 +734,12 @@ export class JobBoard {
     return {
       open: all.filter((c) => !c.decision).map((c) => this.apiChallenge(c)),
       decided: decided.map((c) => this.apiChallenge(c)),
-      record: { decided: decided.length, upheld: decided.filter((c) => c.decision === "upheld").length, rejected: decided.filter((c) => c.decision === "rejected").length },
+      record: {
+        decided: decided.length,
+        upheld: decided.filter((c) => c.decision === "upheld").length,
+        rejected: decided.filter((c) => c.decision === "rejected").length,
+        earned: addUsdc(...decided.map((c) => this.earned(c))),
+      },
     };
   }
 

@@ -25,6 +25,8 @@ export function startBoard(
     pipelines?: Pipeline[];
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
+    challengeDeposit?: string;
+    arbiterFee?: string;
     /** Have the fake Ledger give explorer links under this base URL; without it, it gives none. */
     explorer?: string;
     web?: WebOptions;
@@ -102,6 +104,15 @@ export function startBoard(
         body: JSON.stringify(body),
       });
       return { status: res.status, body: (await res.json()) as { id?: string; error?: string } };
+    },
+    /** For a challenger that signs its own Deposit: the unsigned transaction to sign. */
+    async prepareDeposit(docId: string, challenger: string, pipeline?: string) {
+      const res = await web.request(`/api/documents/${docId}/challenges/deposit`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ challenger, pipeline }),
+      });
+      return { status: res.status, body: (await res.json()) as { xdr: string; amount: string; error?: string } };
     },
   };
 

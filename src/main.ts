@@ -16,6 +16,7 @@ const baseUrl = process.env.BASE_URL ?? `http://${host}:${port}`;
 
 // ponytail: in-memory Storage only; swap in ICP Storage when it lands.
 const challengeWindowMs = Number(process.env.CHALLENGE_WINDOW_MIN ?? 5) * 60_000;
+const { CHALLENGE_DEPOSIT: challengeDeposit = "1", ARBITER_FEE: arbiterFee = "0.1" } = process.env;
 const cache = process.env.DEMO_REPLAY;
 const testdata = (path: string) => new URL(`../testdata/${path}`, import.meta.url);
 let accuracy: WebOptions["accuracy"];
@@ -35,7 +36,7 @@ if (cache) {
   accuracy = Object.fromEntries(
     score(expected, deliveredBy(board, run.documents), (p) => board.operatorOf(p)).map((r) => [r.operator, { correct: r.correct, fields: r.fields }]),
   );
-} else board = new JobBoard({ storage: new InMemoryStorage(), ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs });
+} else board = new JobBoard({ storage: new InMemoryStorage(), ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
 setInterval(() => board.poll().catch((e) => console.error("poll failed:", e)), 5000);
 setInterval(() => board.tick().catch((e) => console.error("settlement failed:", e)), 5000);
 

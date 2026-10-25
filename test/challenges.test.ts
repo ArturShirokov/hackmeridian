@@ -59,7 +59,7 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
   expect(await arbiter.challenges()).toHaveLength(0);
   expect((await arbiter.decide(open[0]!.id, "rejected")).status).toBe(409);
   const desk = await arbiter.desk();
-  expect(desk.record).toEqual({ decided: 2, upheld: 1, rejected: 1 });
+  expect(desk.record).toEqual({ decided: 2, upheld: 1, rejected: 1, earned: "1.1" });
   expect(desk.decided).toMatchObject([
     { id: open[1]!.id, status: "rejected", decidedAt: 1000 },
     { id: open[0]!.id, status: "upheld", decidedAt: 0, note: "p. 1 says 220 Ah" },
@@ -74,7 +74,7 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
   board.clock.advance(60_000);
   await board.tick();
   const escrowId = board.ledger.calls[0]!.escrowId;
-  expect(board.ledger.calls.filter((c) => c.call !== "openEscrow")).toEqual([{ call: "settleWithSlashes", escrowId, slashes: ["1"] }]);
+  expect(board.ledger.calls.filter((c) => c.call === "settleWithSlashes")).toMatchObject([{ escrowId, slashes: ["1"] }]);
   expect(await board.ledger.operatorRecord("baseline")).toEqual({ documents: 1, challengesUpheld: 1, totalSlashed: "1" });
   expect((await brand.page(`/documents/${docId}`)).text).toContain("1 USDC Slashed to the Brand");
 });
@@ -107,11 +107,13 @@ test("settlement waits for the Arbiter while a Challenge is undecided", async ()
   await brand.challenge(docId, capacityChallenge);
   board.clock.advance(60_000);
   await board.tick();
-  expect(board.ledger.calls.filter((c) => c.call !== "openEscrow")).toEqual([]);
+  const settled = () => board.ledger.calls.filter((c) => c.call.startsWith("settle")).map((c) => c.call);
+  expect(settled()).toEqual([]);
 
   await arbiter.decide((await arbiter.challenges())[0]!.id, "rejected");
   await board.tick();
-  expect(board.ledger.calls.filter((c) => c.call !== "openEscrow").map((c) => c.call)).toEqual(["settleClean"]);
+  // Not settleClean: the rejected Challenge's Deposit goes to the Arbiter.
+  expect(settled()).toEqual(["settleWithSlashes"]);
 });
 
 test("a Challenge must name a Template Field and cite a page of the Document and a quote", async () => {
