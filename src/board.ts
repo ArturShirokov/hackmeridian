@@ -234,6 +234,9 @@ export class JobBoard {
   readonly challenges: Challenges;
   /** When each Worker last asked for or handed in a Job. */
   private workersSeen = new Map<string, number>();
+  /** What each Worker said about itself in register_worker. In memory: after a restart, ids are accepted unregistered. */
+  private registered = new Map<string, { harness?: string; label?: string }>();
+  private lastWorkerNo = 0;
   readonly brand: Brand;
   /** Long-polls waiting for work; notify() wakes them all to try again. */
   private wakers = new Set<() => void>();
@@ -411,6 +414,25 @@ export class JobBoard {
   /** Sieves stay independent: a Worker does at most one extraction Sieve per Document, across every Pipeline. */
   private didExtraction(worker: string, j: JobState): boolean {
     return this.jobs.some((o) => o !== j && o.takenBy === worker && o.job.documentId === j.job.documentId && extracts(o.job.sieve));
+  }
+
+  /**
+   * A Worker's id for its shift: `worker` back when it reconnects with the id it was given, else a fresh "w<n>" no
+   * Worker has used. Synchronous, so concurrent registrations never share one.
+   */
+  registerWorker({ worker, harness, label }: { worker?: string; harness?: string; label?: string } = {}): string {
+    let id = worker;
+    if (!id) do id = `w${++this.lastWorkerNo}`; while (this.workersSeen.has(id) || this.registered.has(id));
+    const before = this.registered.get(id);
+    this.registered.set(id, { ...before, ...(harness && { harness }), ...(label && { label }) });
+    this.workersSeen.set(id, this.now());
+    return id;
+  }
+
+  /** "w3 · OpenCode", or the bare id when the Worker named no harness. */
+  workerLabel(id: string): string {
+    const h = this.registered.get(id)?.harness;
+    return h ? `${id} · ${h}` : id;
   }
 
   /** The next open Job for this Worker, or null when there is nothing yet. */
@@ -952,7 +974,7 @@ export class JobBoard {
       trace: p.sieves.flatMap((s, i) => {
         const st = stations[i]!;
         if (st.takenAt === undefined || !st.worker) return [];
-        return [{ id: `sieve-${i}`, label: s.label, view: s.view, model: st.worker, ...(st.meta && { result: st.meta }), start: st.takenAt, ...(st.doneAt !== undefined && { end: st.doneAt }) }];
+        return [{ id: `sieve-${i}`, label: s.label, view: s.view, model: this.workerLabel(st.worker),...(st.meta && { result: st.meta }), start: st.takenAt, ...(st.doneAt !== undefined && { end: st.doneAt }) }];
       }),
     };
   }
@@ -1148,6 +1170,7 @@ export class JobBoard {
         const cur = this.jobs.find((j) => j.takenBy === name && !j.done && !this.stale(j));
         return {
           name,
+          ...this.registered.get(name),
           lastSeen,
           live: now - lastSeen < 60_000,
           ...(cur && { current: { jobId: cur.job.id, sieve: this.sieveOf(cur).label, documentName: this.docs.get(cur.job.documentId)!.meta.name } }),

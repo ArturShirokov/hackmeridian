@@ -114,9 +114,12 @@ left when the demo starts.
 ## Connect a Worker
 
 A Worker is any AI session that speaks MCP. It connects to the Job Board over streamable HTTP at
-`http://127.0.0.1:3000/mcp` and uses two tools:
+`http://127.0.0.1:3000/mcp` and uses three tools:
 
-- `next_job { worker }` returns a Job (Document link and text layer, the Markdown when the Sieve reads it,
+- `register_worker { harness?, label? }` returns the Worker's id (`w1`, `w2`, ...), fresh and unique, assigned by the
+  Job Board. Call it once per session; the Job Board shows the id with its harness ("w3 · OpenCode"). To keep the id
+  after a reconnect, pass it back as `register_worker { worker }`. Nobody numbers Workers by hand.
+- `next_job { worker, wait? }` returns a Job (Document link and text layer, the Markdown when the Sieve reads it,
   Sieve kind, instructions, Template Fields) or `{ job: null }` when there is nothing yet.
 - `submit_job { worker, jobId, result }` hands in the result. A malformed result is rejected with what is wrong;
   fix it and submit again.
@@ -153,10 +156,8 @@ a project `.pi/mcp.json` only once you trust the project. The file is the usual 
 
 On Pi older than 1.0, run `pi install npm:pi-mcp-adapter` and restart Pi; the adapter reads the same `.pi/mcp.json`.
 
-Then give the session this prompt:
-
-> You are Worker `<your-id>`. Call `next_job` with worker `<your-id>`. If there is no Job, wait 10 seconds and
-> try again. Otherwise do the Job as its instructions say and hand it in with `submit_job`. Repeat.
+Then give every session the same prompt, [`agents/worker-prompt.md`](agents/worker-prompt.md) (the modal shows it too).
+It calls `register_worker` first, then loops `next_job` with the id it got and `wait: 25`.
 
 One extraction Job covers the whole Template, up to 60 Fields, answered in one submission. Measured once
 (25 Oct 2026): a Claude Code session (Opus 5.5) acting as Worker took the "Original" extraction Job for

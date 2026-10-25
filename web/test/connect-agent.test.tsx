@@ -15,20 +15,22 @@ function serve() {
 }
 const row = (operator: string) => ({ operator, label: operator, sieves: 1, documents: 0, fieldsDelivered: 0, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "0", series: [] });
 
-test("Claude Code as a Worker: the command for the configured URL and the Worker prompt with its id, then live", async () => {
+test("Claude Code as a Worker: the command for the configured URL and a prompt that registers, then live with the assigned id", async () => {
+  workers = [{ name: "w1", lastSeen: Date.now(), live: true, doneToday: 0 }];
   serve();
   render(<ConnectAgent />);
   fireEvent.click(screen.getByRole("button", { name: "Connect an agent" }));
   fireEvent.click(await screen.findByRole("button", { name: "Claude Code" }));
   fireEvent.click(screen.getByRole("button", { name: /Worker in our Pipeline/ }));
   expect(await screen.findByText("claude mcp add --transport http doc2dpp https://doc2dpp.wisecraft.dev/mcp")).toBeTruthy();
-  fireEvent.change(screen.getByLabelText("Worker id"), { target: { value: "w9" } });
+  expect(screen.queryByLabelText("Worker id")).toBeNull();
   const prompt = screen.getByLabelText("Starter prompt").textContent!;
-  expect(prompt).toContain("You are Worker `w9`");
-  expect(prompt).not.toContain("WORKER_ID");
-  expect(screen.getByText(/Waiting for w9/)).toBeTruthy();
-  workers = [{ name: "w9", lastSeen: Date.now(), live: true, doneToday: 0 }];
-  expect(await screen.findByText(/w9 is connected/, {}, { timeout: 3000 })).toBeTruthy();
+  expect(prompt).toContain("register_worker");
+  expect(prompt).not.toMatch(/WORKER_ID|\bw\d+\b/);
+  expect(await screen.findByText(/Waiting for a new Worker/)).toBeTruthy();
+  await new Promise((r) => setTimeout(r, 50));
+  workers = [{ name: "w2", harness: "Claude Code", lastSeen: Date.now(), live: true, doneToday: 0 }, ...workers];
+  expect(await screen.findByText(/w2 · Claude Code is connected/, {}, { timeout: 3000 })).toBeTruthy();
 });
 
 test("Pi as an outside Operator: native MCP command and file, the Operator prompt, live once a new Leaderboard row appears", async () => {
