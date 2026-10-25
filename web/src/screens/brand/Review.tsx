@@ -152,8 +152,9 @@ export function ReviewView({ d, config, offset, template, file }: {
   return (
     <div className="om-desktop-only" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative" }}>
       <div style={{ flex: "none", padding: "12px 24px", borderBottom: `1px solid ${INK}`, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px 20px", background: "var(--surface)" }}>
-        <div style={{ minWidth: 160, flex: "0 1 260px" }}>
-          <div style={{ font: "600 15px/1.25 var(--sans)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.name.replace(/\.pdf$/i, "")}</div>
+        <div style={{ minWidth: 160, flex: "0 1 320px" }}>
+          {/* Wraps (at its hyphens), never clipped; the full file name on hover. */}
+          <div title={d.name} style={{ font: "600 15px/1.25 var(--sans)", overflowWrap: "anywhere" }}>{d.name.replace(/\.pdf$/i, "")}</div>
           <div style={{ marginTop: 3, font: "400 13px/1.2 var(--sans)", color: "#3D3A34" }}>{d.supplier || "—"} · {template?.label ?? d.template} passport</div>
         </div>
         {(isCompare ? d.views : [view]).filter((v) => v.escrow).map(bond)}
@@ -181,14 +182,16 @@ export function ReviewView({ d, config, offset, template, file }: {
           {e.settlementLink && <span style={{ marginLeft: "auto" }}><ProofLink href={e.settlementLink} hash={e.settlementLink.split("/").at(-1) ?? ""} label="Settlement" color="var(--settled-ink)" /></span>}
         </div>
       )}
-      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(0,55fr) minmax(0,45fr)" }}>
-        <div style={{ minHeight: 0, display: "flex", borderRight: `1px solid ${INK}` }}>
+      {/* The Fields get the wider side so their names fit on two lines; the page scales to its column. */}
+      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(0,41fr) minmax(0,59fr)" }}>
+        {/* The viewer is clipped to its column, so it never draws under the Fields. */}
+        <div style={{ minHeight: 0, minWidth: 0, display: "flex", overflow: "clip", contain: "paint", borderRight: `1px solid ${INK}` }}>
           <DocumentViewer pdfUrl={d.fileUrl} page={page} onPage={setPage} onBoxClick={(n) => select(n)} caption={caption}
             boxes={boxes(isCompare ? d.views[0]!.fields : fields, sel)}
             pick={picking ? { onPick: (p) => setPanel({ ...panel!, pick: p }) } : undefined} />
         </div>
         {/* clip, not hidden: a hidden box can still be scrolled (by focus or scrollIntoView), shifting the Challenge panel sideways. */}
-        <div style={{ minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "clip" }}>
+        <div style={{ minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "clip", background: "var(--paper)" }}>
           <div role="tablist" aria-label="View" style={{ flex: "none", display: "flex", borderBottom: "1px solid var(--rule)", padding: "0 20px", gap: 2, background: "var(--surface)" }}>
             {VIEWS.map((k) => (
               <button key={k} role="tab" aria-selected={k === viewTab} onClick={() => { setViewTab(k); setPanel(undefined); if (k !== "Review" && isCompare) setTab(d.views[0]!.pipeline); }}
@@ -205,7 +208,8 @@ export function ReviewView({ d, config, offset, template, file }: {
                 {t.label}<span style={{ font: "500 12px/1 var(--mono)", color: "#3D3A34" }}>{t.meta}</span>
               </button>
             ))}
-            <span style={{ marginLeft: "auto", alignSelf: "center", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingLeft: 8, font: "400 12px/1.3 var(--mono)", color: "#3D3A34" }}>↑ ↓ move · Enter quote · C Challenge</span>
+            <span title="↑ ↓ move · Enter quote · C Challenge" aria-label="Keys: ↑ ↓ move, Enter quote, C Challenge"
+              style={{ marginLeft: "auto", alignSelf: "center", flex: "none", padding: "3px 6px", border: "1px solid var(--rule)", font: "500 11px/1 var(--mono)", color: "#3D3A34", cursor: "help" }}>Keys</span>
           </div>
           <div data-review key={viewTab} style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
             {viewTab === "JSON" ? <JsonView d={d} v={view} template={template} />

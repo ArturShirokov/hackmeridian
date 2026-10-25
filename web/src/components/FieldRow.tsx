@@ -56,7 +56,7 @@ export function FieldRow({ field, challenge = field.challenge, selected, expande
     <div data-field={field.name}
       style={{ borderBottom: "1px solid var(--rule-row)", background: selected ? "var(--row-selected)" : "transparent", outline: badge === "challenged" ? "1.5px solid #A3221B" : "none", outlineOffset: -2 }}>
       <div onClick={() => (selected ? onToggle() : onSelect())}
-        style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.25fr) 128px 40px 92px", alignItems: "center", gap: 10, padding: "0 20px", minHeight: 52, cursor: "pointer" }}>
+        style={{ display: "grid", gridTemplateColumns: "minmax(0,1.8fr) minmax(0,1fr) 120px 34px 88px", alignItems: "center", gap: 8, padding: "0 16px", minHeight: 52, cursor: "pointer" }}>
         <span style={{ font: "500 14.5px/1.25 var(--sans)", display: "flex", flexDirection: "column", gap: 3 }}>
           {field.label}
           <span style={{ display: "flex", gap: 6, alignItems: "center" }}>

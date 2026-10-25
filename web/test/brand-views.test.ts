@@ -10,7 +10,7 @@ test("the JSON export round-trips the delivered Fields exactly, every Field pres
   const d = doc();
   const ours = d.views[0]!;
   const back = JSON.parse(JSON.stringify(passport(d, ours)));
-  expect(back).toMatchObject({ template: "battery", documentId: "doc-1", pipeline: "ours", operator: "Origyn", outputHash: ours.escrow!.outputHash });
+  expect(back).toMatchObject({ template: "battery", documentId: "doc-1", operator: "Origyn", outputHash: ours.escrow!.outputHash });
   expect(Object.keys(back.fields)).toEqual(ours.fields.map((f) => f.name));
   expect(back.fields.rated_capacity_ah).toEqual({ status: "final", value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity 220 Ah" });
   expect(back.fields.battery_chemistry).toEqual({ status: "final", value: "NMC811", page: 2, quote: "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode" });
@@ -22,6 +22,17 @@ test("the JSON export round-trips the delivered Fields exactly, every Field pres
   }
   // A filed Challenge shows in the status.
   expect(passport(d, d.views[1]!).fields.rated_capacity_ah).toMatchObject({ status: "challenged", value: 80 });
+});
+
+test("the JSON names the Operator by its display name, never an internal id, with an outside Operator's Stellar address", () => {
+  const d = doc();
+  const out = passport(d, { ...d.views[0]!, pipeline: "ours", operator: "ours" });
+  expect(out).not.toHaveProperty("pipeline");
+  expect(out.operator).toBe("Origyn");
+  expect(out).not.toHaveProperty("stellarAddress");
+  expect(JSON.stringify(out)).not.toContain('"ours"');
+  const addr = "GBZXN7PIRZGNMHGA7MUUUF4GWPY5AYPV6LY4UV2GL6VJGIQRXFDNMADI";
+  expect(passport(d, { ...d.views[0]!, pipeline: addr, operator: addr, label: "Claude solo" })).toMatchObject({ operator: "Claude solo", stellarAddress: addr });
 });
 
 test("the JSON carries each Field's Author when the Template gives one", () => {

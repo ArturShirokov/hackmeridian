@@ -34,9 +34,10 @@ function useSession() {
       setUser(user);
       if (user) navigate(to ?? HOME[user.role]);
     },
-    async signOut() {
+    async signOut(to?: string) {
       await api.signOut();
       setUser(null);
+      if (to) navigate(to);
     },
   };
 }
@@ -72,7 +73,7 @@ export function App() {
   return (
     <div className="om-app" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", position: "relative" }}>
-        <Sidebar user={user} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onSwitch={signOut} />
+        <Sidebar user={user} active={nav === "/jobs" && url.hash === "#pipelines" ? "/jobs#pipelines" : nav} onSwitch={() => signOut()} onSignOut={() => signOut("/")} />
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", position: "relative" }}>{el}</main>
       </div>
       {demo && <StoryDock path={url.pathname} role={role} onRole={asRole} />}
@@ -124,12 +125,13 @@ function Balance() {
   );
 }
 
-function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; onSwitch(): void }) {
+function Sidebar({ user, active, onSwitch, onSignOut }: { user: ApiUser; active: string; onSwitch(): void; onSignOut(): void }) {
   const role = user.role;
   const lit = NAV[role].find(([, to]) => to === active)?.[1];
   return (
     <aside className="om-desktop-only" style={{ width: 228, flex: "none", borderRight: "1px solid var(--rule)", display: "flex", flexDirection: "column", background: "var(--sidebar)" }}>
-      <Link to="/" style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
+      {/* Landing is the sign-in screen, so the wordmark signs out on the way there. */}
+      <Link to="/" onClick={(e) => { e.preventDefault(); onSignOut(); }} style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
       <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{user.org}</div>
       <nav style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--rule)" }}>
         {NAV[role].map(([label, to]) => (
@@ -146,6 +148,10 @@ function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; on
         <button onClick={onSwitch}
           style={{ marginTop: 12, height: 28, border: "1px solid var(--ink)", background: "transparent", color: "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer" }}>
           Switch user
+        </button>
+        <button onClick={onSignOut}
+          style={{ marginTop: 4, height: 28, border: 0, background: "transparent", color: "var(--ink)", font: "500 12px/1 var(--sans)", textDecoration: "underline", textUnderlineOffset: 3, cursor: "pointer" }}>
+          Sign out
         </button>
       </div>
     </aside>
