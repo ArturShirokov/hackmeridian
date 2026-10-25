@@ -1,0 +1,31 @@
+{
+  "document": "battery-01-voltaris-pack-spec.pdf",
+  "template": "battery",
+  "fields": {
+    "name": { "value": "Voltaris NMC-800 EV Battery Pack", "page": 1, "quote": "Voltaris NMC-800 EV Battery Pack" },
+    "battery_identifier": { "value": "BAT-EU-2027-000214", "page": 1, "quote": "Battery identifier BAT-EU-2027-000214" },
+    "manufacturer_identifier_information": { "value": "Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982), ul. Przemyslowa 8, 62-052 Komorniki, Poland", "page": 1, "quote": "Manufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982) Manufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland" },
+    "manufacturing_place": { "value": "Komorniki, Poland", "page": 1, "quote": "Place of manufacture Komorniki, Poland" },
+    "manufacturing_date": { "value": "2027-02", "page": 1, "quote": "Date of manufacture February 2027" },
+    "battery_category": { "value": "EV", "page": 1, "quote": "Battery category Electric vehicle battery (EV)" },
+    "battery_chemistry": { "value": "NMC811", "page": 2, "quote": "Lithium nickel manganese cobalt oxide (NMC 811), graphite anode" },
+    "battery_mass_kg": { "value": 482, "unit": "kg", "qualifier": "nominal", "page": 1, "quote": "Nominal mass 482 kg" },
+    "critical_raw_materials": { "value": "Lithium, cobalt, nickel, natural graphite", "page": 2, "quote": "Critical raw materials Lithium, cobalt, nickel, natural graphite" },
+    "hazardous_substances": { "value": "Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%", "page": 2, "quote": "Hazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%; cobalt compounds 3.2%; nickel compounds 9.8%." },
+    "rated_capacity_ah": { "value": 220, "unit": "Ah", "qualifier": "rated", "page": 1, "quote": "Rated capacity 220 Ah" },
+    "nominal_voltage_v": { "value": 360, "unit": "V", "qualifier": "nominal", "page": 1, "quote": "Nominal voltage 360 V" },
+    "minimum_voltage_v": { "value": 288, "unit": "V", "qualifier": "minimum", "page": 1, "quote": "Minimum voltage 288 V" },
+    "maximum_voltage_v": { "value": 403, "unit": "V", "qualifier": "maximum", "page": 1, "quote": "Maximum voltage 403 V" },
+    "original_power_capability_w": { "value": 150000, "unit": "W", "qualifier": "nominal", "page": 1, "quote": "Original power capability (nominal) 150 kW" },
+    "initial_round_trip_efficiency_percent": { "value": 95, "unit": "%", "qualifier": "nominal", "page": 1, "quote": "Initial round-trip energy efficiency (nominal) 95 %" },
+    "initial_internal_resistance_ohm": { "value": 0.135, "unit": "ohm", "qualifier": "nominal", "page": 1, "quote": "Initial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm" },
+    "expected_lifetime_cycles": { "value": 2500, "unit": "cycles", "qualifier": "nominal", "page": 1, "quote": "Expected lifetime (nominal) 2500 cycles" },
+    "idle_temperature_lower_c": { "value": -20, "unit": "°C", "qualifier": "minimum", "page": 1, "quote": "Idle temperature range -20 °C to 45 °C" },
+    "idle_temperature_upper_c": { "value": 45, "unit": "°C", "qualifier": "maximum", "page": 1, "quote": "Idle temperature range -20 °C to 45 °C" },
+    "carbon_footprint_functional_unit": { "value": 41.8, "unit": "kg CO2e/kWh", "qualifier": null, "page": 2, "quote": "per kWh of total energy over the service life: 41.8 kg CO2e/kWh" },
+    "recycled_content_cobalt": { "value": 22, "unit": "%", "qualifier": null, "page": 2, "quote": "Cobalt 22 %" },
+    "recycled_content_lithium": { "value": 11, "unit": "%", "qualifier": null, "page": 2, "quote": "Lithium 11 %" },
+    "recycled_content_nickel": { "value": 16, "unit": "%", "qualifier": null, "page": 2, "quote": "Nickel 16 %" },
+    "recycled_content_lead": { "value": 0, "unit": "%", "qualifier": null, "page": 2, "quote": "Lead 0 %" }
+  }
+}

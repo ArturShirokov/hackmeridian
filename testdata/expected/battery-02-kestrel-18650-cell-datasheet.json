@@ -1,0 +1,31 @@
+{
+  "document": "battery-02-kestrel-18650-cell-datasheet.pdf",
+  "template": "battery",
+  "fields": {
+    "name": { "value": "KC-18650-32", "page": 1, "quote": "Lithium-ion Cylindrical Cell KC-18650-32" },
+    "battery_identifier": "Not stated",
+    "manufacturer_identifier_information": { "value": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia", "page": 1, "quote": "Kestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia" },
+    "manufacturing_place": { "value": "Malaysia", "page": 1, "quote": "Made in Malaysia" },
+    "manufacturing_date": "Not stated",
+    "battery_category": { "value": "portable", "page": 1, "quote": "Category under Regulation (EU) 2023/1542: portable battery" },
+    "battery_chemistry": { "value": "NMC", "page": 1, "quote": "Chemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode" },
+    "battery_mass_kg": { "value": 0.0465, "unit": "kg", "qualifier": "maximum", "page": 1, "quote": "Weight (max) 46.5 g" },
+    "critical_raw_materials": "Not stated",
+    "hazardous_substances": "Not stated",
+    "rated_capacity_ah": { "value": 3.2, "unit": "Ah", "qualifier": "nominal", "page": 1, "quote": "Nominal capacity 3200 mAh" },
+    "nominal_voltage_v": { "value": 3.6, "unit": "V", "qualifier": "nominal", "page": 1, "quote": "Nominal voltage 3.6 V" },
+    "minimum_voltage_v": { "value": 2.5, "unit": "V", "qualifier": "minimum", "page": 1, "quote": "Discharge cut-off voltage 2.50 V minimum" },
+    "maximum_voltage_v": { "value": 4.2, "unit": "V", "qualifier": "maximum", "page": 1, "quote": "Charge voltage (max) 4.20 V" },
+    "original_power_capability_w": "Not stated",
+    "initial_round_trip_efficiency_percent": "Not stated",
+    "initial_internal_resistance_ohm": { "value": 0.035, "unit": "ohm", "qualifier": "maximum", "page": 1, "quote": "AC impedance (max) 35 mOhm" },
+    "expected_lifetime_cycles": { "value": 500, "unit": "cycles", "qualifier": "minimum", "page": 1, "quote": "Cycle life (min) 500 cycles" },
+    "idle_temperature_lower_c": { "value": -20, "unit": "°C", "qualifier": "minimum", "page": 1, "quote": "Storage temperature -20 to 45 °C" },
+    "idle_temperature_upper_c": { "value": 45, "unit": "°C", "qualifier": "maximum", "page": 1, "quote": "Storage temperature -20 to 45 °C" },
+    "carbon_footprint_functional_unit": "Not stated",
+    "recycled_content_cobalt": "Not stated",
+    "recycled_content_lithium": "Not stated",
+    "recycled_content_nickel": "Not stated",
+    "recycled_content_lead": "Not stated"
+  }
+}

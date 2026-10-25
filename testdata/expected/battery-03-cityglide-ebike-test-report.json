@@ -1,0 +1,31 @@
+{
+  "document": "battery-03-cityglide-ebike-test-report.pdf",
+  "template": "battery",
+  "fields": {
+    "name": { "value": "CityGlide CG-48-14 e-bike battery", "page": 1, "quote": "CityGlide CG-48-14 e-bike battery" },
+    "battery_identifier": { "value": "CG48-2026-0007731", "page": 1, "quote": "serial number CG48-2026-0007731" },
+    "manufacturer_identifier_information": { "value": "Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain", "page": 1, "quote": "by Arbor Mobility Components S.L., Calle de la Industria 14, 46980 Paterna, Spain" },
+    "manufacturing_place": { "value": "Paterna, Spain", "page": 1, "quote": "at its plant in Paterna, Spain" },
+    "manufacturing_date": { "value": "2026-09-14", "page": 1, "quote": "manufactured on 14 September 2026" },
+    "battery_category": { "value": "LMT", "page": 1, "quote": "a light means of transport (LMT) battery" },
+    "battery_chemistry": { "value": "LFP", "page": 1, "quote": "16 lithium iron phosphate (LiFePO4) prismatic cells" },
+    "battery_mass_kg": { "value": 3.9, "unit": "kg", "qualifier": "nominal", "page": 1, "quote": "The nominal mass declared on the label is 3.9 kg." },
+    "critical_raw_materials": { "value": "lithium, natural graphite", "page": 2, "quote": "Critical raw materials present: lithium, natural graphite." },
+    "hazardous_substances": { "value": "electrolyte containing lithium hexafluorophosphate (LiPF6)", "page": 2, "quote": "Hazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6)." },
+    "rated_capacity_ah": { "value": 14, "unit": "Ah", "qualifier": "rated", "page": 1, "quote": "the rated capacity is 14 Ah" },
+    "nominal_voltage_v": { "value": 51.2, "unit": "V", "qualifier": "nominal", "page": 1, "quote": "the nominal voltage is 51.2 V" },
+    "minimum_voltage_v": { "value": 40, "unit": "V", "qualifier": "minimum", "page": 1, "quote": "The discharge cut-off (minimum voltage) is 40.0 V" },
+    "maximum_voltage_v": { "value": 58.4, "unit": "V", "qualifier": "maximum", "page": 1, "quote": "the end-of-charge (maximum voltage) is 58.4 V" },
+    "original_power_capability_w": { "value": 750, "unit": "W", "qualifier": "maximum", "page": 1, "quote": "The maximum continuous power capability was 750 W." },
+    "initial_round_trip_efficiency_percent": { "value": 96.1, "unit": "%", "qualifier": "typical", "page": 1, "quote": "The typical initial round-trip energy efficiency was 96.1 %" },
+    "initial_internal_resistance_ohm": { "value": 0.085, "unit": "ohm", "qualifier": "typical", "page": 1, "quote": "The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm." },
+    "expected_lifetime_cycles": { "value": 2000, "unit": "cycles", "qualifier": "nominal", "page": 1, "quote": "Expected lifetime is 2000 cycles (nominal)" },
+    "idle_temperature_lower_c": "Not stated",
+    "idle_temperature_upper_c": "Not stated",
+    "carbon_footprint_functional_unit": { "value": 72.4, "unit": "kg CO2e/kWh", "qualifier": null, "page": 2, "quote": "Carbon footprint: 72.4 kg CO2e/kWh" },
+    "recycled_content_cobalt": "Not stated",
+    "recycled_content_lithium": { "value": 4, "unit": "%", "qualifier": null, "page": 2, "quote": "Recycled lithium content: 4 % (pre- and post-consumer combined)." },
+    "recycled_content_nickel": "Not stated",
+    "recycled_content_lead": "Not stated"
+  }
+}

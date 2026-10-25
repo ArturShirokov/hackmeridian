@@ -1,0 +1,24 @@
+{
+  "document": "textile-02-lumen-tee-spec-sheet.pdf",
+  "template": "textile",
+  "fields": {
+    "product_name": { "value": "Lumen Everyday Tee", "page": 1, "quote": "Style Lumen Everyday Tee" },
+    "gtin": { "value": "5609876543229", "page": 1, "quote": "EAN / GTIN 5609876543229" },
+    "manufacturer_name": { "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal", "page": 1, "quote": "Supplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal" },
+    "country_of_manufacture": { "value": "PT", "page": 1, "quote": "Origin PT" },
+    "production_date": { "value": "2026-08", "page": 1, "quote": "Production batch 2026-08" },
+    "product_category": { "value": "T-shirt", "page": 1, "quote": "Category T-shirt" },
+    "fibre_composition": { "value": { "cotton": 60, "polyester": 35, "elastane": 5 }, "unit": "%", "page": 1, "quote": "Cotton 60 % organic Polyester 35 % recycled, pre-consumer Elastane 5 %" },
+    "recycled_content_percent": { "value": 35, "unit": "%", "qualifier": null, "page": 1, "quote": "Recycled content: 35 % of garment mass" },
+    "recycled_fibre_type": { "value": "recycled polyester from pre-consumer production waste", "page": 1, "quote": "recycled polyester from pre-consumer production waste" },
+    "carbon_footprint": { "value": 4.1, "unit": "kg CO2e", "qualifier": null, "page": 1, "quote": "Carbon footprint: 4.1 kg CO2e" },
+    "water_usage": { "value": 1900, "unit": "L", "qualifier": null, "page": 1, "quote": "Water use: 1.9 m3" },
+    "fabric_weight": { "value": 180, "unit": "g/m2", "qualifier": "nominal", "page": 1, "quote": "Fabric Single jersey, 180 gsm (nominal)" },
+    "certification_scheme": { "value": "OEKO-TEX 100", "page": 1, "quote": "Tested to STANDARD 100 by OEKO-TEX" },
+    "certificate_number": { "value": "26-LT-0412", "page": 1, "quote": "certificate no. 26-LT-0412" },
+    "certificate_valid_until": { "value": "2027-03-31", "page": 1, "quote": "valid until 2027-03-31" },
+    "chemical_compliance": { "value": "REACH: no SVHC above 0.1 % w/w; STANDARD 100 by OEKO-TEX", "page": 1, "quote": "REACH: no SVHC above 0.1 % w/w." },
+    "care_instructions": { "value": "machine wash 30 °C, do not tumble dry, iron low", "page": 1, "quote": "Care: machine wash 30 °C, do not tumble dry, iron low." },
+    "durability_rating": { "value": "pilling grade 4 after 2000 rubs (ISO 12945-2)", "page": 1, "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)." }
+  }
+}
