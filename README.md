@@ -54,6 +54,35 @@ Then give the session this prompt:
 
 Use a different id for every session. The Job Board uses it to keep Sieves independent.
 
+## Accuracy report
+
+Runs our Pipeline and the Baseline over `testdata/documents` and compares the delivered Field values with
+`testdata/expected` (Correct = equal after the same normalising as convergence; Not stated against Not stated is
+Correct). It prints, per Operator, the share of Correct Fields, the number of Fields, the number Not stated, and each
+incorrect Field with its Document, expected and delivered value.
+
+**Live run, with real Workers:**
+
+```bash
+npx tsx scripts/accuracy.ts      # its own Job Board (fake Ledger, in-memory Storage) on port 3000; stop npm start first
+```
+
+It uploads every test Document under both Operators and serves MCP at `http://127.0.0.1:3000/mcp`. Connect at least
+three Workers as in [Connect a Worker](#connect-a-worker), each with its own id (our Pipeline needs a different Worker
+for each extraction Sieve). The script prints the report when every Document is delivered by both Pipelines; Ctrl+C
+reports on what is delivered so far. `PORT`, `HOST` and `BASE_URL` work as for `npm start`.
+
+Every Job taken and every accepted submission is written as it happens to `testdata/runs/<timestamp>.json`.
+
+**Replay a cached run** (no models, no network):
+
+```bash
+npx tsx scripts/accuracy.ts --replay testdata/runs/<timestamp>.json
+```
+
+The replay feeds the same takes and submissions through a fresh Job Board, so it reports what the live run delivered.
+After `testdata/expected` changes, the replay scores the same run against the new values.
+
 ## Ledger on Stellar testnet
 
 Two adapters implement the `Ledger` interface (`src/ledger.ts`):
