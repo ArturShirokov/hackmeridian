@@ -53,3 +53,39 @@ Then give the session this prompt:
 > try again. Otherwise do the Job as its instructions say and hand it in with `submit_job`. Repeat.
 
 Use a different id for every session. The Job Board uses it to keep Sieves independent.
+
+## Ledger on Stellar testnet
+
+Two adapters implement the `Ledger` interface (`src/ledger.ts`):
+
+- `src/ledger/trustless-work.ts`: one Trustless Work multi-release escrow per (Document, Operator), one milestone
+  of Bond + Fee, output hash in the milestone. Operator = service provider, Brand = approver, Arbiter = release
+  signer and dispute resolver. Clean settle = mark done, approve, release. Slashed settle = dispute, resolve with
+  the Slashes to the Brand and the rest to the Operator. Requests are spaced 1.3 s apart (under the 50/min limit).
+- `src/ledger/stellar-payments.ts`: the fallback. The Job Board holds one escrow account; Bond and Fee are paid in
+  and paid out as plain USDC payments with the output hash in the memo. Trust sits with the Job Board.
+
+**Decision: pending.** Trustless Work or the fallback is decided by Artur's 30-minute spike with a real API key.
+The fallback has run end to end on testnet; the Trustless Work adapter is tested only against a mocked API.
+
+### Setup
+
+1. Wallets, XLM, USDC trustlines and 20 testnet USDC each for Brand and both Operators (bought on the testnet DEX):
+   `npx tsx scripts/setup-wallets.ts`. Secrets go to `.env` (gitignored). Safe to run again. If the DEX buy fails,
+   get USDC at https://faucet.circle.com (Stellar Testnet, paste the address printed by the script).
+2. Trustless Work API key: open https://dapp.trustlesswork.com, connect a Stellar wallet (Freighter), go to Settings,
+   fill in your profile (the use case field is required), then API Keys > Testnet > Request. The key is shown once.
+   Add `TW_API_KEY=...` to `.env`.
+
+### Smoke test
+
+```bash
+LEDGER=trustless-work npx tsx scripts/smoke-ledger.ts   # needs TW_API_KEY
+LEDGER=payments       npx tsx scripts/smoke-ledger.ts   # plain-payments fallback
+```
+
+It opens two escrows, settles one clean and one with a Slash, and prints stellar.expert links.
+
+Check in the Trustless Work spike: `milestoneIndex` "0" vs "1"; that signing each XDR as the role's account is
+enough (no separate Soroban auth entries); that one address may be both release signer and dispute resolver; the
+0.3% fee on testnet. If the testnet resets, run the setup script again.

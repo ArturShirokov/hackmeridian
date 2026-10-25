@@ -44,7 +44,7 @@ function fakeTrustlessWork(minIntervalMs = 0) {
   const ledger = new TrustlessWorkLedger({
     baseUrl: "https://tw.test",
     apiKey: "key-1",
-    brand,
+    brands: { "brand-1": brand },
     arbiter,
     operators: { "op-1": op },
     fetch,
@@ -53,7 +53,7 @@ function fakeTrustlessWork(minIntervalMs = 0) {
   return { ledger, sent, times };
 }
 
-const req = { documentId: "doc-9", operator: "op-1", bond: 10, fee: 1, outputHash: "ab".repeat(32) };
+const req = { documentId: "doc-9", operator: "op-1", brand: "brand-1", bond: "10", fee: "1", outputHash: "ab".repeat(32) };
 
 describe("TrustlessWorkLedger", () => {
   it("opens an escrow: deploys one milestone of Bond + Fee, the Operator funds the Bond, the Brand the Fee", async () => {
@@ -117,7 +117,7 @@ describe("TrustlessWorkLedger", () => {
     const { ledger, sent } = fakeTrustlessWork();
     const { escrowId } = await ledger.openEscrow(req);
     sent.length = 0;
-    await ledger.settleWithSlashes(escrowId, [1, 2.5]);
+    await ledger.settleWithSlashes(escrowId, ["1", "2.5"]);
     expect(sent).toEqual([
       {
         path: "/escrow/multi-release/dispute-milestone",
@@ -142,26 +142,26 @@ describe("TrustlessWorkLedger", () => {
 
   it("leaves out a zero share: whole Bond slashed with no Fee pays only the Brand", async () => {
     const { ledger, sent } = fakeTrustlessWork();
-    const { escrowId } = await ledger.openEscrow({ ...req, fee: 0 });
+    const { escrowId } = await ledger.openEscrow({ ...req, fee: "0" });
     expect(sent.filter((s) => s.path.endsWith("fund-escrow"))).toHaveLength(1);
     sent.length = 0;
-    await ledger.settleWithSlashes(escrowId, [10]);
+    await ledger.settleWithSlashes(escrowId, ["10"]);
     expect(sent[1]!.body.distributions).toEqual([{ address: brand.publicKey(), amount: 10 }]);
   });
 
   it("keeps the Operator record", async () => {
     const { ledger } = fakeTrustlessWork();
     const a = await ledger.openEscrow(req);
-    await ledger.settleWithSlashes(a.escrowId, [1, 2]);
-    expect(await ledger.operatorRecord("op-1")).toEqual({ documents: 1, challengesUpheld: 2, totalSlashed: 3 });
-    expect(await ledger.operatorRecord("op-2")).toEqual({ documents: 0, challengesUpheld: 0, totalSlashed: 0 });
+    await ledger.settleWithSlashes(a.escrowId, ["1", "2"]);
+    expect(await ledger.operatorRecord("op-1")).toEqual({ documents: 1, challengesUpheld: 2, totalSlashed: "3" });
+    expect(await ledger.operatorRecord("op-2")).toEqual({ documents: 0, challengesUpheld: 0, totalSlashed: "0" });
   });
 
   it("throws with the API message when Trustless Work answers FAILED", async () => {
     const ledger = new TrustlessWorkLedger({
       baseUrl: "https://tw.test",
       apiKey: "k",
-      brand,
+      brands: { "brand-1": brand },
       arbiter,
       operators: { "op-1": op },
       fetch: async () => Response.json({ status: "FAILED", message: "milestone status cannot be empty" }, { status: 400 }),

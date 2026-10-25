@@ -13,10 +13,10 @@ function fakeHorizon() {
     loadAccount: async (id: string) => new Account(id, "100"),
     submitTransaction: async (tx: Transaction) => {
       txs.push(tx);
-      return { hash: tx.hash().toString("hex") };
+      return { hash: Buffer.from(tx.hash()).toString("hex") };
     },
   };
-  const ledger = new StellarPaymentsLedger({ horizon, brand, escrow, operators: { "op-1": op } });
+  const ledger = new StellarPaymentsLedger({ horizon, brands: { "brand-1": brand }, escrow, operators: { "op-1": op } });
   // What each submitted tx does, in plain terms.
   const summary = () =>
     txs.map((tx) => ({
@@ -29,7 +29,7 @@ function fakeHorizon() {
 }
 
 const USDC = "USDC:GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
-const req = { documentId: "doc-9", operator: "op-1", bond: 10, fee: 1, outputHash: hash };
+const req = { documentId: "doc-9", operator: "op-1", brand: "brand-1", bond: "10", fee: "1", outputHash: hash };
 
 describe("StellarPaymentsLedger", () => {
   it("opens an escrow: Operator pays the Bond and Brand the Fee into the escrow account, output hash in the memo", async () => {
@@ -56,7 +56,7 @@ describe("StellarPaymentsLedger", () => {
     const { ledger, txs, summary } = fakeHorizon();
     const { escrowId } = await ledger.openEscrow(req);
     txs.length = 0;
-    await ledger.settleWithSlashes(escrowId, [1, 2.5]);
+    await ledger.settleWithSlashes(escrowId, ["1", "2.5"]);
     expect(summary()).toEqual([
       {
         from: escrow.publicKey(),
@@ -68,12 +68,12 @@ describe("StellarPaymentsLedger", () => {
         ],
       },
     ]);
-    expect(await ledger.operatorRecord("op-1")).toEqual({ documents: 1, challengesUpheld: 2, totalSlashed: 3.5 });
+    expect(await ledger.operatorRecord("op-1")).toEqual({ documents: 1, challengesUpheld: 2, totalSlashed: "3.5" });
   });
 
   it("hashes an output hash that is not 32 bytes of hex so it fits the memo", async () => {
     const { ledger, summary } = fakeHorizon();
-    await ledger.openEscrow({ ...req, outputHash: "not-hex", fee: 0 });
+    await ledger.openEscrow({ ...req, outputHash: "not-hex", fee: "0" });
     expect(summary().map((t) => t.memo)).toEqual(["95340811d2f3ab05aa125fb6d059b6e02911560314c125fd2e99ad01d995cbd2"]); // sha256("not-hex")
   });
 });

@@ -17,7 +17,7 @@ const key = (name: string) => {
 
 const kind = process.env.LEDGER ?? "trustless-work";
 const onTx = (action: string, hash: string) => console.log(`  ${action.padEnd(48)} ${explorer("tx", hash)}`);
-const common = { brand: key("BRAND_SECRET"), operators: { op: key("OP_SECRET") }, onTx };
+const common = { brands: { brand: key("BRAND_SECRET") }, operators: { op: key("OP_SECRET") }, onTx };
 
 let ledger: Ledger;
 if (kind === "trustless-work") {
@@ -29,7 +29,7 @@ if (kind === "trustless-work") {
 } else throw new Error(`LEDGER must be trustless-work or payments, not ${kind}`);
 
 const run = Date.now();
-const req = (doc: string) => ({ documentId: `smoke-${doc}-${run}`, operator: "op", bond: 2, fee: 0.5, outputHash: `smoke ${doc} ${run}` });
+const req = (doc: string) => ({ documentId: `smoke-${doc}-${run}`, operator: "op", brand: "brand", bond: "2", fee: "0.5", outputHash: `smoke ${doc} ${run}` });
 const link = (id: string) => (id.startsWith("C") ? `  escrow ${explorer("contract", id)}` : `  escrow ${id}`);
 
 console.log(`Ledger: ${kind}\n\nClean (Bond 2 + Fee 0.5 to the Operator):`);
@@ -40,6 +40,6 @@ await ledger.settleClean(clean.escrowId);
 console.log(`\nSlashed (one Slash of 0.75 to the Brand, 1.75 to the Operator):`);
 const slashed = await ledger.openEscrow(req("slashed"));
 console.log(link(slashed.escrowId));
-await ledger.settleWithSlashes(slashed.escrowId, [0.75]);
+await ledger.settleWithSlashes(slashed.escrowId, ["0.75"]);
 
 console.log(`\nOperator record:`, await ledger.operatorRecord("op"));
