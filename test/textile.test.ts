@@ -41,10 +41,10 @@ test("two extraction Sieves agree on a fibre composition named and ordered diffe
   });
 });
 
-test("a different fibre set or a different percentage is a disagreement", async () => {
+test("a different fibre set or a different percentage is a disagreement, so the high-stake composition is Not stated", async () => {
   const first = { cotton: 60, polyester: 35, elastane: 5 };
   for (const second of <Record<string, number>[]>[{ cotton: 60, polyester: 40 }, { cotton: 65, polyester: 30, elastane: 5 }, { cotton: 60, polyamide: 35, elastane: 5 }])
-    expect(await twoExtractions(first, second)).toMatchObject({ status: "disagreeing" });
+    expect(await twoExtractions(first, second)).toMatchObject({ status: "not stated" });
 });
 
 test("a composition not adding to 100 fails submission validation, saying what it adds up to", async () => {

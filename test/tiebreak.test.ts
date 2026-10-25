@@ -69,10 +69,33 @@ test("a Field still split after the tie-break is Not stated with every competing
   expect(page).toContain("<textarea");
 });
 
-test("a high-stake Field where 2 of 3 extractions agree is Not stated, never a majority", async () => {
+test("a high-stake Field whose two extraction values differ is Not stated at once, with no tie-break", async () => {
   const b = await afterTwo({ recycled_content_cobalt: cobalt12, rated_capacity_ah: capacity }, { recycled_content_cobalt: cobalt16, rated_capacity_ah: capacity33 });
+  expect(await b.field("recycled_content_cobalt")).toMatchObject({
+    status: "not stated",
+    quotes: [
+      { page: 2, quote: "Recycled cobalt: 12 % minimum" },
+      { page: 2, quote: "Recycled cobalt 16 % minimum" },
+    ],
+  });
   const tie = (await b.w3.nextJob())!;
-  await b.w3.submitJob(tie.id, extraction(tie, { recycled_content_cobalt: cobalt12, rated_capacity_ah: capacity }));
-  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "not stated", notStated: true });
+  expect(tie.template.fields.map((f) => f.name)).toEqual(["rated_capacity_ah"]);
+  await b.w3.submitJob(tie.id, extraction(tie, { rated_capacity_ah: capacity }));
+  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "not stated" });
   expect(await b.field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2 });
+});
+
+test("a high-stake Field gets a tie-break only when both extractions agree but a quote failed, and is final when the tie-break agrees", async () => {
+  const b = await afterTwo({ recycled_content_cobalt: cobalt12 }, { recycled_content_cobalt: { ...cobalt12, quote: "cobalt 12 % min" } });
+  const tie = (await b.w3.nextJob())!;
+  expect(tie.template.fields.map((f) => f.name)).toEqual(["recycled_content_cobalt"]);
+  await b.w3.submitJob(tie.id, extraction(tie, { recycled_content_cobalt: cobalt12 }));
+  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "final", value: 12 });
+});
+
+test("a high-stake Field whose tie-break differs from the value both extractions agreed on is Not stated", async () => {
+  const b = await afterTwo({ recycled_content_cobalt: cobalt12 }, { recycled_content_cobalt: { ...cobalt12, quote: "cobalt 12 % min" } });
+  const tie = (await b.w3.nextJob())!;
+  await b.w3.submitJob(tie.id, extraction(tie, { recycled_content_cobalt: cobalt16 }));
+  expect(await b.field("recycled_content_cobalt")).toMatchObject({ status: "not stated" });
 });

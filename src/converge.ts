@@ -103,13 +103,15 @@ export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>):
 
 const fold = (s: string) => s.replace(/\s+/g, " ").trim();
 
-/** Comparison key of a value, or undefined when it can't converge (unnormalisable, or quote not in the text). */
-function key(f: Field, v: FieldValue, text: string): string | undefined {
+/** Comparison key of a value's normalised content, or undefined when it can't be normalised. */
+function valueKey(f: Field, v: FieldValue): string | undefined {
   if (!("value" in v)) return "not stated";
-  if (!text.includes(fold(v.quote))) return undefined;
   const c = canonical(f, v);
   return c === undefined ? undefined : JSON.stringify([c, v.qualifier ?? null]);
 }
+
+/** Comparison key of a value, or undefined when it can't converge (unnormalisable, or quote not in the text). */
+const key = (f: Field, v: FieldValue, text: string) => ("quote" in v && !text.includes(fold(v.quote)) ? undefined : valueKey(f, v));
 
 /** What the Brand sees once a value converged: quantities in the canonical unit, codes in canonical form. */
 function shown(f: Field, v: FieldValue): FieldValue {
@@ -123,8 +125,10 @@ function shown(f: Field, v: FieldValue): FieldValue {
 /**
  * Converge the extraction Sieves' results (one FieldValue[] per Sieve, in Pipeline order) Field by Field.
  * A single Sieve (the Baseline) is delivered as is. The first two must agree, else the Field is disagreeing.
+ * A high-stake Field whose two values differ is Not stated at once, with no tie-break (never 2 of 3).
  * A third result is the tie-break and holds only the disagreeing Fields: a normal Field is final when it agrees
- * with either earlier value, a high-stake Field only when it agrees with both (never 2 of 3). Else Not stated.
+ * with either earlier value, a high-stake Field (whose two values agreed but a quote failed) when it agrees with
+ * that value. Else Not stated.
  * `pages` is what quotes are checked against: the text layer, or the checked Markdown for a scan.
  */
 export function converge(template: Template, results: FieldValue[][], pages: string[]): FieldResult[] {
@@ -135,11 +139,14 @@ export function converge(template: Template, results: FieldValue[][], pages: str
     const [a, b, tie] = values as [FieldValue, FieldValue, FieldValue | undefined];
     const [ka, kb] = [key(f, a, text), key(f, b, text)];
     if (ka !== undefined && ka === kb) return { ...shown(f, a), status: "final" };
+    const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
+    const notStated = { field: f.name, status: "not stated", notStated: true, quotes } as const;
+    // A high-stake Field needs both values to agree; a tie-break may only stand in for a failed quote.
+    const both = valueKey(f, a);
+    if (f.highStake && (both === undefined || both !== valueKey(f, b))) return notStated;
     if (values.length === 2) return { field: f.name, status: "disagreeing" };
     const kt = tie && key(f, tie, text);
-    const agreed = kt !== undefined && (f.highStake ? kt === ka && kt === kb : kt === ka || kt === kb);
-    if (agreed) return { ...shown(f, tie!), status: "final" };
-    const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
-    return { field: f.name, status: "not stated", notStated: true, quotes };
+    const agreed = kt !== undefined && (f.highStake ? kt === both : kt === ka || kt === kb);
+    return agreed ? { ...shown(f, tie!), status: "final" } : notStated;
   });
 }
