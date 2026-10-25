@@ -64,3 +64,22 @@ test("a malformed submission is rejected with what is wrong, and the Worker can 
 
   expect(await w1.submitJob(job.id, full)).toMatchObject({ ok: true });
 });
+
+test('an empty "unit" or "qualifier" counts as absent, but a quantity with an empty unit is still rejected', async () => {
+  const { worker, brand } = startBoard();
+  const docId = await brand.upload(await sheet());
+  const w1 = await worker("w1");
+  const job = (await w1.nextJob())!;
+  const capacity = { value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah" };
+  const chemistry = { value: "NMC", unit: "", qualifier: " ", page: 1, quote: "Voltaris NMC-800" };
+
+  const bad = await w1.submitJob(job.id, extraction(job, { rated_capacity_ah: { ...capacity, unit: "" }, battery_chemistry: chemistry }));
+  expect(bad.ok).toBe(false);
+  expect(bad.text).toMatch(/Field "rated_capacity_ah": a quantity needs a unit/);
+
+  expect(await w1.submitJob(job.id, extraction(job, { rated_capacity_ah: capacity, battery_chemistry: chemistry }))).toMatchObject({ ok: true });
+  const f = (await brand.document(docId)).fields.find((f) => f.name === "battery_chemistry");
+  expect(f).toMatchObject({ value: "NMC" });
+  expect(f).not.toHaveProperty("unit");
+  expect(f).not.toHaveProperty("qualifier");
+});

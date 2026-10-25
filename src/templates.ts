@@ -31,11 +31,14 @@ export interface Template {
   fields: Field[];
 }
 
+/** An optional string where "" or whitespace counts as absent (models write `"unit": ""` on Fields with no unit). */
+const optionalText = z.preprocess((v) => (typeof v === "string" && !v.trim() ? undefined : v), z.string().min(1).optional());
+
 /** The parts of a stated Field value, shared by extraction results and Challenges (each adds field and page). */
 export const statedValue = {
   value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
-  unit: z.string().min(1).optional(),
-  qualifier: z.string().min(1).optional(),
+  unit: optionalText,
+  qualifier: optionalText,
   quote: z.string().min(1),
 };
 

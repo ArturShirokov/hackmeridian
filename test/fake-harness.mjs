@@ -1,10 +1,18 @@
-// A fake harness for the shift runner tests: node fake-harness.mjs <good|garbage> <log file> <prompt>
+// A fake harness for the shift runner tests: node fake-harness.mjs <good|garbage|sleep> <log file> <prompt>
 // Runs in the Job's directory, like a real harness: reads job.json and document.pdf, prints a result on stdout.
 // Appends each prompt it gets to the log file (one JSON line), so tests can count runs and read retries.
+import { spawn } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 
 const [mode, log, prompt] = process.argv.slice(2);
 appendFileSync(log, JSON.stringify(prompt) + "\n");
+if (mode === "sleep") {
+  // Like a harness with its own children: a grandchild that ignores SIGTERM, its pid in <log>.pids, then never finish.
+  const grandchild = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000)"], { stdio: "ignore" });
+  appendFileSync(`${log}.pids`, `${process.pid} ${grandchild.pid}\n`);
+  setInterval(() => {}, 1000);
+  await new Promise(() => {});
+}
 if (mode === "garbage") {
   console.log("Sorry, I could not read the PDF.");
   process.exit(0);

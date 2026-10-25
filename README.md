@@ -170,8 +170,12 @@ needs at least four distinct Workers: two for our extraction Sieves, one for our
 
 ## Shift runner
 
-One command keeps four Workers on shift, each a headless harness on its own model. The runner is the MCP client, so
-the harnesses need no MCP config and no Worker ids are set by hand:
+One command keeps four Workers on shift, each a headless harness: two on Claude Code with Sonnet (`claude/sonnet`)
+and two on Pi with Qwen (`pi/qwen3.8-max`). Four, because a Worker does at most one extraction per Document and a
+Document can need four distinct extraction Workers: two for ours (Original and Markdown extraction), the tie-break and
+the Baseline. The OpenCode Workers (Kimi, DeepSeek) are commented out: on 25 Oct their 60-Field extractions ran past
+the 9-minute run limit, though they are fine for the Markdown and faithfulness Sieves. The runner is the MCP client,
+so the harnesses need no MCP config and no Worker ids are set by hand:
 
 ```bash
 npx tsx scripts/shift.ts                      # Job Board at $DOC2DPP_URL, default http://127.0.0.1:3100
@@ -184,11 +188,12 @@ model runs while it waits. On a Job it downloads the Document, writes the Job to
 It hands that in with `submit_job`. Output that is not one JSON object, a failed run, or a rejection goes back to the
 harness once with the message appended; after a second failure the Worker gives the Job up and it goes back on the
 board at the Job timeout (10 minutes). Each Worker does one Job at a time; all four run at once. If the Job Board
-restarts or the network drops, each Worker reconnects every 2 s and registers again under the id it had. Ctrl-C ends
-the shift (twice quits at once). One line per Job:
+restarts or the network drops, each Worker reconnects every 2 s and registers again under the id it had. A run past
+9 minutes is killed. Ctrl-C (or SIGTERM) ends the shift (twice quits at once); every harness runs in its own process
+group, so ending the shift or a timeout kills the harness and everything it started. One line per Job:
 
 ```
-w3 · opencode/kimi-k3 · took Markdown extraction for battery-02-kestrel-18650-cell-datasheet · 41 s · submitted
+w3 · pi/qwen3.8-max · took Markdown extraction for battery-02-kestrel-18650-cell-datasheet · 41 s · submitted
 ```
 
 The Workers and their models are `defaultWorkers` at the top of [`scripts/shift.ts`](scripts/shift.ts); edit them
@@ -199,8 +204,8 @@ each with a one-line prompt printing `{"ok":true}`:
 | Worker | Command |
 |---|---|
 | claude/sonnet | `claude -p "<prompt>" --model sonnet --output-format json --allowedTools Read --no-session-persistence` (the text is in `.result`) |
-| opencode/kimi-k3 | `OPENCODE_PERMISSION='{"*":"deny","read":"allow","glob":"allow","grep":"allow","list":"allow"}' opencode run --format json --dir <job folder> --model opencode-go/kimi-k3 "<prompt>"` (the answer is the last `text` event; `--dir` is needed because OpenCode takes its folder from the inherited `PWD`) |
-| opencode/deepseek-v4-pro | the same, with `--model opencode-go/deepseek-v4-pro` |
+| opencode/kimi-k3 (off by default) | `OPENCODE_PERMISSION='{"*":"deny","read":"allow","glob":"allow","grep":"allow","list":"allow"}' opencode run --format json --dir <job folder> --model opencode-go/kimi-k3 "<prompt>"` (the answer is the last `text` event; `--dir` is needed because OpenCode takes its folder from the inherited `PWD`) |
+| opencode/deepseek-v4-pro (off by default) | the same, with `--model opencode-go/deepseek-v4-pro` |
 | pi/qwen3.8-max | `pi -p --model opencode-go/qwen3.8-max --no-session --tools read "<prompt>"` |
 
 Every harness is read-only, because the Document is untrusted input: Claude Code gets only the Read tool, Pi only
@@ -223,7 +228,7 @@ back under their ids within 2 s of the restart.
 
 1. Start the Job Board: `PORT=3100 npm start` (or point `--url` at the one you demo on).
 2. Start the shift a few minutes before your slot: `npx tsx scripts/shift.ts`. Four lines say `w1`...`w4` are on
-   shift, and the Job Board's Workers list shows them with harness and model ("w3 · OpenCode · kimi-k3").
+   shift, and the Job Board's Workers list shows them with harness and model ("w3 · Pi · qwen3.8-max").
 3. On stage, upload a Supplier PDF on `/` and pick its Template.
 4. Watch the terminal and the Document page: the Workers take the Original extraction, the Markdown, the
    faithfulness check, the Markdown extraction and the Baseline within a second of each other's hand-ins, one line per

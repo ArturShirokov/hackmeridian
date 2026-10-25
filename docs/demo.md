@@ -9,7 +9,9 @@
       cache exists). Start it no more than a minute before your slot: the 3-minute Challenge Window starts now.
 - [ ] For the live Workers beat: start the Job Board (`PORT=3100 npm start`) and, a few minutes before the slot,
       the shift (`npx tsx scripts/shift.ts`) in a terminal you can show. Check the four "on shift" lines and that
-      `/api/workers` lists w1 to w4 with their harness and model. Keep `battery-02-kestrel-18650-cell-datasheet.pdf`
+      `/api/workers` lists w1 to w4 with their harness and model: two `claude/sonnet`, two `pi/qwen3.8-max`. Each
+      Document needs 4 distinct extraction Workers (2 ours + tie-break + Baseline). The OpenCode Workers are off:
+      their 60-Field extractions ran past the 9-minute run limit on 25 Oct. Keep `battery-02-kestrel-18650-cell-datasheet.pdf`
       ready to upload.
 - [ ] Browser tabs: `http://127.0.0.1:3000/`, `/arbiter`, `/leaderboard`, `testdata/documents/battery-04-helion-storage-module.pdf`.
 - [ ] Copy the Challenge quote to the clipboard: `Recycled lithium, this production lot (pre + post consumer) 6 %`
@@ -25,9 +27,9 @@ value wrong, the Brand pays, and finds out from an auditor."
 chain of independent Sieves, each a different AI Worker with a different view of the Document: the PDF itself, a
 Markdown version checked against it, a tie-break when they disagree. Anything still unclear comes back as Not
 stated, with quotes, and becomes a Supplier Request. Workers are Claude Code, OpenCode or Pi sessions connected to
-our Job Board over MCP." On the live board (`http://127.0.0.1:3100/`), upload battery-02 and switch to the shift terminal: "Four Workers on four models have been
+our Job Board over MCP." On the live board (`http://127.0.0.1:3100/`), upload battery-02 and switch to the shift terminal: "Four Workers, Claude Sonnet and Qwen, have been
 waiting on this laptop. No model ran until now." Lines appear as each Worker takes a Sieve
-(`w3 · opencode/kimi-k3 · took Markdown extraction for battery-02… · 41 s · submitted`). Don't wait for all of
+(`w3 · pi/qwen3.8-max · took Markdown extraction for battery-02… · 41 s · submitted`). Don't wait for all of
 them; go on to the replayed Helion Document and come back to battery-02 at the end if time allows.
 
 **1:00 to 1:40. Side by side.** Open the fourth Document (battery, Helion storage module). "Left, our Pipeline;
