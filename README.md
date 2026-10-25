@@ -163,7 +163,11 @@ Two adapters implement the `Ledger` interface (`src/ledger.ts`):
   and dispute resolver. Clean settle = mark done, approve, release. Slashed settle = dispute, then resolve with the
   Slashes to the Brand and the rest to the Operator. Requests are spaced 1.3 s apart (under the 50 a minute limit).
 - `src/ledger/stellar-payments.ts`: the fallback. The Job Board holds one escrow account; Bond and Fee are paid in and
-  out as plain USDC payments with the output hash in the memo. Trust sits with the Job Board.
+  out as plain USDC payments with the output hash in the memo, one payment per Slash. Trust sits with the Job Board.
+
+The leaderboard reads each Operator's record through the Ledger. The fallback rebuilds it from the escrow account's
+payment history on Horizon, so it is read from Stellar. The Trustless Work adapter keeps it in memory for now: its
+escrow query endpoints hold milestone flags, not the dispute split, so they can't give the Slashes.
 
 **Decision: pending.** Trustless Work or the fallback is decided by Artur's 30-minute spike with a real API key. The
 fallback has run end to end on testnet; the Trustless Work adapter is tested only against a mocked API.

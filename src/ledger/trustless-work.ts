@@ -102,6 +102,9 @@ export class TrustlessWorkLedger implements Ledger {
     return { link: explorer("tx", txHash) };
   }
 
+  // ponytail: in memory, lost on restart. /helper/get-escrows-by-role could count the Documents, but its response
+  // shape is unchecked (no API key yet) and it holds milestone flags (disputed, resolved), not the dispute split,
+  // so it can't give the upheld Challenges or the total Slashed. Read them from the resolve txs if the record must survive restarts.
   async operatorRecord(operator: string) {
     return this.escrows.record(operator);
   }

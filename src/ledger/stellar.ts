@@ -1,4 +1,5 @@
-// Shared by the two Stellar Ledger adapters: testnet constants and the in-memory Operator record.
+// Shared by the two Stellar Ledger adapters: testnet constants and the in-memory escrow terms (both) and Operator
+// record (Trustless Work only; the payments adapter reads its record from Horizon).
 import { Asset, type Keypair } from "@stellar/stellar-sdk";
 import { addUsdc, type EscrowRequest, type OperatorRecord } from "../ledger.js";
 
@@ -8,7 +9,7 @@ export const HORIZON_TESTNET = "https://horizon-testnet.stellar.org";
 export const explorer = (kind: "tx" | "account" | "contract", id: string) =>
   `https://stellar.expert/explorer/testnet/${kind}/${id}`;
 
-// ponytail: in-memory, lost on restart; read escrows back from the chain when the leaderboard needs history.
+// ponytail: in-memory, lost on restart, so an escrow opened before a restart can't be settled by this process.
 export class Escrows {
   private open = new Map<string, EscrowRequest>();
   private slashes = new Map<string, string[]>();
