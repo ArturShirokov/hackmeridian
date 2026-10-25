@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { api, usePoll } from "./api.ts";
 import { Link, match, navigate, useLocation } from "./router.tsx";
 import { Arbiter, DocumentsList, Jobs, Leaderboard, NotFound, Pipeline, Review, Upload } from "./screens.tsx";
+import { BrandDocuments } from "./screens/brand/Documents.tsx";
+import { BrandUpload } from "./screens/brand/Upload.tsx";
+import { BrandPipeline } from "./screens/brand/Pipeline.tsx";
+import { BrandReview } from "./screens/brand/Review.tsx";
 
 export type Role = "brand" | "arbiter" | "operator";
 
@@ -32,10 +36,10 @@ export function useRole(): [Role, (r: Role) => void] {
 function route(path: string) {
   let m;
   if (path === "/") return { nav: "/documents", el: <Redirect to="/documents" /> };
-  if (match("/documents", path)) return { nav: "/documents", el: <DocumentsList /> };
-  if (match("/upload", path)) return { nav: "/upload", el: <Upload /> };
-  if ((m = match("/documents/:id/pipeline", path))) return { nav: "/documents", el: <Pipeline id={m.id!} /> };
-  if ((m = match("/documents/:id", path))) return { nav: "/documents", el: <Review id={m.id!} /> };
+  if (match("/documents", path)) return { nav: "/documents", el: <BrandDocuments /> };
+  if (match("/upload", path)) return { nav: "/upload", el: <BrandUpload /> };
+  if ((m = match("/documents/:id/pipeline", path))) return { nav: "/documents", el: <BrandPipeline key={m.id} id={m.id!} /> };
+  if ((m = match("/documents/:id", path))) return { nav: "/documents", el: <BrandReview key={m.id} id={m.id!} /> };
   if (match("/arbiter", path)) return { nav: "/arbiter", el: <Arbiter /> };
   if (match("/leaderboard", path)) return { nav: "/leaderboard", el: <Leaderboard /> };
   if (match("/jobs", path)) return { nav: "/jobs", el: <Jobs /> };
