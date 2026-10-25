@@ -1,4 +1,4 @@
-// Writes testdata/runs/scripted-demo.json: a SCRIPTED run, not a live one. Three scripted Workers hand in the
+// Writes testdata/runs/scripted-demo.json: a SCRIPTED run, not a live one. Four scripted Workers hand in the
 // expected values from testdata/expected; the Baseline's Worker takes the planted 16 % recycled lithium on battery-04.
 // The demo replays it until a live run cache replaces it (npm run demo, DEMO_REPLAY=<cache>).
 //   npx tsx scripts/scripted-run.ts
@@ -34,10 +34,12 @@ const asSubmitted = (e: Expected, overrides: Record<string, object> = {}) => ({
 });
 
 // Each Job is handed in before the next is taken, so a Document's first extraction from the original is ours
-// (our Pipeline posts first) and its second is the Baseline's.
+// (our Pipeline posts first) and its second is the Baseline's. A Worker does one extraction per Document across
+// both Pipelines, so four Workers cover ours (two plus a tie-break) and the Baseline.
+const WORKERS = 4;
 const originals = new Map<string, number>();
-for (let i = 0, idle = 0; idle < 3; i++) {
-  const worker = `scripted-${(i % 3) + 1}`;
+for (let i = 0, idle = 0; idle < WORKERS; i++) {
+  const worker = `scripted-${(i % WORKERS) + 1}`;
   t += 1000;
   const job = board.nextJob(worker);
   if (!job) {

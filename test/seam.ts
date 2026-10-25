@@ -13,11 +13,14 @@ type PipelineView = {
   fields: {
     name: string;
     status: "converging" | "final" | "disagreeing" | "not stated";
-    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean;
+    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; corrected?: boolean;
     quotes?: { page: number; quote: string }[];
     supplierRequest?: string;
   }[];
-  escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[] };
+  escrow?: {
+    operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[];
+    link?: string; settlementLink?: string;
+  };
 };
 
 export function startBoard(
@@ -26,13 +29,16 @@ export function startBoard(
     pipelines?: Pipeline[];
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
+    /** Have the fake Ledger give explorer links under this base URL; without it, it gives none. */
+    explorer?: string;
   } = {},
 ) {
+  const { explorer, ...boardOpts } = opts;
   const storage = new InMemoryStorage();
-  const ledger = new FakeLedger();
+  const ledger = new FakeLedger(explorer);
   let time = 0;
   const clock = { advance: (ms: number) => void (time += ms) };
-  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, ...opts });
+  const board = new JobBoard({ storage, ledger, baseUrl: "http://board.test", now: () => time, ...boardOpts });
   const web = webApp(board);
 
   async function worker(name: string) {
@@ -97,7 +103,7 @@ export function startBoard(
         id: string;
         documentId: string;
         field: string;
-        disputed: Record<string, unknown>;
+        challenged: Record<string, unknown>;
         page: number;
         quote: string;
         value: unknown;

@@ -3,12 +3,12 @@
 import { createHash, randomUUID } from "node:crypto";
 import * as z from "zod";
 import { Challenges } from "./challenges.js";
-import { compositionSum, converge, type FieldResult } from "./converge.js";
+import { compositionSum, converge, supplierRequest, type FieldResult } from "./converge.js";
 import { slashes, type EscrowRequest, type Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
-import { templates, type Template } from "./templates.js";
+import { mustBe, statedValue, templates, type Template } from "./templates.js";
 
 /** A self-contained unit of work for one Sieve pass over one Document. Never carries other Sieves' values. */
 export interface Job {
@@ -22,14 +22,7 @@ export interface Job {
   document: { url: string; text: string[]; markdown?: string };
 }
 
-const stated = z.strictObject({
-  field: z.string(),
-  value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
-  unit: z.string().min(1).optional(),
-  qualifier: z.string().min(1).optional(),
-  page: z.number().int().positive(),
-  quote: z.string().min(1),
-});
+const stated = z.strictObject({ field: z.string(), ...statedValue, page: z.number().int().positive() });
 const notStated = z.strictObject({ field: z.string(), notStated: z.literal(true) });
 export type FieldValue = z.infer<typeof stated> | z.infer<typeof notStated>;
 // Pick the entry shape by `notStated` so errors name the bad key instead of "Invalid input" from a union.
@@ -63,8 +56,8 @@ function checkAgainstTemplate(values: FieldValue[], template: Template, pages: n
     const at = `Field "${f.name}":`;
     const isNumber = typeof v.value === "number";
     const isRecord = typeof v.value === "object";
-    if (f.type === "quantity" && !isNumber) problems.push(`${at} a quantity value must be a number`);
-    if (f.type === "composition" && !isRecord) problems.push(`${at} a composition value must be { fibre: percent }`);
+    if (f.type === "quantity" && !isNumber) problems.push(`${at} ${mustBe.quantity}`);
+    if (f.type === "composition" && !isRecord) problems.push(`${at} ${mustBe.composition}`);
     if (f.type === "composition" && isRecord) {
       const sum = compositionSum(v.value as Record<string, number>);
       if (sum !== 100) problems.push(`${at} fibre percentages must add up to 100, these add up to ${sum}`);
@@ -103,13 +96,20 @@ export interface OperatorTerms {
   fee: string;
 }
 
+/** One escrow per (Document, Pipeline). */
+const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([documentId, pipeline]);
+
 interface Escrow extends EscrowRequest {
+  pipeline: string;
   escrowId: string;
   /** When the Challenge Window closes, in ms since the epoch. */
   closesAt: number;
   status: "open" | "settling" | "settled";
   /** Paid to the Brand at settlement, one per upheld Challenge. */
   slashes?: string[];
+  /** Stellar explorer links from the Ledger, when it has a chain behind it. */
+  link?: string;
+  settlementLink?: string;
 }
 
 interface JobState {
@@ -141,7 +141,7 @@ export class JobBoard {
   private jobTimeoutMs: number;
   private operators: Record<string, OperatorTerms>;
   private challengeWindowMs: number;
-  /** Keyed by `${documentId} ${pipeline}`. */
+  /** Keyed by escrowKey(documentId, pipeline). */
   private escrows = new Map<string, Escrow>();
   readonly challenges = new Challenges();
 
@@ -228,11 +228,9 @@ export class JobBoard {
     return this.jobs.findLast((j) => j.pipeline === pipeline && j.job.documentId === documentId && j.markdown !== undefined)?.markdown;
   }
 
-  /** Sieves stay independent: a Worker does at most one extraction Sieve per Document and Pipeline. */
+  /** Sieves stay independent: a Worker does at most one extraction Sieve per Document, across every Pipeline. */
   private didExtraction(worker: string, j: JobState): boolean {
-    return this.jobs.some(
-      (o) => o !== j && o.takenBy === worker && o.pipeline === j.pipeline && o.job.documentId === j.job.documentId && extracts(o.job.sieve),
-    );
+    return this.jobs.some((o) => o !== j && o.takenBy === worker && o.job.documentId === j.job.documentId && extracts(o.job.sieve));
   }
 
   /** The next open Job for this Worker, or null when there is nothing yet. */
@@ -274,19 +272,26 @@ export class JobBoard {
     }
     s.done = true;
     if (s.pass === false) {
-      // A failed check reruns the Markdown Sieve before it, once. A second fail stops this Pipeline for the Document.
-      // ponytail: the Document then stays converging with no delivery; add a fallback (all Not stated) if demos hit it.
+      // A failed check reruns the Markdown Sieve before it, once. A second fail delivers every Field as Not stated,
+      // with whatever the first extraction quoted, since no checked Markdown exists to extract from.
       const md = p.sieves.findLastIndex((v, i) => i < s.sieve && v.kind === "markdown");
-      const runs = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.sieve === md).length;
-      if (md >= 0 && runs < 2) this.post(p, md, doc.meta.id);
-      return { ok: true };
+      if (md >= 0 && this.jobsOf(p.name, doc.meta.id).filter((j) => j.sieve === md).length < 2) {
+        this.post(p, md, doc.meta.id);
+        return { ok: true };
+      }
+      const first = this.jobsOf(p.name, doc.meta.id).find((j) => extracts(j.job.sieve))?.result ?? [];
+      const fields = doc.template.fields.map((f): FieldResult => {
+        const v = first.find((v) => v.field === f.name);
+        return { field: f.name, status: "not stated", quotes: v && "quote" in v ? [{ page: v.page, quote: v.quote }] : [] };
+      });
+      return this.deliver(s, doc, p.name, fields);
     }
     const next = s.sieve + 1;
     if (next < p.sieves.length && p.sieves[next]!.kind !== "tiebreak") {
       this.post(p, next, doc.meta.id);
       return { ok: true };
     }
-    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && extracts(j.job.sieve));
+    const ran = this.jobsOf(p.name, doc.meta.id).filter((j) => extracts(j.job.sieve));
     // A scan has no text layer, so quotes are checked against the checked Markdown instead.
     const scan = doc.text.every((t) => !t.trim());
     const markdown = this.latestMarkdown(p.name, doc.meta.id);
@@ -300,16 +305,27 @@ export class JobBoard {
         return { ok: true };
       }
     }
-    doc.delivered.set(p.name, fields);
+    return this.deliver(s, doc, p.name, fields);
+  }
+
+  /** Deliver a Pipeline's Field values and open its escrow; if the escrow fails, the submission is undone. */
+  private async deliver(s: JobState, doc: Doc, pipeline: string, fields: FieldResult[]): Promise<SubmitOutcome> {
+    doc.delivered.set(pipeline, fields);
     try {
-      await this.openEscrow(doc, p.name, fields);
+      await this.openEscrow(doc, pipeline, fields);
     } catch (e) {
       s.done = false;
       delete s.result;
-      doc.delivered.delete(p.name);
+      delete s.pass;
+      doc.delivered.delete(pipeline);
       return { ok: false, error: `could not open the escrow, try again: ${(e as Error).message}` };
     }
     return { ok: true };
+  }
+
+  /** Every Job posted so far for this Pipeline and Document, in posting order. */
+  private jobsOf(pipeline: string, documentId: string): JobState[] {
+    return this.jobs.filter((j) => j.pipeline === pipeline && j.job.documentId === documentId);
   }
 
   /** Delivery: lock the Operator's Bond and the Brand's Fee behind a hash of the delivered Field values. */
@@ -321,22 +337,29 @@ export class JobBoard {
       brand: doc.meta.uploader,
       outputHash: createHash("sha256").update(JSON.stringify(fields)).digest("hex"),
     };
-    const { escrowId } = await this.ledger.openEscrow(req);
-    this.escrows.set(`${doc.meta.id} ${pipeline}`, { ...req, escrowId, closesAt: this.now() + this.challengeWindowMs, status: "open" });
+    const { escrowId, link } = await this.ledger.openEscrow(req);
+    this.escrows.set(escrowKey(doc.meta.id, pipeline), {
+      ...req,
+      pipeline,
+      escrowId,
+      ...(link && { link }),
+      closesAt: this.now() + this.challengeWindowMs,
+      status: "open",
+    });
   }
 
   /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
   async tick(): Promise<void> {
-    for (const [key, e] of this.escrows) {
+    for (const e of this.escrows.values()) {
       if (e.status !== "open" || this.now() < e.closesAt) continue;
-      const [documentId, pipeline] = key.split(" ") as [string, string];
+      const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
       e.status = "settling";
       try {
-        if (s.length) await this.ledger.settleWithSlashes(e.escrowId, s);
-        else await this.ledger.settleClean(e.escrowId);
+        const { link } = s.length ? await this.ledger.settleWithSlashes(e.escrowId, s) : await this.ledger.settleClean(e.escrowId);
         e.status = "settled";
+        if (link) e.settlementLink = link;
         if (s.length) e.slashes = s;
       } catch (err) {
         e.status = "open";
@@ -348,12 +371,12 @@ export class JobBoard {
   /** File a Challenge against a delivered Field, only while its Challenge Window is open. */
   challenge(documentId: string, raw: unknown, pipeline = this.pipelines[0]!.name) {
     const d = this.docs.get(documentId);
-    const e = this.escrows.get(`${documentId} ${pipeline}`);
+    const e = this.escrows.get(escrowKey(documentId, pipeline));
     const delivered = d?.delivered.get(pipeline);
     if (!d || !e || !delivered) return { ok: false as const, reason: "not found" as const, error: "no delivered Document with that id" };
     if (e.status !== "open" || this.now() >= e.closesAt)
       return { ok: false as const, reason: "closed" as const, error: "the Challenge Window has closed" };
-    const r = this.challenges.file({ documentId, pipeline, template: d.template, pages: d.text.length, delivered }, raw);
+    const r = this.challenges.fileChallenge({ documentId, pipeline, template: d.template, pages: d.text.length, delivered }, raw);
     return r.ok ? r : { ...r, reason: "invalid" as const };
   }
 
@@ -379,10 +402,15 @@ export class JobBoard {
     return this.operators[pipeline] ?? { operator: pipeline, bond: "10", fee: "1" };
   }
 
+  /** The Operator that runs this Pipeline. */
+  operatorOf(pipeline: string): string {
+    return this.terms(pipeline).operator;
+  }
+
   private view(d: Doc, pipeline: string) {
     const id = d.meta.id;
     const values = d.delivered.get(pipeline) ?? d.progress.get(pipeline) ?? [];
-    const e = this.escrows.get(`${id} ${pipeline}`);
+    const e = this.escrows.get(escrowKey(id, pipeline));
     return {
       operator: this.terms(pipeline).operator,
       escrow: e && {
@@ -393,22 +421,20 @@ export class JobBoard {
         status: e.status === "settled" ? ("settled" as const) : ("open" as const),
         msLeft: Math.max(0, e.closesAt - this.now()),
         ...(e.slashes && { slashes: e.slashes }),
+        ...(e.link && { link: e.link }),
+        ...(e.settlementLink && { settlementLink: e.settlementLink }),
       },
       fields: d.template.fields.map((f) => {
         const corrected = this.challenges.correction(id, pipeline, f.name);
         if (corrected) return { name: f.name, label: f.label, status: "final" as const, ...corrected };
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         if (v.status !== "not stated") return { name: f.name, label: f.label, ...v };
-        const quoted = v.quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
-        const supplierRequest =
-          `Please confirm "${f.label}" for Document ${id} (${d.meta.template}).` +
-          ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`;
-        return { name: f.name, label: f.label, ...v, supplierRequest };
+        return { name: f.name, label: f.label, ...v, supplierRequest: supplierRequest(f, id, d.meta.template, v.quotes) };
       }),
     };
   }
 
-  async file(id: string): Promise<Uint8Array | undefined> {
+  async documentBytes(id: string): Promise<Uint8Array | undefined> {
     return (await this.storage.get(id))?.bytes;
   }
 

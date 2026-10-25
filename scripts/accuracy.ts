@@ -16,9 +16,9 @@ const expected: Expected[] = readdirSync(new URL("expected/", dir))
 const readPdf = async (file: string) => new Uint8Array(readFileSync(new URL(`documents/${file}`, dir)));
 
 function report(board: JobBoard, documents: Run["documents"]) {
-  for (const r of score(expected, deliveredBy(board, documents))) {
+  for (const r of score(expected, deliveredBy(board, documents), (p) => board.operatorOf(p))) {
     const share = r.fields ? ((100 * r.correct) / r.fields).toFixed(1) : "0.0";
-    console.log(`\n${r.operator}: ${share}% Correct (${r.correct} of ${r.fields} Fields), ${r.notStated} Not stated`);
+    console.log(`\n${r.pipeline} (Operator ${r.operator}): ${share}% Correct (${r.correct} of ${r.fields} Fields), ${r.notStated} Not stated`);
     for (const i of r.incorrect) console.log(`  ${i.document}  ${i.field}: expected ${i.expected}, delivered ${i.delivered}`);
   }
 }

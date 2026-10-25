@@ -20,12 +20,13 @@ test("a Field equal after normalising is Correct, Not stated against Not stated 
       "cell.pdf": [
         { field: "rated_capacity_ah", ...capacity, status: "final" },
         { field: "battery_chemistry", value: "nmc-811", page: 1, quote: "NMC 811", status: "final" },
-        { field: "battery_identifier", status: "not stated", notStated: true, quotes: [] },
-        { field: "manufacturing_date", status: "not stated", notStated: true, quotes: [] },
+        { field: "battery_identifier", status: "not stated", quotes: [] },
+        { field: "manufacturing_date", status: "not stated", quotes: [] },
       ],
     },
   });
   expect(ours).toEqual({
+    pipeline: "ours",
     operator: "ours",
     fields: 4,
     correct: 3,
@@ -40,7 +41,7 @@ test("a wrong qualifier and a Document never delivered are not Correct", () => {
       "cell.pdf": [
         { field: "rated_capacity_ah", ...capacity, qualifier: "typical", status: "final" },
         { field: "battery_chemistry", value: "NMC811", page: 1, quote: "NMC 811", status: "final" },
-        { field: "battery_identifier", status: "not stated", notStated: true, quotes: [] },
+        { field: "battery_identifier", status: "not stated", quotes: [] },
         { field: "manufacturing_date", value: "2027-02", page: 1, quote: "February 2027", status: "final" },
       ],
     },
@@ -91,8 +92,9 @@ test("a recorded run replays to the same score: ours holds on the planted error,
   await submit("w2", take("w2").id, asSubmitted()); // ours, extract from the Markdown
 
   const known = [
-    { operator: "ours", fields: 25, correct: 25, notStated: 5, incorrect: [] },
+    { pipeline: "ours", operator: "ours", fields: 25, correct: 25, notStated: 5, incorrect: [] },
     {
+      pipeline: "baseline",
       operator: "baseline",
       fields: 25,
       correct: 24,

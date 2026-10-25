@@ -31,7 +31,7 @@ test("a Worker does the Baseline extraction Job and the Brand sees its Field val
   expect(doc.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({
     value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah",
   });
-  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ notStated: true });
+  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ status: "not stated" });
   expect((await brand.page(`/documents/${docId}`)).text).toContain("Rated capacity: 220 Ah");
   expect(await w1.nextJob()).toBeNull();
 });

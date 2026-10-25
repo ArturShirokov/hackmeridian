@@ -5,10 +5,27 @@ import type { Field, Template } from "./templates.js";
 export type FieldStatus = "converging" | "final" | "disagreeing" | "not stated";
 export type Quote = { page: number; quote: string };
 export type FieldResult =
-  | (FieldValue & { status: "final" })
+  | (Extract<FieldValue, { value: unknown }> & { status: "final" })
   | { field: string; status: "disagreeing" }
-  /** Still split after the tie-break: every competing quote, for the Supplier Request. */
-  | { field: string; status: "not stated"; notStated: true; quotes: Quote[] };
+  /** Agreed Not stated, or still split after the tie-break: every competing quote, for the Supplier Request. */
+  | { field: string; status: "not stated"; quotes: Quote[] };
+
+/** A value the Sieves settled on: final when stated, else Not stated with these quotes. */
+const settled = (v: FieldValue, quotes: Quote[] = []): FieldResult =>
+  "value" in v ? { ...v, status: "final" } : { field: v.field, status: "not stated", quotes };
+
+/** A stated value as people read it: `3.2 Ah (nominal)`, compositions as JSON. */
+export const formatValue = (v: { value: unknown; unit?: string; qualifier?: string | null }) =>
+  `${typeof v.value === "object" ? JSON.stringify(v.value) : v.value}${v.unit ? ` ${v.unit}` : ""}${v.qualifier ? ` (${v.qualifier})` : ""}`;
+
+/** The Supplier Request for a Not stated Field: what to confirm and what the Document says instead. */
+export function supplierRequest(f: Field, documentId: string, template: string, quotes: Quote[]): string {
+  const quoted = quotes.map((q) => `- page ${q.page}: "${q.quote}"`).join("\n");
+  return (
+    `Please confirm "${f.label}" for Document ${documentId} (${template}).` +
+    ` The Document does not state it clearly${quoted ? `; it says:\n${quoted}` : "."}\nPlease send the value, its unit and the page that states it, or a corrected Document.`
+  );
+}
 
 /** Factor from each accepted unit to the canonical one, keyed by spelling() of the canonical unit. */
 const units: Record<string, Record<string, number>> = {
@@ -103,13 +120,15 @@ export function canonical(f: Field, v: Extract<FieldValue, { value: unknown }>):
 
 const fold = (s: string) => s.replace(/\s+/g, " ").trim();
 
-/** Comparison key of a value, or undefined when it can't converge (unnormalisable, or quote not in the text). */
-function key(f: Field, v: FieldValue, text: string): string | undefined {
+/** Comparison key of a value's normalised content, or undefined when it can't be normalised. */
+function valueKey(f: Field, v: FieldValue): string | undefined {
   if (!("value" in v)) return "not stated";
-  if (!text.includes(fold(v.quote))) return undefined;
   const c = canonical(f, v);
   return c === undefined ? undefined : JSON.stringify([c, v.qualifier ?? null]);
 }
+
+/** Comparison key of a value, or undefined when it can't converge (unnormalisable, or quote not in the text). */
+const key = (f: Field, v: FieldValue, text: string) => ("quote" in v && !text.includes(fold(v.quote)) ? undefined : valueKey(f, v));
 
 /** What the Brand sees once a value converged: quantities in the canonical unit, codes in canonical form. */
 function shown(f: Field, v: FieldValue): FieldValue {
@@ -123,23 +142,28 @@ function shown(f: Field, v: FieldValue): FieldValue {
 /**
  * Converge the extraction Sieves' results (one FieldValue[] per Sieve, in Pipeline order) Field by Field.
  * A single Sieve (the Baseline) is delivered as is. The first two must agree, else the Field is disagreeing.
+ * A high-stake Field whose two values differ is Not stated at once, with no tie-break (never 2 of 3).
  * A third result is the tie-break and holds only the disagreeing Fields: a normal Field is final when it agrees
- * with either earlier value, a high-stake Field only when it agrees with both (never 2 of 3). Else Not stated.
+ * with either earlier value, a high-stake Field (whose two values agreed but a quote failed) when it agrees with
+ * that value. Else Not stated.
  * `pages` is what quotes are checked against: the text layer, or the checked Markdown for a scan.
  */
 export function converge(template: Template, results: FieldValue[][], pages: string[]): FieldResult[] {
   const text = fold(pages.join(" "));
   return template.fields.map((f): FieldResult => {
     const values = results.map((r) => r.find((v) => v.field === f.name));
-    if (values.length === 1) return { ...values[0]!, status: "final" };
+    if (values.length === 1) return settled(values[0]!);
     const [a, b, tie] = values as [FieldValue, FieldValue, FieldValue | undefined];
     const [ka, kb] = [key(f, a, text), key(f, b, text)];
-    if (ka !== undefined && ka === kb) return { ...shown(f, a), status: "final" };
+    if (ka !== undefined && ka === kb) return settled(shown(f, a));
+    const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
+    const notStated = { field: f.name, status: "not stated", quotes } as const;
+    // A high-stake Field needs both values to agree; a tie-break may only stand in for a failed quote.
+    const both = valueKey(f, a);
+    if (f.highStake && (both === undefined || both !== valueKey(f, b))) return notStated;
     if (values.length === 2) return { field: f.name, status: "disagreeing" };
     const kt = tie && key(f, tie, text);
-    const agreed = kt !== undefined && (f.highStake ? kt === ka && kt === kb : kt === ka || kt === kb);
-    if (agreed) return { ...shown(f, tie!), status: "final" };
-    const quotes = values.flatMap((v) => (v && "quote" in v ? [{ page: v.page, quote: v.quote }] : []));
-    return { field: f.name, status: "not stated", notStated: true, quotes };
+    const agreed = kt !== undefined && (f.highStake ? kt === both : kt === ka || kt === kb);
+    return agreed ? settled(shown(f, tie!), quotes) : notStated;
   });
 }

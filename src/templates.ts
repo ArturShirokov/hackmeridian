@@ -1,4 +1,6 @@
 // Templates as data. Battery Field names reuse the ids of Origyn's "Batteries" mint form.
+import * as z from "zod";
+
 export type FieldType = "code" | "quantity" | "composition" | "text" | "date";
 export type Qualifier = "nominal" | "rated" | "minimum" | "maximum" | "typical";
 
@@ -19,6 +21,20 @@ export interface Template {
   label: string;
   fields: Field[];
 }
+
+/** The parts of a stated Field value, shared by extraction results and Challenges (each adds field and page). */
+export const statedValue = {
+  value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
+  unit: z.string().min(1).optional(),
+  qualifier: z.string().min(1).optional(),
+  quote: z.string().min(1),
+};
+
+/** What a value of each structured Field type must be, for error messages. */
+export const mustBe = {
+  quantity: "a quantity value must be a number",
+  composition: "a composition value must be { fibre: percent }",
+};
 
 const q = (name: string, label: string, unit: string, qualifiers?: Qualifier[], highStake?: true): Field => ({
   name, label, type: "quantity", unit, ...(qualifiers && { qualifiers }), ...(highStake && { highStake }),

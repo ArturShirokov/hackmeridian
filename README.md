@@ -48,7 +48,9 @@ npm run typecheck
 ```
 
 Set `HOST=0.0.0.0` and `BASE_URL=http://<your-ip>:3000` to let Workers on other machines connect.
-`CHALLENGE_WINDOW_MIN` sets the Challenge Window (default 5 minutes). Pages: `/` (upload and Documents),
+`CHALLENGE_WINDOW_MIN` sets the Challenge Window (default 5 minutes). `LEDGER=fake|payments|trustless-work` picks
+the Ledger (default `fake`, nothing on chain); the Stellar ones read the testnet keys from `.env` (see
+[Wallets](#wallets)), and the Document page then links the escrow and its settlement on stellar.expert. Pages: `/` (upload and Documents),
 `/documents/<id>` (Pipeline and Baseline side by side), `/arbiter`, `/leaderboard`.
 
 ### Demo replay: no models, no network
@@ -107,8 +109,9 @@ Then give the session this prompt:
 > You are Worker `<your-id>`. Call `next_job` with worker `<your-id>`. If there is no Job, wait 10 seconds and
 > try again. Otherwise do the Job as its instructions say and hand it in with `submit_job`. Repeat.
 
-Use a different id for every session. The Job Board uses it to keep Sieves independent: our Pipeline needs at least
-three Workers, one per extraction Sieve.
+Use a different id for every session. The Job Board uses it to keep Sieves independent: a Worker does at most one
+extraction Sieve (or tie-break) per Document, across both Pipelines. A live run with our Pipeline and the Baseline
+needs at least four distinct Workers: two for our extraction Sieves, one for our tie-break, one for the Baseline.
 
 ## Testnet transactions
 
@@ -128,7 +131,7 @@ accounts the Job Board holds. In a real product the Brand never holds crypto.
 
 Runs our Pipeline and the Baseline over `testdata/documents` and compares the delivered Field values with
 `testdata/expected` (Correct = equal after the same normalising as convergence; Not stated against Not stated is
-Correct). It prints, per Operator, the share of Correct Fields, the number of Fields, the number Not stated, and each
+Correct). It prints, per Pipeline and its Operator, the share of Correct Fields, the number of Fields, the number Not stated, and each
 incorrect Field.
 
 **Live run, with real Workers:**
@@ -138,7 +141,7 @@ npx tsx scripts/accuracy.ts      # its own Job Board (fake Ledger, in-memory Sto
 ```
 
 It uploads every test Document under both Operators and serves MCP at `http://127.0.0.1:3000/mcp`. Connect at least
-three Workers as in [Connect a Worker](#connect-a-worker). The script prints the report when every Document is
+four distinct Workers as in [Connect a Worker](#connect-a-worker). The script prints the report when every Document is
 delivered by both Pipelines; Ctrl+C reports on what is delivered so far. Every Job taken and every accepted
 submission is written as it happens to `testdata/runs/<timestamp>.json`, which is also a demo replay cache.
 
@@ -160,7 +163,11 @@ Two adapters implement the `Ledger` interface (`src/ledger.ts`):
   and dispute resolver. Clean settle = mark done, approve, release. Slashed settle = dispute, then resolve with the
   Slashes to the Brand and the rest to the Operator. Requests are spaced 1.3 s apart (under the 50 a minute limit).
 - `src/ledger/stellar-payments.ts`: the fallback. The Job Board holds one escrow account; Bond and Fee are paid in and
-  out as plain USDC payments with the output hash in the memo. Trust sits with the Job Board.
+  out as plain USDC payments with the output hash in the memo, one payment per Slash. Trust sits with the Job Board.
+
+The leaderboard reads each Operator's record through the Ledger. The fallback rebuilds it from the escrow account's
+payment history on Horizon, so it is read from Stellar. The Trustless Work adapter keeps it in memory for now: its
+escrow query endpoints hold milestone flags, not the dispute split, so they can't give the Slashes.
 
 **Decision: pending.** Trustless Work or the fallback is decided by Artur's 30-minute spike with a real API key. The
 fallback has run end to end on testnet; the Trustless Work adapter is tested only against a mocked API.

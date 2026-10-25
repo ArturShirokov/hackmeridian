@@ -28,12 +28,12 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
   expect(open[0]).toMatchObject({
     documentId: docId,
     field: "rated_capacity_ah",
-    disputed: { value: 22, unit: "Ah", page: 1 },
+    challenged: { value: 22, unit: "Ah", page: 1 },
     page: 1,
     quote: "Rated capacity: 220 Ah",
     value: 220,
   });
-  expect(open[1]).toMatchObject({ field: "battery_chemistry", disputed: { notStated: true } });
+  expect(open[1]).toMatchObject({ field: "battery_chemistry", challenged: { status: "not stated" } });
   const page = (await arbiter.page()).text;
   expect(page).toContain("Chemistry: NMC811");
   expect(page).toContain(`/documents/${docId}/file`);
@@ -45,7 +45,7 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
 
   const doc = await brand.document(docId);
   expect(doc.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ value: 220, unit: "Ah", corrected: true });
-  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ notStated: true });
+  expect(doc.fields.find((f) => f.name === "battery_chemistry")).toMatchObject({ status: "not stated" });
   expect((await brand.page(`/documents/${docId}`)).text).toContain("corrected by Challenge");
 
   board.clock.advance(60_000);

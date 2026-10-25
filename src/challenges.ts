@@ -3,23 +3,16 @@
 import { randomUUID } from "node:crypto";
 import * as z from "zod";
 import type { FieldResult } from "./converge.js";
-import type { Template } from "./templates.js";
+import { mustBe, statedValue, type Template } from "./templates.js";
 
-const input = z.strictObject({
-  field: z.string(),
-  page: z.coerce.number().int().positive(),
-  quote: z.string().min(1),
-  value: z.union([z.string().min(1), z.number(), z.record(z.string(), z.number())]),
-  unit: z.string().min(1).optional(),
-  qualifier: z.string().min(1).optional(),
-});
+const input = z.strictObject({ field: z.string(), ...statedValue, page: z.coerce.number().int().positive() });
 
 export type Challenge = z.infer<typeof input> & {
   id: string;
   documentId: string;
   pipeline: string;
   /** The delivered value being challenged, as the Brand saw it. */
-  disputed: FieldResult;
+  challenged: FieldResult;
   decision?: "upheld" | "rejected";
 };
 
@@ -35,7 +28,7 @@ export interface Target {
 export class Challenges {
   private all: Challenge[] = [];
 
-  file(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
+  fileChallenge(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
     const r = input.safeParse(raw);
     if (!r.success) return { ok: false, error: z.prettifyError(r.error) };
     const c = r.data;
@@ -48,12 +41,12 @@ export class Challenges {
       try {
         c.value = z.record(z.string(), z.number()).parse(JSON.parse(c.value));
       } catch {
-        return { ok: false, error: `Field "${f.name}": a composition value must be { fibre: percent }` };
+        return { ok: false, error: `Field "${f.name}": ${mustBe.composition}` };
       }
     }
-    if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": a quantity value must be a number` };
-    const disputed = t.delivered.find((d) => d.field === f.name)!;
-    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, disputed };
+    if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": ${mustBe.quantity}` };
+    const challenged = t.delivered.find((d) => d.field === f.name)!;
+    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged };
     this.all.push(challenge);
     return { ok: true, challenge };
   }

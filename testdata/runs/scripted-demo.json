@@ -1,32 +1,32 @@
 {
  "documents": [
   {
-   "id": "113f0851-9442-4d8f-9901-4bceccaf0ae7",
+   "id": "b4bf23a6-9e56-494e-86f7-a8e487908f1a",
    "file": "battery-01-voltaris-pack-spec.pdf",
    "template": "battery"
   },
   {
-   "id": "3c0cf10a-932a-4ddb-b967-b919597b32f7",
+   "id": "8735a822-6dea-4d78-b87d-5a412ba2f69d",
    "file": "battery-02-kestrel-18650-cell-datasheet.pdf",
    "template": "battery"
   },
   {
-   "id": "14b2c114-5c4a-495c-bf41-ffe37fbcd527",
+   "id": "98dfad6d-2116-4bfc-9ecf-f1cf25a55d02",
    "file": "battery-03-cityglide-ebike-test-report.pdf",
    "template": "battery"
   },
   {
-   "id": "fa4b6b4d-c5fa-490a-8ffa-a3debb42476c",
+   "id": "1cb6cff9-6dd9-4bae-afd0-5466de27ecc4",
    "file": "battery-04-helion-storage-module.pdf",
    "template": "battery"
   },
   {
-   "id": "6af8423c-9fd5-4e62-ba72-f6d7fede45be",
+   "id": "23f0244c-eedc-4642-a9c4-6659c20d91dc",
    "file": "textile-01-northwind-grs-certificate.pdf",
    "template": "textile"
   },
   {
-   "id": "d3aae27f-9e5e-4762-a1ac-3962ee3589ce",
+   "id": "1bb7da64-b401-49e1-ade8-79680f60102a",
    "file": "textile-02-lumen-tee-spec-sheet.pdf",
    "template": "textile"
   }
@@ -35,12 +35,12 @@
   {
    "t": 1000,
    "worker": "scripted-1",
-   "take": "7134678f-feb1-4961-87f7-9c82c0d81c76"
+   "take": "7d8043a1-86d6-4f9e-a82b-b3489819f920"
   },
   {
    "t": 2000,
    "worker": "scripted-1",
-   "submit": "7134678f-feb1-4961-87f7-9c82c0d81c76",
+   "submit": "7d8043a1-86d6-4f9e-a82b-b3489819f920",
    "result": {
     "fields": [
      {
@@ -226,12 +226,12 @@
   {
    "t": 3000,
    "worker": "scripted-2",
-   "take": "0ff5a206-814b-4231-8509-b8a37963ccae"
+   "take": "3efdf52a-2265-4135-af18-7a3f2c2eff64"
   },
   {
    "t": 4000,
    "worker": "scripted-2",
-   "submit": "0ff5a206-814b-4231-8509-b8a37963ccae",
+   "submit": "3efdf52a-2265-4135-af18-7a3f2c2eff64",
    "result": {
     "fields": [
      {
@@ -417,12 +417,12 @@
   {
    "t": 5000,
    "worker": "scripted-3",
-   "take": "6c5b15c8-2db4-4ad7-a9e3-dbdba78f623f"
+   "take": "e90326d4-d296-441b-b4b6-449debb7fe11"
   },
   {
    "t": 6000,
    "worker": "scripted-3",
-   "submit": "6c5b15c8-2db4-4ad7-a9e3-dbdba78f623f",
+   "submit": "e90326d4-d296-441b-b4b6-449debb7fe11",
    "result": {
     "fields": [
      {
@@ -576,13 +576,13 @@
   },
   {
    "t": 7000,
-   "worker": "scripted-1",
-   "take": "920962d3-52ae-4485-bd7a-47b790d8c7df"
+   "worker": "scripted-4",
+   "take": "3030895c-3dc8-4fbc-b811-fef5721e78d2"
   },
   {
    "t": 8000,
-   "worker": "scripted-1",
-   "submit": "920962d3-52ae-4485-bd7a-47b790d8c7df",
+   "worker": "scripted-4",
+   "submit": "3030895c-3dc8-4fbc-b811-fef5721e78d2",
    "result": {
     "fields": [
      {
@@ -736,13 +736,13 @@
   },
   {
    "t": 9000,
-   "worker": "scripted-2",
-   "take": "6a3366a2-95b9-48f9-bb1c-9ea31c5b155c"
+   "worker": "scripted-1",
+   "take": "4ac990b5-0270-41f4-8cec-9723c8d4a218"
   },
   {
    "t": 10000,
-   "worker": "scripted-2",
-   "submit": "6a3366a2-95b9-48f9-bb1c-9ea31c5b155c",
+   "worker": "scripted-1",
+   "submit": "4ac990b5-0270-41f4-8cec-9723c8d4a218",
    "result": {
     "fields": [
      {
@@ -910,13 +910,13 @@
   },
   {
    "t": 11000,
-   "worker": "scripted-3",
-   "take": "502c879b-b603-4277-ba01-2d6ef8e827a2"
+   "worker": "scripted-2",
+   "take": "aa7b3df5-8407-4856-a49f-46a6fd6aac93"
   },
   {
    "t": 12000,
-   "worker": "scripted-3",
-   "submit": "502c879b-b603-4277-ba01-2d6ef8e827a2",
+   "worker": "scripted-2",
+   "submit": "aa7b3df5-8407-4856-a49f-46a6fd6aac93",
    "result": {
     "fields": [
      {
@@ -1084,13 +1084,13 @@
   },
   {
    "t": 13000,
-   "worker": "scripted-1",
-   "take": "485633f5-a961-4a03-9845-fc4097755067"
+   "worker": "scripted-3",
+   "take": "cb02d4e4-f947-4e8f-8b40-f05b6bdf2c3c"
   },
   {
    "t": 14000,
-   "worker": "scripted-1",
-   "submit": "485633f5-a961-4a03-9845-fc4097755067",
+   "worker": "scripted-3",
+   "submit": "cb02d4e4-f947-4e8f-8b40-f05b6bdf2c3c",
    "result": {
     "fields": [
      {
@@ -1260,13 +1260,13 @@
   },
   {
    "t": 15000,
-   "worker": "scripted-2",
-   "take": "64fed894-c57f-4c55-9f5d-f45f5f9f2f2d"
+   "worker": "scripted-4",
+   "take": "dd9973a7-bbdd-4919-884f-7d18ab45c21a"
   },
   {
    "t": 16000,
-   "worker": "scripted-2",
-   "submit": "64fed894-c57f-4c55-9f5d-f45f5f9f2f2d",
+   "worker": "scripted-4",
+   "submit": "dd9973a7-bbdd-4919-884f-7d18ab45c21a",
    "result": {
     "fields": [
      {
@@ -1436,13 +1436,13 @@
   },
   {
    "t": 17000,
-   "worker": "scripted-3",
-   "take": "41b7fb78-9c35-48c5-b548-4bded2c84471"
+   "worker": "scripted-1",
+   "take": "c23b9be1-4115-4080-8759-2d7458fc2b78"
   },
   {
    "t": 18000,
-   "worker": "scripted-3",
-   "submit": "41b7fb78-9c35-48c5-b548-4bded2c84471",
+   "worker": "scripted-1",
+   "submit": "c23b9be1-4115-4080-8759-2d7458fc2b78",
    "result": {
     "fields": [
      {
@@ -1553,13 +1553,13 @@
   },
   {
    "t": 19000,
-   "worker": "scripted-1",
-   "take": "b9a10047-d455-46c6-a92a-49c2d91efc07"
+   "worker": "scripted-2",
+   "take": "5ce596b7-9a1e-4956-aea7-c9f495af6ad7"
   },
   {
    "t": 20000,
-   "worker": "scripted-1",
-   "submit": "b9a10047-d455-46c6-a92a-49c2d91efc07",
+   "worker": "scripted-2",
+   "submit": "5ce596b7-9a1e-4956-aea7-c9f495af6ad7",
    "result": {
     "fields": [
      {
@@ -1670,13 +1670,13 @@
   },
   {
    "t": 21000,
-   "worker": "scripted-2",
-   "take": "88a83532-6fb2-4ee1-a774-45abc26bf74d"
+   "worker": "scripted-3",
+   "take": "865690ea-b0a5-4673-a14d-17abccece7af"
   },
   {
    "t": 22000,
-   "worker": "scripted-2",
-   "submit": "88a83532-6fb2-4ee1-a774-45abc26bf74d",
+   "worker": "scripted-3",
+   "submit": "865690ea-b0a5-4673-a14d-17abccece7af",
    "result": {
     "fields": [
      {
@@ -1802,13 +1802,13 @@
   },
   {
    "t": 23000,
-   "worker": "scripted-3",
-   "take": "ed9523b9-81da-4f0b-a865-a8a266437995"
+   "worker": "scripted-4",
+   "take": "5c091307-454e-4898-806e-b257ae6bd15a"
   },
   {
    "t": 24000,
-   "worker": "scripted-3",
-   "submit": "ed9523b9-81da-4f0b-a865-a8a266437995",
+   "worker": "scripted-4",
+   "submit": "5c091307-454e-4898-806e-b257ae6bd15a",
    "result": {
     "fields": [
      {
@@ -1935,12 +1935,12 @@
   {
    "t": 25000,
    "worker": "scripted-1",
-   "take": "1385f0df-daff-4e97-840f-7ca828b6bea9"
+   "take": "717875ca-cb71-442f-805f-567356146b82"
   },
   {
    "t": 26000,
    "worker": "scripted-1",
-   "submit": "1385f0df-daff-4e97-840f-7ca828b6bea9",
+   "submit": "717875ca-cb71-442f-805f-567356146b82",
    "result": {
     "markdown": "<!-- page 1 -->\nVoltaris Mobility - Product Specification Sheet\nVoltaris NMC-800 EV Battery Pack\n80 kWh lithium-ion traction battery pack for mid-size electric passenger vehicles.\n1. Identification\nBattery identifier BAT-EU-2027-000214\nBattery category Electric vehicle battery (EV)\nManufacturer Voltaris Cell Systems Sp. z o.o. (MFR-EU-001982)\nManufacturer address ul. Przemyslowa 8, 62-052 Komorniki, Poland\nPlace of manufacture Komorniki, Poland\nDate of manufacture February 2027\n2. Electrical characteristics\nRated capacity 220 Ah\nNominal voltage 360 V\nMinimum voltage 288 V\nMaximum voltage 403 V\nOriginal power capability (nominal) 150 kW\nInitial round-trip energy efficiency (nominal) 95 %\nInitial internal resistance (nominal) cell 0.0012 ohm, pack 0.135 ohm\nExpected lifetime (nominal) 2500 cycles (IEC 62660-1, 25 °C, 1C/1C, 100% DoD)\n3. Physical\nNominal mass 482 kg\nIdle temperature range -20 °C to 45 °C\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\n4. Materials and composition\nChemistry Lithium nickel manganese cobalt oxide (NMC 811), graphite anode\nCritical raw materials Lithium, cobalt, nickel, natural graphite\nHazardous substances: Lithium hexafluorophosphate (LiPF6) 1.1% of pack mass; ethylene carbonate 2.4%;\ncobalt compounds 3.2%; nickel compounds 9.8%.\n5. Carbon footprint\nLife-cycle carbon footprint per kWh of total energy over the service life: 41.8 kg CO2e/kWh\nCarbon footprint performance class: Class B\n6. Recycled content (pre- and post-consumer combined)\nMaterial Recycled share\nCobalt 22 %\nLithium 11 %\nNickel 16 %\nLead 0 %\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
@@ -1948,12 +1948,12 @@
   {
    "t": 27000,
    "worker": "scripted-2",
-   "take": "ee22d1d0-b11c-4a3d-8cdd-15839cdfcd85"
+   "take": "a8d3bc23-28dc-4818-89e7-378636569eda"
   },
   {
    "t": 28000,
    "worker": "scripted-2",
-   "submit": "ee22d1d0-b11c-4a3d-8cdd-15839cdfcd85",
+   "submit": "a8d3bc23-28dc-4818-89e7-378636569eda",
    "result": {
     "markdown": "<!-- page 1 -->\nKESTREL ENERGY\nLithium-ion Cylindrical Cell KC-18650-32\nDatasheet revision C, issued 2026-03-02\nKestrel Energy Sdn. Bhd., Lot 88 Jalan Perindustrian 4, 11900 Bayan Lepas, Penang, Malaysia\nMade in Malaysia\nCategory under Regulation (EU) 2023/1542: portable battery\nChemistry: Li-ion, NMC (LiNiMnCoO2) cathode, graphite anode\nSpecifications\nItem Value Condition\nNominal capacity 3200 mAh 0.2C discharge to 2.5 V, 25 °C\nNominal voltage 3.6 V\nCharge voltage (max) 4.20 V CC/CV\nDischarge cut-off voltage 2.50 V minimum\nMax. continuous discharge current 10 A 25 °C\nAC impedance (max) 35 mOhm 1 kHz, 50% SoC\nCycle life (min) 500 cycles to 80% of nominal capacity\nWeight (max) 46.5 g\nOperating temperature -10 to 60 °C discharge\nStorage temperature -20 to 45 °C up to 3 months\nValues are typical unless stated otherwise. Specifications may change without notice.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
@@ -1961,129 +1961,129 @@
   {
    "t": 29000,
    "worker": "scripted-3",
-   "take": "1f593778-c86f-4b13-ac26-e303d87e822a"
+   "take": "e1e4f2a2-fd89-4ac3-92a0-30dd128b731f"
   },
   {
    "t": 30000,
    "worker": "scripted-3",
-   "submit": "1f593778-c86f-4b13-ac26-e303d87e822a",
+   "submit": "e1e4f2a2-fd89-4ac3-92a0-30dd128b731f",
    "result": {
     "markdown": "<!-- page 1 -->\nArbor Test Laboratories - Test Report AT-2026-1184\nClient: Arbor Mobility Components S.L.\nTest item\nThe test item is a CityGlide CG-48-14 e-bike battery, a light means of transport (LMT) battery,\nserial number CG48-2026-0007731, manufactured on 14 September 2026 by Arbor Mobility Components S.L.,\nCalle de la Industria 14, 46980 Paterna, Spain, at its plant in Paterna, Spain.\nThe pack is built from 16 lithium iron phosphate (LiFePO4) prismatic cells in series.\nAccording to the manufacturer the rated capacity is 14 Ah and the nominal voltage is 51.2 V.\nThe discharge cut-off (minimum voltage) is 40.0 V and the end-of-charge (maximum voltage) is 58.4 V.\nThe nominal mass declared on the label is 3.9 kg.\nResults\nCapacity measured at 0.5C and 25 °C was 13.8 Ah, which is within the tolerance of the rated value.\nThe maximum continuous power capability was 750 W. The typical initial round-trip energy efficiency\nwas 96.1 % at 0.5C. The typical pack internal resistance (DC, 25 °C, 50% SoC) was 85 mOhm.\nExpected lifetime is 2000 cycles (nominal) to 80% of rated capacity.\nOperating temperature range (discharge): -10 °C to 55 °C.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nSustainability declarations supplied by the client\nCritical raw materials present: lithium, natural graphite.\nHazardous substances: electrolyte containing lithium hexafluorophosphate (LiPF6).\nCarbon footprint: 72.4 kg CO2e/kWh (declared by the client, not verified by this laboratory).\nRecycled lithium content: 4 % (pre- and post-consumer combined).\nApproved by: J. Doe, Head of Laboratory. This report covers only the item tested.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
   },
   {
    "t": 31000,
-   "worker": "scripted-1",
-   "take": "76703391-af36-4953-a5ee-0b8c1026d5d0"
+   "worker": "scripted-4",
+   "take": "4dd7c6f4-02a6-4811-8547-d25e05e2ee7a"
   },
   {
    "t": 32000,
-   "worker": "scripted-1",
-   "submit": "76703391-af36-4953-a5ee-0b8c1026d5d0",
+   "worker": "scripted-4",
+   "submit": "4dd7c6f4-02a6-4811-8547-d25e05e2ee7a",
    "result": {
     "markdown": "<!-- page 1 -->\nHELION STORAGE\nHelion HX-280 LFP storage module\nStationary energy storage for commercial and industrial sites.\nBuilt for a circular future\n16 % recycled lithium\nRoadmap target for 2031\nWhy HX-280?\nLong life: 6000 cycles nominal at 25 °C, 0.5C, 90% DoD.\nHigh efficiency: typical round-trip energy efficiency of 95.5 %.\nManufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate.\n\n<!-- page 2 -->\nTechnical data\nParameter Value\nModule serial number HX280-26-004417\nBattery category Industrial battery\nCell chemistry LFP (LiFePO4)\nRated capacity 280 Ah\nNominal voltage 51.2 V\nVoltage range (min / max) 44.8 V / 57.6 V\nMaximum power 14.3 kW\nNominal mass 128 kg\nIdle (storage) temperature min -10 °C, max 45 °C\nPlace of manufacture Eindhoven, Netherlands\nDate of manufacture 2026-06\nCritical raw materials lithium, natural graphite\nCarbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh\nRecycled lithium, this production lot (pre + post consumer) 6 %\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
   },
   {
    "t": 33000,
-   "worker": "scripted-2",
-   "take": "7549ff6e-0c39-4e0a-bc47-b1c2757cd40c"
+   "worker": "scripted-1",
+   "take": "f518ee57-2ff9-4032-b0d0-83ca7d048bab"
   },
   {
    "t": 34000,
-   "worker": "scripted-2",
-   "submit": "7549ff6e-0c39-4e0a-bc47-b1c2757cd40c",
+   "worker": "scripted-1",
+   "submit": "f518ee57-2ff9-4032-b0d0-83ca7d048bab",
    "result": {
     "markdown": "<!-- page 1 -->\nNorthwind Certification Ltd\nProduct Certificate - Global Recycled Standard (GRS)\nCertificate number: NWC-GRS-2026-01187\nIssue date: 2026-09-01\nValid until: 2027-08-31\nCertified organisation\nLumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nCountry: Portugal\nCertified product\nProduct Harbour Fleece Hoodie\nArticle number (GTIN) 5609876543212\nProduct category Hooded sweatshirt\nComposition 80% polyester, 20% cotton\nRecycled content 80 % of total product mass\nRecycled material post-consumer recycled polyester from PET bottles\nChemical requirements: the certified product complies with the GRS chemical restrictions (ZDHC MRSL).\nThis certificate does not cover social or environmental claims beyond those listed above.\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
   },
   {
    "t": 35000,
-   "worker": "scripted-3",
-   "take": "6527eb17-7ab6-46ef-8f71-0eb1af4ce645"
+   "worker": "scripted-2",
+   "take": "c831ffd8-52b4-4f34-8d82-19afe53993f8"
   },
   {
    "t": 36000,
-   "worker": "scripted-3",
-   "submit": "6527eb17-7ab6-46ef-8f71-0eb1af4ce645",
+   "worker": "scripted-2",
+   "submit": "c831ffd8-52b4-4f34-8d82-19afe53993f8",
    "result": {
     "markdown": "<!-- page 1 -->\nLUMEN TEXTILES - Garment Technical Sheet\nStyle Lumen Everyday Tee\nEAN / GTIN 5609876543229\nCategory T-shirt\nSupplier Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal\nOrigin PT\nProduction batch 2026-08\nFabric Single jersey, 180 gsm (nominal)\nFibre composition (by mass)\nFibre Share Note\nCotton 60 % organic\nPolyester 35 % recycled, pre-consumer\nElastane 5 %\nRecycled content: 35 % of garment mass (recycled polyester from pre-consumer production waste).\nEnvironmental data (per garment, cradle to gate)\nCarbon footprint: 4.1 kg CO2e\nWater use: 1.9 m3\nCompliance and care\nTested to STANDARD 100 by OEKO-TEX, certificate no. 26-LT-0412, valid until 2027-03-31.\nREACH: no SVHC above 0.1 % w/w.\nCare: machine wash 30 °C, do not tumble dry, iron low.\nDurability: pilling grade 4 after 2000 rubs (ISO 12945-2).\nFICTITIOUS SAMPLE DOCUMENT - invented for software testing. Not a real product, company or certificate."
    }
   },
   {
    "t": 37000,
-   "worker": "scripted-1",
-   "take": "229c9dda-23c9-46eb-8342-a2ebc6869380"
+   "worker": "scripted-3",
+   "take": "4678cf41-5baf-48c6-94e2-4c1d5511f35c"
   },
   {
    "t": 38000,
-   "worker": "scripted-1",
-   "submit": "229c9dda-23c9-46eb-8342-a2ebc6869380",
+   "worker": "scripted-3",
+   "submit": "4678cf41-5baf-48c6-94e2-4c1d5511f35c",
    "result": {
     "pass": true
    }
   },
   {
    "t": 39000,
-   "worker": "scripted-2",
-   "take": "d2b52dff-5e6c-458b-8c20-036129c9c0e6"
+   "worker": "scripted-4",
+   "take": "8f2daaa4-8136-4510-b377-bfeea3772331"
   },
   {
    "t": 40000,
-   "worker": "scripted-2",
-   "submit": "d2b52dff-5e6c-458b-8c20-036129c9c0e6",
+   "worker": "scripted-4",
+   "submit": "8f2daaa4-8136-4510-b377-bfeea3772331",
    "result": {
     "pass": true
    }
   },
   {
    "t": 41000,
-   "worker": "scripted-3",
-   "take": "8d7f1cd5-8410-4edd-87a0-0a5553fc0063"
+   "worker": "scripted-1",
+   "take": "2a7e44d0-9150-46b2-a3c9-54c23aa4c794"
   },
   {
    "t": 42000,
-   "worker": "scripted-3",
-   "submit": "8d7f1cd5-8410-4edd-87a0-0a5553fc0063",
+   "worker": "scripted-1",
+   "submit": "2a7e44d0-9150-46b2-a3c9-54c23aa4c794",
    "result": {
     "pass": true
    }
   },
   {
    "t": 43000,
-   "worker": "scripted-1",
-   "take": "5d2e668f-982b-422f-9e15-a50f82c576e5"
+   "worker": "scripted-2",
+   "take": "a795a75a-880e-490e-9be0-26cf5a6d4574"
   },
   {
    "t": 44000,
-   "worker": "scripted-1",
-   "submit": "5d2e668f-982b-422f-9e15-a50f82c576e5",
+   "worker": "scripted-2",
+   "submit": "a795a75a-880e-490e-9be0-26cf5a6d4574",
    "result": {
     "pass": true
    }
   },
   {
    "t": 45000,
-   "worker": "scripted-2",
-   "take": "4688db05-12c6-4f1e-ad9c-66f4358e0b4d"
+   "worker": "scripted-3",
+   "take": "640173b4-80ab-4655-a607-a99830933615"
   },
   {
    "t": 46000,
-   "worker": "scripted-2",
-   "submit": "4688db05-12c6-4f1e-ad9c-66f4358e0b4d",
+   "worker": "scripted-3",
+   "submit": "640173b4-80ab-4655-a607-a99830933615",
    "result": {
     "pass": true
    }
   },
   {
    "t": 47000,
-   "worker": "scripted-3",
-   "take": "06f973c2-8916-4671-82e3-455db37bfdd2"
+   "worker": "scripted-4",
+   "take": "cc2f2106-9615-492a-a35e-13beeae10ff6"
   },
   {
    "t": 48000,
-   "worker": "scripted-3",
-   "submit": "06f973c2-8916-4671-82e3-455db37bfdd2",
+   "worker": "scripted-4",
+   "submit": "cc2f2106-9615-492a-a35e-13beeae10ff6",
    "result": {
     "pass": true
    }
@@ -2091,12 +2091,12 @@
   {
    "t": 49000,
    "worker": "scripted-1",
-   "take": "899c37ea-99fb-4840-9dbd-9c35f9707452"
+   "take": "50a45832-c149-4d87-b480-3120f30d111e"
   },
   {
    "t": 50000,
    "worker": "scripted-1",
-   "submit": "899c37ea-99fb-4840-9dbd-9c35f9707452",
+   "submit": "50a45832-c149-4d87-b480-3120f30d111e",
    "result": {
     "fields": [
      {
@@ -2251,12 +2251,188 @@
   {
    "t": 51000,
    "worker": "scripted-2",
-   "take": "19594608-fd2b-4418-8d3f-42ce5468cef3"
+   "take": "9990d2df-23f3-41c6-ad53-859f8132098c"
   },
   {
    "t": 52000,
    "worker": "scripted-2",
-   "submit": "19594608-fd2b-4418-8d3f-42ce5468cef3",
+   "submit": "9990d2df-23f3-41c6-ad53-859f8132098c",
+   "result": {
+    "fields": [
+     {
+      "field": "name",
+      "value": "Helion HX-280 LFP storage module",
+      "page": 1,
+      "quote": "Helion HX-280 LFP storage module"
+     },
+     {
+      "field": "battery_identifier",
+      "value": "HX280-26-004417",
+      "page": 2,
+      "quote": "Module serial number HX280-26-004417"
+     },
+     {
+      "field": "manufacturer_identifier_information",
+      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
+      "page": 1,
+      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
+     },
+     {
+      "field": "manufacturing_place",
+      "value": "Eindhoven, Netherlands",
+      "page": 2,
+      "quote": "Place of manufacture Eindhoven, Netherlands"
+     },
+     {
+      "field": "manufacturing_date",
+      "value": "2026-06",
+      "page": 2,
+      "quote": "Date of manufacture 2026-06"
+     },
+     {
+      "field": "battery_category",
+      "value": "industrial",
+      "page": 2,
+      "quote": "Battery category Industrial battery"
+     },
+     {
+      "field": "battery_chemistry",
+      "value": "LFP",
+      "page": 2,
+      "quote": "Cell chemistry LFP (LiFePO4)"
+     },
+     {
+      "field": "battery_mass_kg",
+      "value": 128,
+      "unit": "kg",
+      "page": 2,
+      "quote": "Nominal mass 128 kg",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "critical_raw_materials",
+      "value": "lithium, natural graphite",
+      "page": 2,
+      "quote": "Critical raw materials lithium, natural graphite"
+     },
+     {
+      "field": "hazardous_substances",
+      "notStated": true
+     },
+     {
+      "field": "rated_capacity_ah",
+      "value": 280,
+      "unit": "Ah",
+      "page": 2,
+      "quote": "Rated capacity 280 Ah",
+      "qualifier": "rated"
+     },
+     {
+      "field": "nominal_voltage_v",
+      "value": 51.2,
+      "unit": "V",
+      "page": 2,
+      "quote": "Nominal voltage 51.2 V",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "minimum_voltage_v",
+      "value": 44.8,
+      "unit": "V",
+      "page": 2,
+      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "maximum_voltage_v",
+      "value": 57.6,
+      "unit": "V",
+      "page": 2,
+      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "original_power_capability_w",
+      "value": 14300,
+      "unit": "W",
+      "page": 2,
+      "quote": "Maximum power 14.3 kW",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "initial_round_trip_efficiency_percent",
+      "value": 95.5,
+      "unit": "%",
+      "page": 1,
+      "quote": "typical round-trip energy efficiency of 95.5 %",
+      "qualifier": "typical"
+     },
+     {
+      "field": "initial_internal_resistance_ohm",
+      "notStated": true
+     },
+     {
+      "field": "expected_lifetime_cycles",
+      "value": 6000,
+      "unit": "cycles",
+      "page": 1,
+      "quote": "6000 cycles nominal",
+      "qualifier": "nominal"
+     },
+     {
+      "field": "idle_temperature_lower_c",
+      "value": -10,
+      "unit": "°C",
+      "page": 2,
+      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
+      "qualifier": "minimum"
+     },
+     {
+      "field": "idle_temperature_upper_c",
+      "value": 45,
+      "unit": "°C",
+      "page": 2,
+      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
+      "qualifier": "maximum"
+     },
+     {
+      "field": "carbon_footprint_functional_unit",
+      "value": 58.3,
+      "unit": "kg CO2e/kWh",
+      "page": 2,
+      "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
+     },
+     {
+      "field": "recycled_content_cobalt",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lithium",
+      "value": 6,
+      "unit": "%",
+      "page": 2,
+      "quote": "Recycled lithium, this production lot (pre + post consumer) 6 %"
+     },
+     {
+      "field": "recycled_content_nickel",
+      "notStated": true
+     },
+     {
+      "field": "recycled_content_lead",
+      "notStated": true
+     }
+    ]
+   }
+  },
+  {
+   "t": 53000,
+   "worker": "scripted-3",
+   "take": "f7a58a33-4b2f-4403-9131-856959bd9c4d"
+  },
+  {
+   "t": 54000,
+   "worker": "scripted-3",
+   "submit": "f7a58a33-4b2f-4403-9131-856959bd9c4d",
    "result": {
     "fields": [
      {
@@ -2440,14 +2616,14 @@
    }
   },
   {
-   "t": 53000,
-   "worker": "scripted-3",
-   "take": "f7014970-1316-4bcd-a642-c21a5afd1e33"
+   "t": 55000,
+   "worker": "scripted-4",
+   "take": "a1952658-e956-4b71-a257-51fcccdadf63"
   },
   {
-   "t": 54000,
-   "worker": "scripted-3",
-   "submit": "f7014970-1316-4bcd-a642-c21a5afd1e33",
+   "t": 56000,
+   "worker": "scripted-4",
+   "submit": "a1952658-e956-4b71-a257-51fcccdadf63",
    "result": {
     "fields": [
      {
@@ -2614,307 +2790,14 @@
    }
   },
   {
-   "t": 55000,
-   "worker": "scripted-1",
-   "take": "4b06abf9-2af0-4f2a-9bcd-80cf2e68838d"
-  },
-  {
-   "t": 56000,
-   "worker": "scripted-1",
-   "submit": "4b06abf9-2af0-4f2a-9bcd-80cf2e68838d",
-   "result": {
-    "fields": [
-     {
-      "field": "product_name",
-      "value": "Harbour Fleece Hoodie",
-      "page": 1,
-      "quote": "Product Harbour Fleece Hoodie"
-     },
-     {
-      "field": "gtin",
-      "value": "5609876543212",
-      "page": 1,
-      "quote": "Article number (GTIN) 5609876543212"
-     },
-     {
-      "field": "manufacturer_name",
-      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
-      "page": 1,
-      "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
-     },
-     {
-      "field": "country_of_manufacture",
-      "value": "PT",
-      "page": 1,
-      "quote": "Country: Portugal"
-     },
-     {
-      "field": "production_date",
-      "value": "2026-09-01",
-      "page": 1,
-      "quote": "Issue date: 2026-09-01"
-     },
-     {
-      "field": "product_category",
-      "value": "Hooded sweatshirt",
-      "page": 1,
-      "quote": "Product category Hooded sweatshirt"
-     },
-     {
-      "field": "fibre_composition",
-      "value": {
-       "polyester": 80,
-       "cotton": 20
-      },
-      "unit": "%",
-      "page": 1,
-      "quote": "Composition 80% polyester, 20% cotton"
-     },
-     {
-      "field": "recycled_content_percent",
-      "value": 80,
-      "unit": "%",
-      "page": 1,
-      "quote": "Recycled content 80 % of total product mass"
-     },
-     {
-      "field": "recycled_fibre_type",
-      "value": "post-consumer recycled polyester from PET bottles",
-      "page": 1,
-      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
-     },
-     {
-      "field": "carbon_footprint",
-      "notStated": true
-     },
-     {
-      "field": "water_usage",
-      "notStated": true
-     },
-     {
-      "field": "fabric_weight",
-      "notStated": true
-     },
-     {
-      "field": "certification_scheme",
-      "value": "GRS",
-      "page": 1,
-      "quote": "Product Certificate - Global Recycled Standard (GRS)"
-     },
-     {
-      "field": "certificate_number",
-      "value": "NWC-GRS-2026-01187",
-      "page": 1,
-      "quote": "Certificate number: NWC-GRS-2026-01187"
-     },
-     {
-      "field": "certificate_valid_until",
-      "value": "2027-08-31",
-      "page": 1,
-      "quote": "Valid until: 2027-08-31"
-     },
-     {
-      "field": "chemical_compliance",
-      "value": "complies with the GRS chemical restrictions (ZDHC MRSL)",
-      "page": 1,
-      "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)."
-     },
-     {
-      "field": "care_instructions",
-      "notStated": true
-     },
-     {
-      "field": "durability_rating",
-      "notStated": true
-     }
-    ]
-   }
-  },
-  {
    "t": 57000,
-   "worker": "scripted-2",
-   "take": "9e0317b8-af79-4b33-b112-e4f54b0ae8c4"
+   "worker": "scripted-1",
+   "take": "7110bfd5-d836-4725-87f5-c207eaa28158"
   },
   {
    "t": 58000,
-   "worker": "scripted-2",
-   "submit": "9e0317b8-af79-4b33-b112-e4f54b0ae8c4",
-   "result": {
-    "fields": [
-     {
-      "field": "name",
-      "value": "Helion HX-280 LFP storage module",
-      "page": 1,
-      "quote": "Helion HX-280 LFP storage module"
-     },
-     {
-      "field": "battery_identifier",
-      "value": "HX280-26-004417",
-      "page": 2,
-      "quote": "Module serial number HX280-26-004417"
-     },
-     {
-      "field": "manufacturer_identifier_information",
-      "value": "Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands",
-      "page": 1,
-      "quote": "Manufactured by Helion Storage Technologies B.V., Industrieweg 21, 5651 GM Eindhoven, Netherlands."
-     },
-     {
-      "field": "manufacturing_place",
-      "value": "Eindhoven, Netherlands",
-      "page": 2,
-      "quote": "Place of manufacture Eindhoven, Netherlands"
-     },
-     {
-      "field": "manufacturing_date",
-      "value": "2026-06",
-      "page": 2,
-      "quote": "Date of manufacture 2026-06"
-     },
-     {
-      "field": "battery_category",
-      "value": "industrial",
-      "page": 2,
-      "quote": "Battery category Industrial battery"
-     },
-     {
-      "field": "battery_chemistry",
-      "value": "LFP",
-      "page": 2,
-      "quote": "Cell chemistry LFP (LiFePO4)"
-     },
-     {
-      "field": "battery_mass_kg",
-      "value": 128,
-      "unit": "kg",
-      "page": 2,
-      "quote": "Nominal mass 128 kg",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "critical_raw_materials",
-      "value": "lithium, natural graphite",
-      "page": 2,
-      "quote": "Critical raw materials lithium, natural graphite"
-     },
-     {
-      "field": "hazardous_substances",
-      "notStated": true
-     },
-     {
-      "field": "rated_capacity_ah",
-      "value": 280,
-      "unit": "Ah",
-      "page": 2,
-      "quote": "Rated capacity 280 Ah",
-      "qualifier": "rated"
-     },
-     {
-      "field": "nominal_voltage_v",
-      "value": 51.2,
-      "unit": "V",
-      "page": 2,
-      "quote": "Nominal voltage 51.2 V",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "minimum_voltage_v",
-      "value": 44.8,
-      "unit": "V",
-      "page": 2,
-      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "maximum_voltage_v",
-      "value": 57.6,
-      "unit": "V",
-      "page": 2,
-      "quote": "Voltage range (min / max) 44.8 V / 57.6 V",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "original_power_capability_w",
-      "value": 14300,
-      "unit": "W",
-      "page": 2,
-      "quote": "Maximum power 14.3 kW",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "initial_round_trip_efficiency_percent",
-      "value": 95.5,
-      "unit": "%",
-      "page": 1,
-      "quote": "typical round-trip energy efficiency of 95.5 %",
-      "qualifier": "typical"
-     },
-     {
-      "field": "initial_internal_resistance_ohm",
-      "notStated": true
-     },
-     {
-      "field": "expected_lifetime_cycles",
-      "value": 6000,
-      "unit": "cycles",
-      "page": 1,
-      "quote": "6000 cycles nominal",
-      "qualifier": "nominal"
-     },
-     {
-      "field": "idle_temperature_lower_c",
-      "value": -10,
-      "unit": "°C",
-      "page": 2,
-      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
-      "qualifier": "minimum"
-     },
-     {
-      "field": "idle_temperature_upper_c",
-      "value": 45,
-      "unit": "°C",
-      "page": 2,
-      "quote": "Idle (storage) temperature min -10 °C, max 45 °C",
-      "qualifier": "maximum"
-     },
-     {
-      "field": "carbon_footprint_functional_unit",
-      "value": 58.3,
-      "unit": "kg CO2e/kWh",
-      "page": 2,
-      "quote": "Carbon footprint (per kWh, life cycle) 58.3 kg CO2e/kWh"
-     },
-     {
-      "field": "recycled_content_cobalt",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lithium",
-      "value": 6,
-      "unit": "%",
-      "page": 2,
-      "quote": "Recycled lithium, this production lot (pre + post consumer) 6 %"
-     },
-     {
-      "field": "recycled_content_nickel",
-      "notStated": true
-     },
-     {
-      "field": "recycled_content_lead",
-      "notStated": true
-     }
-    ]
-   }
-  },
-  {
-   "t": 59000,
-   "worker": "scripted-3",
-   "take": "9a44f07d-02b4-4cdc-8958-df5c355785fd"
-  },
-  {
-   "t": 60000,
-   "worker": "scripted-3",
-   "submit": "9a44f07d-02b4-4cdc-8958-df5c355785fd",
+   "worker": "scripted-1",
+   "submit": "7110bfd5-d836-4725-87f5-c207eaa28158",
    "result": {
     "fields": [
      {
@@ -3034,6 +2917,123 @@
       "value": "pilling grade 4 after 2000 rubs (ISO 12945-2)",
       "page": 1,
       "quote": "Durability: pilling grade 4 after 2000 rubs (ISO 12945-2)."
+     }
+    ]
+   }
+  },
+  {
+   "t": 60000,
+   "worker": "scripted-3",
+   "take": "e4223b95-1d21-491a-a286-681271c3107e"
+  },
+  {
+   "t": 61000,
+   "worker": "scripted-3",
+   "submit": "e4223b95-1d21-491a-a286-681271c3107e",
+   "result": {
+    "fields": [
+     {
+      "field": "product_name",
+      "value": "Harbour Fleece Hoodie",
+      "page": 1,
+      "quote": "Product Harbour Fleece Hoodie"
+     },
+     {
+      "field": "gtin",
+      "value": "5609876543212",
+      "page": 1,
+      "quote": "Article number (GTIN) 5609876543212"
+     },
+     {
+      "field": "manufacturer_name",
+      "value": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal",
+      "page": 1,
+      "quote": "Lumen Textiles Lda., Rua da Fabrica 120, 4760-100 Vila Nova de Famalicao, Portugal"
+     },
+     {
+      "field": "country_of_manufacture",
+      "value": "PT",
+      "page": 1,
+      "quote": "Country: Portugal"
+     },
+     {
+      "field": "production_date",
+      "value": "2026-09-01",
+      "page": 1,
+      "quote": "Issue date: 2026-09-01"
+     },
+     {
+      "field": "product_category",
+      "value": "Hooded sweatshirt",
+      "page": 1,
+      "quote": "Product category Hooded sweatshirt"
+     },
+     {
+      "field": "fibre_composition",
+      "value": {
+       "polyester": 80,
+       "cotton": 20
+      },
+      "unit": "%",
+      "page": 1,
+      "quote": "Composition 80% polyester, 20% cotton"
+     },
+     {
+      "field": "recycled_content_percent",
+      "value": 80,
+      "unit": "%",
+      "page": 1,
+      "quote": "Recycled content 80 % of total product mass"
+     },
+     {
+      "field": "recycled_fibre_type",
+      "value": "post-consumer recycled polyester from PET bottles",
+      "page": 1,
+      "quote": "Recycled material post-consumer recycled polyester from PET bottles"
+     },
+     {
+      "field": "carbon_footprint",
+      "notStated": true
+     },
+     {
+      "field": "water_usage",
+      "notStated": true
+     },
+     {
+      "field": "fabric_weight",
+      "notStated": true
+     },
+     {
+      "field": "certification_scheme",
+      "value": "GRS",
+      "page": 1,
+      "quote": "Product Certificate - Global Recycled Standard (GRS)"
+     },
+     {
+      "field": "certificate_number",
+      "value": "NWC-GRS-2026-01187",
+      "page": 1,
+      "quote": "Certificate number: NWC-GRS-2026-01187"
+     },
+     {
+      "field": "certificate_valid_until",
+      "value": "2027-08-31",
+      "page": 1,
+      "quote": "Valid until: 2027-08-31"
+     },
+     {
+      "field": "chemical_compliance",
+      "value": "complies with the GRS chemical restrictions (ZDHC MRSL)",
+      "page": 1,
+      "quote": "the certified product complies with the GRS chemical restrictions (ZDHC MRSL)."
+     },
+     {
+      "field": "care_instructions",
+      "notStated": true
+     },
+     {
+      "field": "durability_rating",
+      "notStated": true
      }
     ]
    }

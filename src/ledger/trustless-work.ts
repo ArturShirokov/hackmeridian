@@ -3,7 +3,7 @@
 // Roles: Operator = service provider, Brand = approver, Arbiter = release signer and dispute resolver.
 import { Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
 import { addUsdc, type EscrowRequest, type Ledger } from "../ledger.js";
-import { Escrows, keyFor, split, USDC_ISSUER } from "./stellar.js";
+import { Escrows, explorer, keyFor, split, USDC_ISSUER } from "./stellar.js";
 
 export interface TrustlessWorkOptions {
   apiKey: string;
@@ -64,7 +64,7 @@ export class TrustlessWorkLedger implements Ledger {
     if (Number(req.bond) > 0) await this.act(`${M}/fund-escrow`, { contractId, signer: op.publicKey(), amount: Number(req.bond) }, op);
     if (Number(req.fee) > 0) await this.act(`${M}/fund-escrow`, { contractId, signer: brand.publicKey(), amount: Number(req.fee) }, brand);
     this.escrows.add(contractId, req);
-    return { escrowId: contractId };
+    return { escrowId: contractId, link: explorer("contract", contractId) };
   }
 
   async settleClean(contractId: string) {
@@ -78,7 +78,8 @@ export class TrustlessWorkLedger implements Ledger {
       op,
     );
     await this.act(`${M}/approve-milestone`, { ...m, approver: brand.publicKey() }, brand);
-    await this.act(`${M}/release-milestone-funds`, { ...m, releaseSigner: this.o.arbiter.publicKey() }, this.o.arbiter);
+    const { txHash } = await this.act(`${M}/release-milestone-funds`, { ...m, releaseSigner: this.o.arbiter.publicKey() }, this.o.arbiter);
+    return { link: explorer("tx", txHash) };
   }
 
   async settleWithSlashes(contractId: string, slashes: string[]) {
@@ -92,14 +93,18 @@ export class TrustlessWorkLedger implements Ledger {
       { address: this.operator(req.operator).publicKey(), amount: Number(toOperator) },
     ].filter((d) => d.amount > 0);
     await this.act(`${M}/dispute-milestone`, { ...m, signer: brand.publicKey() }, brand);
-    await this.act(
+    const { txHash } = await this.act(
       `${M}/resolve-milestone-dispute`,
       { ...m, disputeResolver: this.o.arbiter.publicKey(), distributions },
       this.o.arbiter,
     );
     this.escrows.slashed(contractId, slashes);
+    return { link: explorer("tx", txHash) };
   }
 
+  // ponytail: in memory, lost on restart. /helper/get-escrows-by-role could count the Documents, but its response
+  // shape is unchecked (no API key yet) and it holds milestone flags (disputed, resolved), not the dispute split,
+  // so it can't give the upheld Challenges or the total Slashed. Read them from the resolve txs if the record must survive restarts.
   async operatorRecord(operator: string) {
     return this.escrows.record(operator);
   }
@@ -107,13 +112,14 @@ export class TrustlessWorkLedger implements Ledger {
   private operator = (id: string) => keyFor(this.o.operators, "Operator", id);
   private brand = (id: string) => keyFor(this.o.brands, "Brand", id);
 
-  /** One action = build (API returns unsigned XDR), sign, send. Two requests. */
+  /** One action = build (API returns unsigned XDR), sign, send. Two requests. Returns the send response and the tx hash. */
   private async act(path: string, body: unknown, signer: Keypair): Promise<any> {
     const { unsignedTransaction } = await this.post(path, body);
     const tx = TransactionBuilder.fromXDR(unsignedTransaction, Networks.TESTNET);
     tx.sign(signer);
-    this.o.onTx?.(path, Buffer.from(tx.hash()).toString("hex"));
-    return this.post("/helper/send-transaction", { signedXdr: tx.toXDR() });
+    const txHash = Buffer.from(tx.hash()).toString("hex");
+    this.o.onTx?.(path, txHash);
+    return { ...(await this.post("/helper/send-transaction", { signedXdr: tx.toXDR() })), txHash };
   }
 
   // ponytail: one global queue per adapter instance; share it across instances if several ever run in one process.

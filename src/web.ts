@@ -3,11 +3,12 @@ import { Hono } from "hono";
 import { html } from "hono/html";
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import type { JobBoard } from "./board.js";
+import { formatValue } from "./converge.js";
 import { buildMcpServer } from "./mcp.js";
 import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
 
-const show = (v: unknown) => (typeof v === "object" ? JSON.stringify(v) : String(v));
+const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
 const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
 
 const layout = (title: string, body: unknown) => html`<!doctype html>
@@ -59,7 +60,7 @@ export function webApp(board: JobBoard): Hono {
   });
 
   app.get("/documents/:id/file", async (c) => {
-    const bytes = await board.file(c.req.param("id"));
+    const bytes = await board.documentBytes(c.req.param("id"));
     if (!bytes) return c.notFound();
     return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { "content-type": "application/pdf" });
   });
@@ -70,24 +71,23 @@ export function webApp(board: JobBoard): Hono {
     const views = Object.entries(d.pipelines);
     const cell = (f: (typeof d.fields)[number]) =>
       "supplierRequest" in f
-        ? html`<td>${f.status}</td><td>Not stated. Competing quotes:
-            <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
+        ? html`<td>${f.status}</td><td>Not stated.${f.quotes.length
+              ? html` Competing quotes:<ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>`
+              : html`<br>`}
             Supplier Request:<br><textarea readonly rows="5" cols="50">${f.supplierRequest}</textarea>
             <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
-        : "notStated" in f
-        ? html`<td>${f.status}</td><td class="muted">Not stated</td>`
         : "value" in f
-          ? html`<td>${f.status}</td><td>${show(f.value)} ${f.unit ?? ""} ${f.qualifier ?? ""}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
+          ? html`<td>${f.status}</td><td>${formatValue(f)}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
               <br><span class="muted">p. ${f.page}: <q>${f.quote}</q></span></td>`
           : html`<td>${f.status}</td><td></td>`;
     const rows = d.fields.map((f, i) => html`<tr><th>${f.label}</th>${views.map(([, v]) => cell(v.fields[i]!))}</tr>`);
     const escrow = (name: string, v: (typeof views)[number][1]) =>
       v.escrow
         ? html`<p><b>${name}</b>: Bond locked: ${v.escrow.bond} USDC by ${v.escrow.operator} (Fee ${v.escrow.fee} USDC).
-            Output hash: <code>${v.escrow.outputHash}</code><br>${v.escrow.status === "settled"
-              ? v.escrow.slashes
-                ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
-                : "Settled: Bond and Fee paid to the Operator."
+            Output hash: <code>${v.escrow.outputHash}</code>${explorer(v.escrow.link, "escrow")}<br>${v.escrow.status === "settled"
+              ? html`${v.escrow.slashes
+                  ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
+                  : "Settled: Bond and Fee paid to the Operator."}${explorer(v.escrow.settlementLink, v.escrow.slashes ? "settlement and Slashes" : "settlement")}`
               : v.escrow.msLeft > 0
                 ? html`${Math.ceil(v.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/documents/${d.id}/challenge?pipeline=${name}">Challenge a Field</a>`
                 : "Challenge Window closed; waiting for the Arbiter."}</p>`
@@ -175,11 +175,11 @@ export function webApp(board: JobBoard): Hono {
   app.get("/arbiter", (c) => {
     const rows = board.challenges.open().map((ch) => {
       const label = templates[board.document(ch.documentId)!.template]!.fields.find((f) => f.name === ch.field)!.label;
-      const d = ch.disputed;
-      const disputed =
-        "notStated" in d ? "Not stated" : "value" in d ? `${show(d.value)} ${d.unit ?? ""} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
-      return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${disputed}</td>
-        <td>${show(ch.value)} ${ch.unit ?? ""} ${ch.qualifier ?? ""}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
+      const d = ch.challenged;
+      const challenged =
+        d.status === "not stated" ? "Not stated" : "value" in d ? `${formatValue(d)} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
+      return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${challenged}</td>
+        <td>${formatValue(ch)}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
         <td><form method="post" action="/challenges/${ch.id}/decision">
           <button name="decision" value="upheld">Uphold</button> <button name="decision" value="rejected">Reject</button>
         </form></td></tr>`;
