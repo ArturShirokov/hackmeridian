@@ -57,6 +57,13 @@ the Ledger (default `fake`, nothing on chain); the Stellar ones read the testnet
 [Wallets](#wallets)), and the Document page then links the escrow and its settlement on stellar.expert. Pages: `/` (upload and Documents),
 `/documents/<id>` (Pipeline and Baseline side by side), `/arbiter`, `/leaderboard`.
 
+`STORAGE=memory|icp` picks Storage (default `memory`). With `icp`, Documents are public files in one Task
+("doc2dpp Documents") on Origyn's ICP storage canister, and Workers and the Brand page link the ICP URL;
+the Job Board polls the Task every 5 s, so files other uploaders put there are picked up too.
+`npx tsx scripts/icp-identity.ts` writes the board's ICP identity and Task id to `.env` (once);
+`npx tsx scripts/smoke-icp.ts` uploads a testdata PDF, lists it and fetches it back.
+Smoke run on 25 Oct 2026: https://m3vyi-uqaaa-aaaaj-qsm7a-cai.raw.icp0.io/tasks/3/a29e4eacdffcbd14.battery.brand.Smoke_Test.battery-02-kestrel-18650-cell-datasheet.pdf
+
 ### Demo replay: no models, no network
 
 ```bash

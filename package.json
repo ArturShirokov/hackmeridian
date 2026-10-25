@@ -12,6 +12,10 @@
     "dev:web": "VITE_FIXTURES=${VITE_FIXTURES:-1} vite web"
   },
   "dependencies": {
+    "@dfinity/agent": "^3.4.3",
+    "@dfinity/candid": "^3.4.3",
+    "@dfinity/identity": "^3.4.3",
+    "@dfinity/principal": "^3.4.3",
     "@fontsource/inter-tight": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
     "@fontsource/newsreader": "^5.3.0",

@@ -8,7 +8,8 @@ import type {
 } from "../src/api.js";
 import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
 import type { Pipeline } from "../src/pipelines.js";
-import { InMemoryStorage } from "../src/storage.js";
+import { InMemoryStorage, type Storage } from "../src/storage.js";
+import { IcpStorage, type FileEntry, type IcpActor } from "../src/storage/icp.js";
 import { FakeLedger } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
 import { webApp, type WebOptions } from "../src/web.js";
@@ -31,10 +32,11 @@ export function startBoard(
     /** Have the fake Ledger give explorer links under this base URL; without it, it gives none. */
     explorer?: string;
     web?: WebOptions;
+    /** Default: in memory. */
+    storage?: Storage;
   } = {},
 ) {
-  const { explorer, web: webOpts, ...boardOpts } = opts;
-  const storage = new InMemoryStorage();
+  const { explorer, web: webOpts, storage = new InMemoryStorage(), ...boardOpts } = opts;
   const ledger = new FakeLedger(explorer);
   let time = 0;
   const clock = { advance: (ms: number) => void (time += ms) };
@@ -188,8 +190,10 @@ export function startBoard(
 
   /** Run what main.ts runs every 5 s: settle escrows whose Challenge Window has closed. */
   const tick = () => board.tick();
+  /** Run what main.ts runs every 5 s: pick up Documents other uploaders put in Storage. */
+  const poll = () => board.poll();
 
-  return { web, worker, outsideOperator, brand, arbiter, users, ledger, clock, tick };
+  return { web, worker, outsideOperator, brand, arbiter, users, ledger, clock, tick, poll };
 }
 
 /** A fixture PDF: one array of text lines per page. */
@@ -217,5 +221,60 @@ export async function checkedMarkdown(w: Awaited<ReturnType<ReturnType<typeof st
 export function extraction(job: Job, values: Record<string, object> = {}) {
   return {
     fields: job.template.fields.map((f) => ({ field: f.name, ...(values[f.name] ?? { notStated: true }) })),
+  };
+}
+
+/** Viktoria's ICP canister in memory: one Task (id 7) whose files are served under https://files.test. */
+export function fakeCanister() {
+  const taskId = 7n;
+  const files: FileEntry[] = [];
+  const served = new Map<string, Uint8Array>();
+  const uploads = new Map<string, { size: bigint; contentType: string; chunks: Uint8Array[] }>();
+  let chunks = 0;
+  const add = (entry_name: string, bytes: Uint8Array, content_type: string) => {
+    const path = `tasks/${taskId}/${entry_name}`;
+    const entry: FileEntry = {
+      entry_name, path, url: `https://files.test/${path}`, hash: path, size: BigInt(bytes.length), content_type,
+      added_at_ns: BigInt(Date.now()) * 1_000_000n,
+    };
+    files.push(entry);
+    served.set(entry.url, bytes);
+    return entry;
+  };
+  const actor: IcpActor = {
+    create_task: async () => ({ Ok: taskId }),
+    list_tasks: async () => ({ total: 0n, tasks: [] }),
+    get_task: async (id) => (id === taskId ? [{ id, title: "doc2dpp Documents", files: [...files] }] : []),
+    async task_init_upload({ entry_name, file_size, content_type }) {
+      if (entry_name.length > 120) return { Err: "Entry name must be 1-120 characters" };
+      if (files.some((f) => f.entry_name === entry_name)) return { Err: "exists" };
+      uploads.set(entry_name, { size: file_size, contentType: content_type[0] ?? "", chunks: [] });
+      return { Ok: entry_name };
+    },
+    async task_store_chunk({ entry_name, chunk_id, chunk_data }) {
+      chunks++;
+      uploads.get(entry_name)!.chunks[Number(chunk_id)] = new Uint8Array(chunk_data);
+      return { Ok: null };
+    },
+    async task_finalize_upload({ entry_name }) {
+      const u = uploads.get(entry_name)!;
+      const bytes = new Uint8Array(Buffer.concat(u.chunks));
+      if (BigInt(bytes.length) !== u.size) return { Err: "size mismatch" };
+      return { Ok: add(entry_name, bytes, u.contentType) };
+    },
+    task_cancel_upload: async ({ entry_name }) => (uploads.delete(entry_name), { Ok: null }),
+  };
+  const fetch = async (url: string | URL | Request) => {
+    const bytes = served.get(String(url));
+    return bytes ? new Response(bytes as Uint8Array<ArrayBuffer>) : new Response("not found", { status: 404 });
+  };
+  return {
+    storage: () => new IcpStorage({ actor, taskId, fetch: fetch as typeof globalThis.fetch }),
+    files: () => [...files],
+    chunks: () => chunks,
+    /** Someone else's file in the same Task. */
+    addForeign: (name: string, bytes: Uint8Array) => void add(name, bytes, "image/png"),
+    /** Swap the bytes served behind a URL. */
+    tamper: (url: string) => void served.set(url, new Uint8Array([9, 9, 9])),
   };
 }

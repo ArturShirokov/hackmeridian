@@ -321,7 +321,7 @@ export class JobBoard {
         view: sieve.view,
         instructions: sieve.instructions,
         template: fields ? { ...d.template, fields: d.template.fields.filter((f) => fields.includes(f.name)) } : d.template,
-        document: { url: `${this.baseUrl}/documents/${documentId}/file`, text: d.text, ...(markdown !== undefined && { markdown }) },
+        document: { url: d.meta.link ?? `${this.baseUrl}/documents/${documentId}/file`, text: d.text, ...(markdown !== undefined && { markdown }) },
       },
     });
   }
@@ -501,7 +501,7 @@ export class JobBoard {
         name: d.meta.name,
         supplier: d.meta.supplier,
         template: d.template,
-        url: `${this.baseUrl}/documents/${d.meta.id}/file`,
+        url: d.meta.link ?? `${this.baseUrl}/documents/${d.meta.id}/file`,
         text: d.text,
         ...this.terms(operator),
         instructions: outsideInstructions,
@@ -919,7 +919,7 @@ export class JobBoard {
         brandToProvide: notStated.filter(({ f }) => f.author === "Brand").map(({ f }) => f.name),
       };
     });
-    return { ...this.summary(d), fileUrl: `/documents/${id}/file`, views, differs: this.differs(d) };
+    return { ...this.summary(d), fileUrl: `/documents/${id}/file`, ...(d.meta.link && { storageLink: d.meta.link }), views, differs: this.differs(d) };
   }
 
   /** The delivered Field values in the testdata/expected shape, corrections applied; undefined until shown. */

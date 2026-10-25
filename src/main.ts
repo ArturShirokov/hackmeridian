@@ -1,5 +1,6 @@
 // Wires adapters, serves the web pages and the MCP endpoint, and polls Storage every 5 s.
 // LEDGER=fake|payments|trustless-work picks the Ledger (default fake; the Stellar ones need .env keys).
+// STORAGE=memory|icp picks Storage (default memory; icp needs ICP_IDENTITY in .env, see scripts/icp-identity.ts).
 // DEMO_REPLAY=<run file> starts from a cached run instead (fake Ledger, no models, no network).
 import { existsSync, readFileSync } from "node:fs";
 import { serve } from "@hono/node-server";
@@ -9,13 +10,13 @@ import { JobBoard } from "./board.js";
 import { baseline, ours } from "./pipelines.js";
 import { ledgerFromEnv } from "./ledger/env.js";
 import { InMemoryStorage } from "./storage.js";
+import { icpStorageFromEnv } from "./storage/icp.js";
 import { webApp, type WebOptions } from "./web.js";
 
 const port = Number(process.env.PORT ?? 3000);
 const host = process.env.HOST ?? "127.0.0.1";
 const baseUrl = process.env.BASE_URL ?? `http://${host}:${port}`;
 
-// ponytail: in-memory Storage only; swap in ICP Storage when it lands.
 const challengeWindowMs = Number(process.env.CHALLENGE_WINDOW_MIN ?? 5) * 60_000;
 const { CHALLENGE_DEPOSIT: challengeDeposit = "1", ARBITER_FEE: arbiterFee = "0.1" } = process.env;
 const cache = process.env.DEMO_REPLAY;
@@ -38,9 +39,11 @@ if (cache) {
     score(expected, deliveredBy(board, run.documents), (p) => board.operatorOf(p)).map((r) => [r.operator, { correct: r.correct, fields: r.fields }]),
   );
 } else {
-  board = new JobBoard({ storage: new InMemoryStorage(), ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
-  // State is in memory, so a restart starts empty. SEED_DOCUMENTS=<testdata PDF>,... uploads those on start so
-  // Workers find Jobs waiting. The Template comes from the file name (battery-… or textile-…).
+  const storage = process.env.STORAGE === "icp" ? await icpStorageFromEnv() : new InMemoryStorage();
+  board = new JobBoard({ storage, ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
+  // The Job Board's own state is in memory. With STORAGE=icp, Documents come back from ICP on the first poll after
+  // a restart; with memory Storage, SEED_DOCUMENTS=<testdata PDF>,... uploads those on start so Workers find Jobs
+  // waiting. The Template comes from the file name (battery-… or textile-…).
   for (const file of (process.env.SEED_DOCUMENTS ?? "").split(",").map((s) => s.trim()).filter(Boolean)) {
     const supplier = file.split("-")[2] ?? "";
     await board.upload(new Uint8Array(readFileSync(testdata(`documents/${file}`))), file.split("-")[0]!, {
@@ -54,6 +57,6 @@ setInterval(() => board.tick().catch((e) => console.error("settlement failed:", 
 
 serve({ fetch: webApp(board, { accuracy }).fetch, port, hostname: host }, () => {
   if (cache) console.log(`Demo replay of ${cache} (fake Ledger, no models or network).`);
-  else console.log(`Ledger: ${process.env.LEDGER ?? "fake"}`);
+  else console.log(`Ledger: ${process.env.LEDGER ?? "fake"}  Storage: ${process.env.STORAGE ?? "memory"}`);
   console.log(`Brand page: ${baseUrl}/  MCP endpoint: ${baseUrl}/mcp`);
 });
