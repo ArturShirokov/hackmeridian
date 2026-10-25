@@ -48,6 +48,7 @@ button, input, textarea, select { font-family: inherit; }
 .om-nav { display: flex; align-items: center; gap: 10px; text-align: left; height: 46px; padding: 0 22px; border: 0; border-bottom: 1px solid var(--rule-row);
   background: transparent; color: var(--ink); font: 500 15px/1 var(--sans); cursor: pointer; text-decoration: none; }
 .om-nav:hover { background: var(--nav-hover); color: var(--ink); }
+.om-sugg:hover { background: var(--hover); }
 .om-nav.active { background: var(--nav-active); font-weight: 600; }
 
 /* Arbiter desk: queue rows and the two decision buttons (64px / 20px) */

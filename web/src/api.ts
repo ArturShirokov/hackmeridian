@@ -19,7 +19,7 @@ export interface ChallengeBody {
   field: string;
   page: number;
   quote: string;
-  value: string | number;
+  value: string | number | Record<string, number>;
   unit?: string;
   qualifier?: string;
 }
