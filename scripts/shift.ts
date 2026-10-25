@@ -29,15 +29,31 @@ export const defaultWorkers: WorkerConfig[] = [
 ];
 
 /** Headless command per harness. Verified on this Mac: claude 2.1.310, opencode 1.19.4, pi 0.84.4. */
-const harnesses: Record<string, { name: string; command: (model: string, prompt: string) => string[] }> = {
+// OpenCode lets the model run shell commands unless told otherwise, and the Document is untrusted input. Deny
+// every tool except reading files (checked 25 Oct 2026: with this, Kimi reports it has no bash tool).
+const OPENCODE_READ_ONLY = JSON.stringify({ "*": "deny", read: "allow", glob: "allow", grep: "allow", list: "allow" });
+
+const harnesses: Record<string, { name: string; command: (model: string, prompt: string) => string[]; env?: Record<string, string> }> = {
   // Only the Read tool (it reads the PDF); never bypasses permissions. --output-format json wraps the text in .result.
   claude: {
     name: "Claude Code",
     command: (m, p) => ["claude", "-p", p, "--model", m, "--output-format", "json", "--allowedTools", "Read", "--no-session-persistence"],
   },
-  opencode: { name: "OpenCode", command: (m, p) => ["opencode", "run", "--model", m, p] },
+  // --format json: the answer is the last text event, so a run that ends on a tool call shows up as no result.
+  opencode: {
+    name: "OpenCode",
+    command: (m, p) => ["opencode", "run", "--format", "json", "--model", m, p],
+    env: { OPENCODE_PERMISSION: OPENCODE_READ_ONLY },
+  },
   pi: { name: "Pi", command: (m, p) => ["pi", "-p", "--model", m, "--no-session", "--tools", "read", p] },
 };
+
+/** The command line and extra environment a harness runs with. */
+export function harnessCommand(harness: string, model: string, prompt: string) {
+  const h = harnesses[harness];
+  if (!h) throw new Error(`unknown harness "${harness}": use claude, opencode or pi, or give a command`);
+  return { argv: h.command(model, prompt), env: h.env };
+}
 
 const PROMPT = `You are doing one Job for a Job Board. The Job is in job.json in the current directory: its instructions, the Template Fields, the Document's text layer and, when the Sieve reads it, the Markdown. The Document itself is document.pdf in the same directory.
 Read job.json, look at document.pdf if you can, and do the Job exactly as its instructions say. Do not hand it in yourself.
@@ -61,6 +77,12 @@ export function parseResult(out: string): Record<string, unknown> | undefined {
   const whole = tryParse(out.trim());
   if (whole?.type === "result" && typeof whole.result === "string") return parseResult(whole.result);
   if (whole) return whole;
+  // OpenCode's --format json: one event per line; the answer is the last text part, never a tool's output.
+  const events = out.split("\n").filter((l) => l.trim()).map(tryParse);
+  if (events.length > 1 && events.every((e) => e && typeof e.part === "object")) {
+    const text = events.map((e) => e!.part as { type?: string; text?: string }).filter((p) => p.type === "text" && p.text).at(-1)?.text;
+    return text ? parseResult(text) : undefined;
+  }
   const fenced = [...out.matchAll(/```(?:json)?\s*\n([\s\S]*?)\n\s*```/g)].map((m) => tryParse(m[1]!)).findLast(Boolean);
   if (fenced) return fenced;
   // Braces in tool output or prose before the result: try each "{" from the right, up to the last "}".
@@ -74,9 +96,9 @@ export function parseResult(out: string): Record<string, unknown> | undefined {
 }
 
 /** Run a command in `cwd` with no stdin; resolves with stdout and the end of stderr, rejects with that on a non-zero exit. */
-function run([cmd, ...args]: string[], cwd: string, signal: AbortSignal): Promise<{ out: string; err: string }> {
+function run([cmd, ...args]: string[], cwd: string, signal: AbortSignal, env?: Record<string, string>): Promise<{ out: string; err: string }> {
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd!, args, { cwd, signal, timeout: RUN_TIMEOUT_MS, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(cmd!, args, { cwd, signal, timeout: RUN_TIMEOUT_MS, stdio: ["ignore", "pipe", "pipe"], env: env && { ...process.env, ...env } });
     let out = "";
     let err = "";
     child.stdout.on("data", (d) => (out += d));
@@ -127,6 +149,7 @@ export async function runShift(opts: {
     const h = harnesses[cfg.harness];
     const command = cfg.command ? (p: string) => [...cfg.command!, p] : h?.command.bind(null, cfg.model);
     if (!command) throw new Error(`unknown harness "${cfg.harness}": use claude, opencode or pi, or give a command`);
+    const env = cfg.command ? undefined : h?.env;
     const name = `${cfg.harness}/${cfg.model.split("/").pop()}`;
     let id: string | undefined;
     let client: Conn | undefined;
@@ -148,7 +171,7 @@ export async function runShift(opts: {
         }
         const r = await call<{ job: Job | null }>(client, "next_job", { worker: id, wait: 25 });
         if (!r.ok) throw new Error(r.text);
-        if (r.data.job) await doJob(client, id!, name, command, r.data.job);
+        if (r.data.job) await doJob(client, id!, name, command, r.data.job, env);
       } catch (e) {
         if (signal.aborted) break;
         if (!down) log(`${id ?? "?"} · ${name} · Job Board unreachable (${oneLine(String((e as Error)?.message ?? e))}), reconnecting`);
@@ -162,7 +185,7 @@ export async function runShift(opts: {
   }
 
   /** Download, run the harness, submit; on a rejection run once more with it appended, then leave the Job to time out. */
-  async function doJob(client: Conn, id: string, name: string, command: (prompt: string) => string[], job: Job) {
+  async function doJob(client: Conn, id: string, name: string, command: (prompt: string) => string[], job: Job, env?: Record<string, string>) {
     const started = Date.now();
     const dir = await mkdtemp(join(tmpdir(), "shift-"));
     let outcome: string;
@@ -178,7 +201,7 @@ export async function runShift(opts: {
       for (let attempt = 1; ; attempt++) {
         let result: Record<string, unknown> | undefined;
         try {
-          ({ out, err } = await run(command(prompt), dir, signal));
+          ({ out, err } = await run(command(prompt), dir, signal, env));
           result = parseResult(out);
           rejection = result ? "" : `your output was not one JSON object (it began: ${JSON.stringify(out.trim().slice(0, 200))})`;
         } catch (e) {

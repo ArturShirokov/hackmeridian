@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, expect, test, vi } from "vitest";
 import { ours, baseline } from "../src/pipelines.js";
-import { parseResult, runShift, type WorkerConfig } from "../scripts/shift.js";
+import { harnessCommand, parseResult, runShift, type WorkerConfig } from "../scripts/shift.js";
 import { makePdf, startBoard } from "./seam.js";
 
 const fake = fileURLToPath(new URL("fake-harness.mjs", import.meta.url));
@@ -119,6 +119,28 @@ test("the result is found in Claude Code's JSON wrapper, a fenced block, or pros
   expect(parseResult('Read {job.json}\n{"fields": [{"field": "a", "notStated": true}]}\n')).toEqual({ fields: [{ field: "a", notStated: true }] });
   expect(parseResult(JSON.stringify({ type: "result", is_error: true, result: "Credit balance is too low" }))).toBeUndefined();
   expect(parseResult("[1, 2]")).toBeUndefined();
+});
+
+test("OpenCode's --format json event stream gives its last text message as the result; a stream with no text is no result", () => {
+  const ev = (part: object) => JSON.stringify({ type: "x", sessionID: "s", part });
+  const stream = [
+    ev({ type: "step-start" }),
+    ev({ type: "tool", tool: "read", state: { status: "completed", output: '{"pass": false} inside a file' } }),
+    ev({ type: "text", text: "Checking." }),
+    ev({ type: "text", text: '{"pass": true}' }),
+    ev({ type: "step-finish" }),
+  ].join("\n");
+  expect(parseResult(stream)).toEqual({ pass: true });
+  expect(parseResult([ev({ type: "step-start" }), ev({ type: "tool", tool: "read", state: { output: '{"pass": true}' } })].join("\n"))).toBeUndefined();
+});
+
+test("OpenCode runs read-only: JSON events and a permission config that denies everything but reading files", () => {
+  const { argv, env } = harnessCommand("opencode", "opencode-go/kimi-k3", "do the Job");
+  expect(argv).toEqual(["opencode", "run", "--format", "json", "--model", "opencode-go/kimi-k3", "do the Job"]);
+  const permission = JSON.parse(env!.OPENCODE_PERMISSION!);
+  expect(permission["*"]).toBe("deny");
+  expect(permission.bash ?? permission["*"]).toBe("deny");
+  expect(permission.read).toBe("allow");
 });
 
 test("Ctrl-C ends the shift", async () => {
