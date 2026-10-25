@@ -110,6 +110,9 @@ interface Escrow extends EscrowRequest {
   status: "open" | "settling" | "settled";
   /** Paid to the Brand at settlement, one per upheld Challenge. */
   slashes?: string[];
+  /** Stellar explorer links from the Ledger, when it has a chain behind it. */
+  link?: string;
+  settlementLink?: string;
 }
 
 interface JobState {
@@ -337,8 +340,14 @@ export class JobBoard {
       brand: doc.meta.uploader,
       outputHash: createHash("sha256").update(JSON.stringify(fields)).digest("hex"),
     };
-    const { escrowId } = await this.ledger.openEscrow(req);
-    this.escrows.set(`${doc.meta.id} ${pipeline}`, { ...req, escrowId, closesAt: this.now() + this.challengeWindowMs, status: "open" });
+    const { escrowId, link } = await this.ledger.openEscrow(req);
+    this.escrows.set(`${doc.meta.id} ${pipeline}`, {
+      ...req,
+      escrowId,
+      ...(link && { link }),
+      closesAt: this.now() + this.challengeWindowMs,
+      status: "open",
+    });
   }
 
   /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
@@ -350,9 +359,9 @@ export class JobBoard {
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
       e.status = "settling";
       try {
-        if (s.length) await this.ledger.settleWithSlashes(e.escrowId, s);
-        else await this.ledger.settleClean(e.escrowId);
+        const { link } = s.length ? await this.ledger.settleWithSlashes(e.escrowId, s) : await this.ledger.settleClean(e.escrowId);
         e.status = "settled";
+        if (link) e.settlementLink = link;
         if (s.length) e.slashes = s;
       } catch (err) {
         e.status = "open";
@@ -409,6 +418,8 @@ export class JobBoard {
         status: e.status === "settled" ? ("settled" as const) : ("open" as const),
         msLeft: Math.max(0, e.closesAt - this.now()),
         ...(e.slashes && { slashes: e.slashes }),
+        ...(e.link && { link: e.link }),
+        ...(e.settlementLink && { settlementLink: e.settlementLink }),
       },
       fields: d.template.fields.map((f) => {
         const corrected = this.challenges.correction(id, pipeline, f.name);

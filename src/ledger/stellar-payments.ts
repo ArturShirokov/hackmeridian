@@ -4,7 +4,7 @@
 import { createHash } from "node:crypto";
 import { BASE_FEE, Keypair, Memo, Networks, Operation, TransactionBuilder, type Transaction } from "@stellar/stellar-sdk";
 import { addUsdc, type EscrowRequest, type Ledger } from "../ledger.js";
-import { Escrows, keyFor, split, USDC } from "./stellar.js";
+import { Escrows, explorer, keyFor, split, USDC } from "./stellar.js";
 
 /** The two Horizon.Server methods we use. */
 export interface HorizonLike {
@@ -30,26 +30,29 @@ export class StellarPaymentsLedger implements Ledger {
     addUsdc(req.bond, req.fee); // reject bad amounts before touching the chain
     const op = this.operator(req.operator);
     const to = this.o.escrow.publicKey();
-    if (Number(req.bond) > 0) await this.pay("bond", op, req, [[to, req.bond]]);
-    if (Number(req.fee) > 0) await this.pay("fee", this.brand(req.brand), req, [[to, req.fee]]);
+    const bond = Number(req.bond) > 0 ? await this.pay("bond", op, req, [[to, req.bond]]) : undefined;
+    const fee = Number(req.fee) > 0 ? await this.pay("fee", this.brand(req.brand), req, [[to, req.fee]]) : undefined;
     const escrowId = `${req.documentId}-${req.operator}`;
     this.escrows.add(escrowId, req);
-    return { escrowId };
+    const tx = bond ?? fee; // the Bond payment is the record the Brand wants to see
+    return { escrowId, ...(tx && { link: explorer("tx", tx) }) };
   }
 
   async settleClean(escrowId: string) {
     const req = this.escrows.get(escrowId);
-    await this.pay("settle", this.o.escrow, req, [[this.operator(req.operator).publicKey(), addUsdc(req.bond, req.fee)]]);
+    const tx = await this.pay("settle", this.o.escrow, req, [[this.operator(req.operator).publicKey(), addUsdc(req.bond, req.fee)]]);
+    return { link: explorer("tx", tx) };
   }
 
   async settleWithSlashes(escrowId: string, slashes: string[]) {
     const req = this.escrows.get(escrowId);
     const { toBrand, toOperator } = split(req, slashes);
-    await this.pay("slash", this.o.escrow, req, [
+    const tx = await this.pay("slash", this.o.escrow, req, [
       [this.brand(req.brand).publicKey(), toBrand],
       [this.operator(req.operator).publicKey(), toOperator],
     ]);
     this.escrows.slashed(escrowId, slashes);
+    return { link: explorer("tx", tx) };
   }
 
   async operatorRecord(operator: string) {
@@ -70,6 +73,7 @@ export class StellarPaymentsLedger implements Ledger {
     tx.sign(from);
     const { hash } = await this.o.horizon.submitTransaction(tx);
     this.o.onTx?.(action, hash);
+    return hash;
   }
 }
 

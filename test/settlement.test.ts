@@ -30,6 +30,25 @@ test("delivery opens one escrow per (Document, Operator) with the Operator's Bon
   expect(page).toMatch(/5 min left in the Challenge Window/);
 });
 
+test("the Brand page links the escrow and its settlement on a Stellar explorer, when the Ledger gives links", async () => {
+  const board = startBoard({ explorer: "https://explorer.test", challengeWindowMs: 60_000 });
+  const docId = await deliver(board);
+  expect((await board.brand.document(docId)).escrow).toMatchObject({ link: "https://explorer.test/escrow-1" });
+  expect((await board.brand.page(`/documents/${docId}`)).text).toContain('href="https://explorer.test/escrow-1"');
+
+  board.clock.advance(60_000);
+  await board.tick();
+  expect((await board.brand.document(docId)).escrow).toMatchObject({ settlementLink: "https://explorer.test/escrow-1/settle" });
+  expect((await board.brand.page(`/documents/${docId}`)).text).toContain('href="https://explorer.test/escrow-1/settle"');
+});
+
+test("with the fake Ledger's default, no explorer link is shown", async () => {
+  const board = startBoard();
+  const docId = await deliver(board);
+  expect((await board.brand.document(docId)).escrow).not.toHaveProperty("link");
+  expect((await board.brand.page(`/documents/${docId}`)).text).not.toContain("explorer");
+});
+
 test("different delivered values give a different output hash", async () => {
   const a = startBoard();
   const b = startBoard();

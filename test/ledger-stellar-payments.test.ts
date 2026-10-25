@@ -33,9 +33,10 @@ const req = { documentId: "doc-9", operator: "op-1", brand: "brand-1", bond: "10
 
 describe("StellarPaymentsLedger", () => {
   it("opens an escrow: Operator pays the Bond and Brand the Fee into the escrow account, output hash in the memo", async () => {
-    const { ledger, summary } = fakeHorizon();
-    const { escrowId } = await ledger.openEscrow(req);
+    const { ledger, summary, txs } = fakeHorizon();
+    const { escrowId, link } = await ledger.openEscrow(req);
     expect(escrowId).toBe("doc-9-op-1");
+    expect(link).toBe(`https://stellar.expert/explorer/testnet/tx/${Buffer.from(txs[0]!.hash()).toString("hex")}`); // the Bond payment
     expect(summary()).toEqual([
       { from: op.publicKey(), memo: hash, signed: 1, pays: [[escrow.publicKey(), "10.0000000", USDC]] },
       { from: brand.publicKey(), memo: hash, signed: 1, pays: [[escrow.publicKey(), "1.0000000", USDC]] },
@@ -46,7 +47,8 @@ describe("StellarPaymentsLedger", () => {
     const { ledger, txs, summary } = fakeHorizon();
     const { escrowId } = await ledger.openEscrow(req);
     txs.length = 0;
-    await ledger.settleClean(escrowId);
+    const { link } = await ledger.settleClean(escrowId);
+    expect(link).toBe(`https://stellar.expert/explorer/testnet/tx/${Buffer.from(txs[0]!.hash()).toString("hex")}`);
     expect(summary()).toEqual([
       { from: escrow.publicKey(), memo: hash, signed: 1, pays: [[op.publicKey(), "11.0000000", USDC]] },
     ]);

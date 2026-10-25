@@ -16,6 +16,9 @@ const unsignedXdr = new TransactionBuilder(new Account(op.publicKey(), "1"), {
   .build()
   .toXDR();
 
+// Every action signs the same unsigned tx, so every signed tx has this hash.
+const signedHash = Buffer.from(TransactionBuilder.fromXDR(unsignedXdr, Networks.TESTNET).hash()).toString("hex");
+
 type Sent = { path: string; body: any; signedBy?: string };
 
 function fakeTrustlessWork(minIntervalMs = 0) {
@@ -58,8 +61,9 @@ const req = { documentId: "doc-9", operator: "op-1", brand: "brand-1", bond: "10
 describe("TrustlessWorkLedger", () => {
   it("opens an escrow: deploys one milestone of Bond + Fee, the Operator funds the Bond, the Brand the Fee", async () => {
     const { ledger, sent } = fakeTrustlessWork();
-    const { escrowId } = await ledger.openEscrow(req);
+    const { escrowId, link } = await ledger.openEscrow(req);
     expect(escrowId).toBe("CESCROW1");
+    expect(link).toBe("https://stellar.expert/explorer/testnet/contract/CESCROW1");
     expect(sent.map((s) => [s.path, s.signedBy])).toEqual([
       ["/deployer/multi-release", "op"],
       ["/escrow/multi-release/fund-escrow", "op"],
@@ -87,7 +91,7 @@ describe("TrustlessWorkLedger", () => {
     const { ledger, sent } = fakeTrustlessWork();
     const { escrowId } = await ledger.openEscrow(req);
     sent.length = 0;
-    await ledger.settleClean(escrowId);
+    expect(await ledger.settleClean(escrowId)).toEqual({ link: `https://stellar.expert/explorer/testnet/tx/${signedHash}` }); // the release
     expect(sent).toEqual([
       {
         path: "/escrow/multi-release/change-milestone-status",
@@ -117,7 +121,7 @@ describe("TrustlessWorkLedger", () => {
     const { ledger, sent } = fakeTrustlessWork();
     const { escrowId } = await ledger.openEscrow(req);
     sent.length = 0;
-    await ledger.settleWithSlashes(escrowId, ["1", "2.5"]);
+    expect(await ledger.settleWithSlashes(escrowId, ["1", "2.5"])).toEqual({ link: `https://stellar.expert/explorer/testnet/tx/${signedHash}` });
     expect(sent).toEqual([
       {
         path: "/escrow/multi-release/dispute-milestone",

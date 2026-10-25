@@ -48,7 +48,9 @@ npm run typecheck
 ```
 
 Set `HOST=0.0.0.0` and `BASE_URL=http://<your-ip>:3000` to let Workers on other machines connect.
-`CHALLENGE_WINDOW_MIN` sets the Challenge Window (default 5 minutes). Pages: `/` (upload and Documents),
+`CHALLENGE_WINDOW_MIN` sets the Challenge Window (default 5 minutes). `LEDGER=fake|payments|trustless-work` picks
+the Ledger (default `fake`, nothing on chain); the Stellar ones read the testnet keys from `.env` (see
+[Wallets](#wallets)), and the Document page then links the escrow and its settlement on stellar.expert. Pages: `/` (upload and Documents),
 `/documents/<id>` (Pipeline and Baseline side by side), `/arbiter`, `/leaderboard`.
 
 ### Demo replay: no models, no network

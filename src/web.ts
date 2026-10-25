@@ -8,7 +8,8 @@ import { addUsdc } from "./ledger.js";
 import { templates } from "./templates.js";
 
 const show = (v: unknown) => (typeof v === "object" ? JSON.stringify(v) : String(v));
-const statusOf = { "not found": 404, closed: 409, invalid: 400 } as const;
+const explorer = (href: string | undefined, what: string) => (href ? html` <a href="${href}">See the ${what} on a Stellar explorer</a>` : "");
+const statusOf ={ "not found": 404, closed: 409, invalid: 400 } as const;
 
 const layout = (title: string, body: unknown) => html`<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,10 +85,10 @@ export function webApp(board: JobBoard): Hono {
     const escrow = (name: string, v: (typeof views)[number][1]) =>
       v.escrow
         ? html`<p><b>${name}</b>: Bond locked: ${v.escrow.bond} USDC by ${v.escrow.operator} (Fee ${v.escrow.fee} USDC).
-            Output hash: <code>${v.escrow.outputHash}</code><br>${v.escrow.status === "settled"
-              ? v.escrow.slashes
-                ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
-                : "Settled: Bond and Fee paid to the Operator."
+            Output hash: <code>${v.escrow.outputHash}</code>${explorer(v.escrow.link, "escrow")}<br>${v.escrow.status === "settled"
+              ? html`${v.escrow.slashes
+                  ? `Settled: ${addUsdc(...v.escrow.slashes)} USDC Slashed to the Brand, the rest of the Bond and the Fee paid to the Operator.`
+                  : "Settled: Bond and Fee paid to the Operator."}${explorer(v.escrow.settlementLink, v.escrow.slashes ? "settlement and Slashes" : "settlement")}`
               : v.escrow.msLeft > 0
                 ? html`${Math.ceil(v.escrow.msLeft / 60_000)} min left in the Challenge Window. <a href="/documents/${d.id}/challenge?pipeline=${name}">Challenge a Field</a>`
                 : "Challenge Window closed; waiting for the Arbiter."}</p>`

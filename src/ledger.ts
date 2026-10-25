@@ -22,12 +22,13 @@ export interface OperatorRecord {
   totalSlashed: string;
 }
 
+/** `link`: where to see it on a Stellar explorer; absent when the Ledger has no chain behind it. */
 export interface Ledger {
-  openEscrow(req: EscrowRequest): Promise<{ escrowId: string }>;
+  openEscrow(req: EscrowRequest): Promise<{ escrowId: string; link?: string }>;
   /** Window closed with no Challenge upheld: Fee and Bond go to the Operator. */
-  settleClean(escrowId: string): Promise<void>;
+  settleClean(escrowId: string): Promise<{ link?: string }>;
   /** Each Slash goes to the Brand; the Operator gets the rest of the Bond plus the Fee. */
-  settleWithSlashes(escrowId: string, slashes: string[]): Promise<void>;
+  settleWithSlashes(escrowId: string, slashes: string[]): Promise<{ link?: string }>;
   operatorRecord(operator: string): Promise<OperatorRecord>;
 }
 
@@ -61,19 +62,26 @@ export type LedgerCall =
 export class FakeLedger implements Ledger {
   readonly calls: LedgerCall[] = [];
 
+  /** explorer: give placeholder links under this base URL; without it, no links (nothing is on a chain). */
+  constructor(private readonly explorer?: string) {}
+
+  private link = (path: string) => (this.explorer ? { link: `${this.explorer}/${path}` } : {});
+
   async openEscrow(req: EscrowRequest) {
     addUsdc(req.bond, req.fee); // reject bad amounts like the real one would
     const escrowId = `escrow-${this.calls.length + 1}`;
     this.calls.push({ call: "openEscrow", escrowId, req });
-    return { escrowId };
+    return { escrowId, ...this.link(escrowId) };
   }
 
   async settleClean(escrowId: string) {
     this.calls.push({ call: "settleClean", escrowId });
+    return this.link(`${escrowId}/settle`);
   }
 
   async settleWithSlashes(escrowId: string, slashes: string[]) {
     this.calls.push({ call: "settleWithSlashes", escrowId, slashes });
+    return this.link(`${escrowId}/settle`);
   }
 
   async operatorRecord(operator: string): Promise<OperatorRecord> {
