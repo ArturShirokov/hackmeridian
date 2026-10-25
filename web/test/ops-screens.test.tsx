@@ -10,8 +10,8 @@ import { Leaderboard } from "../src/screens/ops/Leaderboard.tsx";
 const config = {
   now: Date.now(), baseUrl: "http://127.0.0.1:3193", challengeWindowMs: 180_000, brand: { name: "Voltaris", reviewer: "Inês Duarte" },
   operators: [
-    { pipeline: "ours", label: "Origyn", operator: "Origyn", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "Original" }, { kind: "tiebreak", label: "Tie-break" }] },
-    { pipeline: "baseline", label: "Baseline", operator: "Baseline", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction" }] },
+    { pipeline: "ours", label: "Origyn", operator: "Origyn", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "Original", view: "original" }, { kind: "tiebreak", label: "Tie-break", view: "original" }] },
+    { pipeline: "baseline", label: "Baseline", operator: "Baseline", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction", view: "original" }] },
   ],
 };
 function serve(routes: Record<string, unknown>) {

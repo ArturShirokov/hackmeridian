@@ -21,11 +21,12 @@ const config: ApiConfig = {
     {
       pipeline: "ours", label: "Origyn", operator: "Origyn", bond: "50", fee: "5",
       sieves: [
-        { kind: "extract", label: "Original" }, { kind: "markdown", label: "Markdown" }, { kind: "faithfulness", label: "Faithfulness check" },
-        { kind: "extract", label: "Markdown extraction" }, { kind: "tiebreak", label: "Tie-break" },
+        { kind: "extract", label: "Original", view: "original" }, { kind: "markdown", label: "Markdown", view: "original" },
+        { kind: "faithfulness", label: "Faithfulness check", view: "mix" }, { kind: "extract", label: "Markdown extraction", view: "markdown" },
+        { kind: "tiebreak", label: "Tie-break", view: "original" },
       ],
     },
-    { pipeline: "baseline", label: "Baseline", operator: "Baseline", bond: "50", fee: "5", sieves: [{ kind: "extract", label: "One-pass extraction" }] },
+    { pipeline: "baseline", label: "Baseline", operator: "Baseline", bond: "50", fee: "5", sieves: [{ kind: "extract", label: "One-pass extraction", view: "original" }] },
   ],
 };
 

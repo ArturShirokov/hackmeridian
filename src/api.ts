@@ -1,9 +1,9 @@
 // The JSON contract between the Job Board (web.ts) and the front end (web/). Types only: web/ imports this file.
 // Sieve independence: while any Pipeline for a Document is still extracting, no value, quote, rect, differs or export is served.
-import type { SieveKind } from "./pipelines.js";
+import type { SieveKind, View } from "./pipelines.js";
 import type { Author, FieldType } from "./templates.js";
 
-export type { Author, SieveKind, FieldType };
+export type { Author, SieveKind, View, FieldType };
 
 /** USDC decimal string, as in ledger.ts ("10", "2.5"). */
 export type Usdc = string;
@@ -23,7 +23,8 @@ export interface ApiConfig {
   /** What the Arbiter earns for an upheld Challenge, out of the Slash (at most the Slash). */
   arbiterFee: Usdc;
   brand: { name: string; reviewer: string };
-  operators: { pipeline: string; label: string; operator: string; bond: Usdc; fee: Usdc; sieves: { kind: SieveKind; label: string }[] }[];
+  /** view: what the Sieve reads. */
+  operators: { pipeline: string; label: string; operator: string; bond: Usdc; fee: Usdc; sieves: { kind: SieveKind; label: string; view: View }[] }[];
 }
 
 /** GET /api/templates */
@@ -206,6 +207,8 @@ export interface ApiChallengeSummary {
   value: string;
   page: number;
   quote: string;
+  /** The Arbiter's note, once decided. */
+  note?: string;
 }
 
 export interface ApiChallenge extends ApiChallengeSummary, ApiWindow {

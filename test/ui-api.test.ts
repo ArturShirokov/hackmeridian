@@ -36,7 +36,7 @@ test("upload stores the file name and Supplier; the list is newest first with st
   expect(await brand.documents()).toHaveLength(2);
 });
 
-test("config and Templates: terms per Pipeline with Sieve labels, the window length, Template Fields with examples", async () => {
+test("config and Templates: terms per Pipeline with Sieve labels and what each reads, the window length, Template Fields with examples", async () => {
   const { brand } = startBoard({ pipelines: [ours, baseline], operators, challengeWindowMs: 60_000 });
   expect(await brand.config()).toEqual({
     now: 0,
@@ -47,8 +47,8 @@ test("config and Templates: terms per Pipeline with Sieve labels, the window len
     brand: { name: "Voltaris", reviewer: "Inês Duarte" },
     operators: [
       { pipeline: "ours", label: "Origyn", operator: "origyn", bond: "20", fee: "2",
-        sieves: ["Original", "Markdown", "Faithfulness check", "Markdown extraction", "Tie-break"].map((label, i) => ({ kind: ours.sieves[i]!.kind, label })) },
-      { pipeline: "baseline", label: "Baseline", operator: "one-pass", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction" }] },
+        sieves: ["Original", "Markdown", "Faithfulness check", "Markdown extraction", "Tie-break"].map((label, i) => ({ kind: ours.sieves[i]!.kind, label, view: ["original", "original", "mix", "markdown", "original"][i] })) },
+      { pipeline: "baseline", label: "Baseline", operator: "one-pass", bond: "10", fee: "1", sieves: [{ kind: "extract", label: "One-pass extraction", view: "original" }] },
     ],
   });
   const [battery, textile] = await brand.templates();
