@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { baseline, ours } from "../src/pipelines.js";
-import { extraction, makePdf, startBoard } from "./seam.js";
+import { checkedMarkdown, extraction, makePdf, startBoard } from "./seam.js";
 
 const sheet = () => makePdf([["Voltaris NMC-800", "Rated capacity: 220 Ah"]]);
 const capacity = { value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah" };
@@ -15,11 +15,12 @@ test("two Operators on one Document: two escrows, values side by side, and a lea
   const docId = await brand.upload(await sheet());
   const [w1, w2] = [await worker("w1"), await worker("w2")];
 
-  // w1 takes our first Sieve, w2 the Baseline's single Sieve (which gets capacity wrong), then w2 our second Sieve.
+  // w1 takes our first Sieve, w2 the Baseline's single Sieve (which gets capacity wrong), w1 our Markdown, then w2 our second extraction.
   const j1 = (await w1.nextJob())!;
   await w1.submitJob(j1.id, extraction(j1, { rated_capacity_ah: capacity }));
   const jb = (await w2.nextJob())!;
   await w2.submitJob(jb.id, extraction(jb, { rated_capacity_ah: { ...capacity, value: 22 } }));
+  await checkedMarkdown(w1);
   const j2 = (await w2.nextJob())!;
   expect(await w2.submitJob(j2.id, extraction(j2, { rated_capacity_ah: capacity }))).toMatchObject({ ok: true });
 
