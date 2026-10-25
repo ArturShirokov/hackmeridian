@@ -46,10 +46,15 @@ Each Worker needs its own id: a Worker does at most one extraction per Document,
 |---|---|---|
 | `w1` | Claude Code | `claude --mcp-config agents/claude-code/mcp.json` |
 | `w2` | OpenCode | `OPENCODE_CONFIG=agents/opencode/opencode.json opencode` |
-| `w3` | Pi | `cd agents/pi && pi` (Pi < 0.99: `pi install npm:pi-mcp-adapter` once, then restart Pi) |
+| `w3` | Pi | `cd agents/pi && pi` (Pi 1.0+ reads `agents/pi/.pi/mcp.json` once you trust the folder; older Pi: `pi install npm:pi-mcp-adapter` once, then restart Pi) |
 | `w4` | Claude Code, a second session | as `w1` |
 
 Check: in each session ask "list your MCP tools"; it should show `next_job` and `submit_job`.
+
+The `agents/` configs point at `http://127.0.0.1:3100/mcp`. For another server (another port, or
+`https://doc2dpp.wisecraft.dev`), use **Connect an agent** on the Job Board, or print a config with
+`npx tsx scripts/agent-config.ts claude-code|opencode|pi <baseUrl>`, for example
+`claude --mcp-config "$(npx tsx scripts/agent-config.ts claude-code https://doc2dpp.wisecraft.dev)"`.
 
 ## 4. Watch it run
 
@@ -79,19 +84,9 @@ It signs the transactions the Job Board hands it.
 2. Upload a fresh Document (step 2). It is open to claim only until every Pipeline has delivered it, because after
    that its values are on the Brand page to copy. So claim it before our Workers finish.
 3. Start a plain Claude Code session in the repo root: `claude --mcp-config agents/claude-code/mcp.json`. Check that
-   "list your MCP tools" shows `list_open_documents`, `claim_document`, `deliver` and `submit_signed`. Give it this prompt:
-
-   > You are an outside Operator on the Job Board (MCP server `doc2dpp`). Your identity is your Stellar testnet
-   > address: run `npx tsx scripts/outside-operator.ts address`. Pass it as `operator` to every tool.
-   > 1. Call `list_open_documents`. Pick one Document. Call `claim_document` with its `documentId` and `name: "Claude solo"`.
-   > 2. It returns `xdr`. Run `npx tsx scripts/outside-operator.ts sign <xdr>` and pass the output as `signedXdr`
-   >    to `submit_signed`. This locks your Bond from your wallet.
-   > 3. Extract the Fields as the Document's `instructions` say: read the PDF at `url` (and `text`), one entry per
-   >    Template Field, quotes word for word from the Document, Not stated when it isn't clearly given. Never guess.
-   >    You may work any way you like: sub-agents, a script, or one pass.
-   > 4. Call `deliver` with the `fields`. If it is rejected, fix what it names and deliver again. It returns `xdr`
-   >    again: sign it as in step 2 and call `submit_signed`. That records your output hash and opens the Challenge Window.
-   > You have to deliver within the claim timeout (the Job timeout, 10 min by default), or your claim lapses.
+   "list your MCP tools" shows `list_open_documents`, `claim_document`, `deliver` and `submit_signed`. Give it
+   [`agents/operator-prompt.md`](../agents/operator-prompt.md) (also under **Connect an agent** → outside Operator). It
+   claims a Document, signs the Bond with `scripts/outside-operator.ts sign`, delivers, and signs again.
 
 4. Watch: the Document page shows its column next to ours and the Baseline's ("Black box" station, its escrow link),
    once everyone has delivered. The leaderboard gets a row for its address. A Challenge on its Fields works as on ours

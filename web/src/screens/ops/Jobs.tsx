@@ -1,7 +1,8 @@
 // 08 · Job Board (Operator): connected Workers, the Jobs list (a timed-out take is its own red row), the Pipelines panel
-// and "Connect a Worker" with the real MCP URL from /api/config.
-import { useEffect, useState } from "react";
+// and "Connect an agent" (the modal takes the real MCP URL from /api/config).
+import { useEffect } from "react";
 import { api, usePoll, type ApiConfig } from "../../api.ts";
+import { ConnectAgent } from "../../components/ConnectAgent.tsx";
 import { useLocation } from "../../router.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, th, useNow } from "./common.tsx";
@@ -16,8 +17,6 @@ const TONE = {
   timeout: { bd: RED, fg: RED, bs: "solid", bg: "#FFFDF9", row: "#FBEDEA" },
 };
 const card = { border: `1px solid ${INK}`, background: "var(--surface)" } as const;
-
-export const connectCommand = (baseUrl: string) => `claude mcp add --transport http doc2dpp ${baseUrl.replace(/\/$/, "")}/mcp`;
 
 export function Jobs() {
   const { data: workers } = usePoll(api.workers, 1000);
@@ -85,7 +84,7 @@ export function Jobs() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {config && <Pipelines operators={config.operators} />}
-            {config && <Connect cmd={connectCommand(config.baseUrl)} />}
+            <Connect />
           </div>
         </div>
       </div>
@@ -116,15 +115,12 @@ function Pipelines({ operators }: { operators: ApiConfig["operators"] }) {
   );
 }
 
-function Connect({ cmd }: { cmd: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => navigator.clipboard?.writeText(cmd).then(() => setCopied(true), () => setCopied(false));
+function Connect() {
   return (
-    <div style={{ ...card, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
-      <span style={{ font: "600 15px/1 var(--sans)" }}>Connect a Worker</span>
-      <span style={{ font: "400 13.5px/1.45 var(--sans)", color: "#2A2723" }}>Add the Job Board as an MCP server in any harness. The Worker takes open Jobs and returns results.</span>
-      <pre style={{ margin: 0, padding: 12, background: INK, color: "var(--paper)", font: "400 12.5px/1.55 var(--mono)", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{cmd}</pre>
-      <button onClick={copy} className="om-btn ghost sm" style={{ alignSelf: "flex-start", fontWeight: 600 }}>{copied ? "Copied" : "Copy command"}</button>
+    <div style={{ ...card, padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
+      <span style={{ font: "600 15px/1 var(--sans)" }}>Connect an agent</span>
+      <span style={{ font: "400 13.5px/1.45 var(--sans)", color: "#2A2723" }}>Claude Code, OpenCode, Pi or any MCP client: as a Worker that takes Jobs here, or as an outside Operator with its own Bond.</span>
+      <ConnectAgent />
     </div>
   );
 }
