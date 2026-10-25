@@ -95,10 +95,12 @@ export interface Expected {
 }
 
 export interface Report {
+  pipeline: string;
+  /** The Operator that runs the Pipeline. */
   operator: string;
   fields: number;
   correct: number;
-  /** Fields the Operator delivered as Not stated. */
+  /** Fields the Pipeline delivered as Not stated. */
   notStated: number;
   incorrect: { document: string; field: string; expected: string; delivered: string }[];
 }
@@ -107,10 +109,14 @@ const show = (v: Omit<Stated, "field"> | undefined | "Not stated" | "not deliver
   typeof v === "string" ? v : v === undefined ? "not delivered"
   : `${typeof v.value === "object" ? JSON.stringify(v.value) : v.value}${v.unit ? ` ${v.unit}` : ""}${v.qualifier ? ` (${v.qualifier})` : ""}`;
 
-/** Per Operator (Pipeline name): delivered Field values by Document file name, undefined when not delivered. */
-export function score(expected: Expected[], delivered: Record<string, Record<string, FieldResult[] | undefined>>): Report[] {
-  return Object.entries(delivered).map(([operator, byDoc]) => {
-    const r: Report = { operator, fields: 0, correct: 0, notStated: 0, incorrect: [] };
+/** `delivered`: per Pipeline name, its Field values by Document file name, undefined when not delivered. */
+export function score(
+  expected: Expected[],
+  delivered: Record<string, Record<string, FieldResult[] | undefined>>,
+  operatorOf: (pipeline: string) => string = (p) => p,
+): Report[] {
+  return Object.entries(delivered).map(([pipeline, byDoc]) => {
+    const r: Report = { pipeline, operator: operatorOf(pipeline), fields: 0, correct: 0, notStated: 0, incorrect: [] };
     for (const e of expected) {
       const template = templates[e.template]!;
       for (const [name, want] of Object.entries(e.fields)) {

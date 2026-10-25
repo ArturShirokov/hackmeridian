@@ -28,12 +28,12 @@ test("one upheld and one rejected Challenge: the upheld one corrects the Field a
   expect(open[0]).toMatchObject({
     documentId: docId,
     field: "rated_capacity_ah",
-    disputed: { value: 22, unit: "Ah", page: 1 },
+    challenged: { value: 22, unit: "Ah", page: 1 },
     page: 1,
     quote: "Rated capacity: 220 Ah",
     value: 220,
   });
-  expect(open[1]).toMatchObject({ field: "battery_chemistry", disputed: { notStated: true } });
+  expect(open[1]).toMatchObject({ field: "battery_chemistry", challenged: { notStated: true } });
   const page = (await arbiter.page()).text;
   expect(page).toContain("Chemistry: NMC811");
   expect(page).toContain(`/documents/${docId}/file`);

@@ -103,7 +103,7 @@ export function startBoard(
         id: string;
         documentId: string;
         field: string;
-        disputed: Record<string, unknown>;
+        challenged: Record<string, unknown>;
         page: number;
         quote: string;
         value: unknown;

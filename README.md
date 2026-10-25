@@ -131,7 +131,7 @@ accounts the Job Board holds. In a real product the Brand never holds crypto.
 
 Runs our Pipeline and the Baseline over `testdata/documents` and compares the delivered Field values with
 `testdata/expected` (Correct = equal after the same normalising as convergence; Not stated against Not stated is
-Correct). It prints, per Operator, the share of Correct Fields, the number of Fields, the number Not stated, and each
+Correct). It prints, per Pipeline and its Operator, the share of Correct Fields, the number of Fields, the number Not stated, and each
 incorrect Field.
 
 **Live run, with real Workers:**

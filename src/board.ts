@@ -378,7 +378,7 @@ export class JobBoard {
     if (!d || !e || !delivered) return { ok: false as const, reason: "not found" as const, error: "no delivered Document with that id" };
     if (e.status !== "open" || this.now() >= e.closesAt)
       return { ok: false as const, reason: "closed" as const, error: "the Challenge Window has closed" };
-    const r = this.challenges.file({ documentId, pipeline, template: d.template, pages: d.text.length, delivered }, raw);
+    const r = this.challenges.fileChallenge({ documentId, pipeline, template: d.template, pages: d.text.length, delivered }, raw);
     return r.ok ? r : { ...r, reason: "invalid" as const };
   }
 
@@ -402,6 +402,11 @@ export class JobBoard {
 
   private terms(pipeline: string): OperatorTerms {
     return this.operators[pipeline] ?? { operator: pipeline, bond: "10", fee: "1" };
+  }
+
+  /** The Operator that runs this Pipeline. */
+  operatorOf(pipeline: string): string {
+    return this.terms(pipeline).operator;
   }
 
   private view(d: Doc, pipeline: string) {
@@ -435,7 +440,7 @@ export class JobBoard {
     };
   }
 
-  async file(id: string): Promise<Uint8Array | undefined> {
+  async documentBytes(id: string): Promise<Uint8Array | undefined> {
     return (await this.storage.get(id))?.bytes;
   }
 

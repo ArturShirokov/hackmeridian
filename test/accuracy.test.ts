@@ -26,6 +26,7 @@ test("a Field equal after normalising is Correct, Not stated against Not stated 
     },
   });
   expect(ours).toEqual({
+    pipeline: "ours",
     operator: "ours",
     fields: 4,
     correct: 3,
@@ -91,8 +92,9 @@ test("a recorded run replays to the same score: ours holds on the planted error,
   await submit("w2", take("w2").id, asSubmitted()); // ours, extract from the Markdown
 
   const known = [
-    { operator: "ours", fields: 25, correct: 25, notStated: 5, incorrect: [] },
+    { pipeline: "ours", operator: "ours", fields: 25, correct: 25, notStated: 5, incorrect: [] },
     {
+      pipeline: "baseline",
       operator: "baseline",
       fields: 25,
       correct: 24,

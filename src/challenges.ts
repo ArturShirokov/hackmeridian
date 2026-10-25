@@ -19,7 +19,7 @@ export type Challenge = z.infer<typeof input> & {
   documentId: string;
   pipeline: string;
   /** The delivered value being challenged, as the Brand saw it. */
-  disputed: FieldResult;
+  challenged: FieldResult;
   decision?: "upheld" | "rejected";
 };
 
@@ -35,7 +35,7 @@ export interface Target {
 export class Challenges {
   private all: Challenge[] = [];
 
-  file(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
+  fileChallenge(t: Target, raw: unknown): { ok: true; challenge: Challenge } | { ok: false; error: string } {
     const r = input.safeParse(raw);
     if (!r.success) return { ok: false, error: z.prettifyError(r.error) };
     const c = r.data;
@@ -52,8 +52,8 @@ export class Challenges {
       }
     }
     if (Number.isNaN(c.value)) return { ok: false, error: `Field "${f.name}": a quantity value must be a number` };
-    const disputed = t.delivered.find((d) => d.field === f.name)!;
-    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, disputed };
+    const challenged = t.delivered.find((d) => d.field === f.name)!;
+    const challenge: Challenge = { ...c, id: randomUUID(), documentId: t.documentId, pipeline: t.pipeline, challenged };
     this.all.push(challenge);
     return { ok: true, challenge };
   }

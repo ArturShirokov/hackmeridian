@@ -60,7 +60,7 @@ export function webApp(board: JobBoard): Hono {
   });
 
   app.get("/documents/:id/file", async (c) => {
-    const bytes = await board.file(c.req.param("id"));
+    const bytes = await board.documentBytes(c.req.param("id"));
     if (!bytes) return c.notFound();
     return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { "content-type": "application/pdf" });
   });
@@ -176,10 +176,10 @@ export function webApp(board: JobBoard): Hono {
   app.get("/arbiter", (c) => {
     const rows = board.challenges.open().map((ch) => {
       const label = templates[board.document(ch.documentId)!.template]!.fields.find((f) => f.name === ch.field)!.label;
-      const d = ch.disputed;
-      const disputed =
+      const d = ch.challenged;
+      const challenged =
         "notStated" in d ? "Not stated" : "value" in d ? `${show(d.value)} ${d.unit ?? ""} (p. ${d.page}: “${d.quote}”)` : "Sieves disagree";
-      return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${disputed}</td>
+      return html`<tr><td><a href="/documents/${ch.documentId}/file">Document</a></td><th>${label}</th><td>${challenged}</td>
         <td>${show(ch.value)} ${ch.unit ?? ""} ${ch.qualifier ?? ""}</td><td>${ch.page}</td><td><q>${ch.quote}</q></td>
         <td><form method="post" action="/challenges/${ch.id}/decision">
           <button name="decision" value="upheld">Uphold</button> <button name="decision" value="rejected">Reject</button>
