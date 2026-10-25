@@ -51,11 +51,19 @@ export function compare(d: ApiDocument) {
   return { rows, summary: `${n} difference${n === 1 ? "" : "s"} in ${rows.length} Fields. Click a row to see its quote.` };
 }
 
-/** Review: Not stated Fields get their own group on top; `order` is the keyboard order. */
+/**
+ * Review: Not stated Fields on top, the Supplier's (one Supplier Request) before the Brand's ("Brand to provide");
+ * the other rows grouped by Template section. `order` is the keyboard order.
+ */
 export function reviewGroups(fields: ApiField[]) {
   const notStated = fields.filter((f) => f.status === "not stated");
+  const supplier = notStated.filter((f) => f.author !== "Brand");
+  const brand = notStated.filter((f) => f.author === "Brand");
   const rows = fields.filter((f) => f.status !== "not stated");
-  return { notStated, rows, order: [...notStated, ...rows].map((f) => f.name) };
+  const bySection = new Map<string, ApiField[]>();
+  for (const f of rows) bySection.set(f.section, [...(bySection.get(f.section) ?? []), f]);
+  const sections = [...bySection].map(([section, fields]) => ({ section, fields }));
+  return { notStated, supplier, brand, rows, sections, order: [...supplier, ...brand, ...sections.flatMap((s) => s.fields)].map((f) => f.name) };
 }
 
 type Claim = { value: number | string | Record<string, number>; unit?: string } | { error: string };

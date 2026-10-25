@@ -16,6 +16,10 @@ The source is Origyn's "DPP templates" Google Doc (battery and textile tabs, rea
 
 Numbers refer to the source list. Units in brackets are canonical units.
 
+**Sections** (`src/templates.ts`), by source number:
+- Battery, after the Commission's categories: general battery and manufacturer information (R2–9), symbols, labels and conformity (14–15), carbon footprint (18–22), battery materials and composition (27–31), circularity and resource efficiency (33–47b), performance and durability (51–80).
+- Textile: product identification (2.1), materials and substances (2.2), durability (2.3), care and repair (2.4), end of life and circularity (2.5), environmental footprint (2.6).
+
 ## Battery
 
 | No. | Field | Type [unit] | Author |

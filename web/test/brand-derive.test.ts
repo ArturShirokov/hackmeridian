@@ -102,14 +102,27 @@ test("Compare lists every Field for both Pipelines and marks the server's differ
   const ns = c.rows.find((r) => r.name === "initial_internal_resistance_ohm")!;
   expect(ns.values[0]).toBe("Not stated");
   expect(c.rows.filter((r) => r.diff)).toHaveLength(2);
-  expect(c.summary).toBe("2 differences in 12 Fields. Click a row to see its quote.");
+  expect(c.summary).toBe("2 differences in 10 Fields. Click a row to see its quote.");
 });
 
 test("Review puts Not stated Fields in their own group, above the other rows", () => {
   const g = reviewGroups(doc("doc-1").views[0]!.fields);
   expect(g.notStated.map((x) => x.name)).toEqual(["initial_internal_resistance_ohm"]);
-  expect(g.rows).toHaveLength(11);
+  expect(g.rows).toHaveLength(9);
   expect(g.order[0]).toBe("initial_internal_resistance_ohm");
+});
+
+test("Review splits Not stated by Author and groups the other rows by Template section, in Template order", () => {
+  const f = (name: string, section: string, author: "Supplier" | "Brand", status: "final" | "not stated") =>
+    ({ name, label: name, section, author, tieBreak: false, status, ...(status === "not stated" ? { quotes: [] } : { value: 1, display: "1", evidence: { page: 1, quote: "q", rects: [] } }) }) as ApiField;
+  const g = reviewGroups([
+    f("commodity_code", "General", "Brand", "not stated"), f("mass", "General", "Supplier", "final"),
+    f("cf", "Carbon footprint", "Supplier", "not stated"), f("chem", "Materials", "Supplier", "final"), f("crm", "Materials", "Supplier", "final"),
+  ]);
+  expect(g.supplier.map((x) => x.name)).toEqual(["cf"]);
+  expect(g.brand.map((x) => x.name)).toEqual(["commodity_code"]);
+  expect(g.sections.map((s) => [s.section, s.fields.map((x) => x.name)])).toEqual([["General", ["mass"]], ["Materials", ["chem", "crm"]]]);
+  expect(g.order).toEqual(["cf", "commodity_code", "mass", "chem", "crm"]);
 });
 
 test("viewer boxes: the selected Field is solid and tagged, a Challenged one red, the rest dashed", () => {

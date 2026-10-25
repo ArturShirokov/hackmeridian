@@ -96,7 +96,7 @@ test("delivery records the output hash, opens the Challenge Window, and shows it
   expect((await board.brand.documents())[0]!.pipelines[op.address]).toMatchObject({ status: "delivered" });
 
   const row = (await board.brand.leaderboard()).find((r) => r.operator === op.address);
-  expect(row).toMatchObject({ documents: 1, fieldsDelivered: 25, bondsLocked: "10", challengesUpheld: 0 });
+  expect(row).toMatchObject({ documents: 1, fieldsDelivered: 60, bondsLocked: "10", challengesUpheld: 0 });
 });
 
 test("the Challenge Window closing clean pays Bond and Fee to the outside Operator's own address", async () => {
@@ -138,15 +138,15 @@ test("deliver rejects Fields outside the Template, missing Fields and quotes not
   const good = await fieldsFor(board, { rated_capacity_ah: capacity });
 
   const bad = [
-    ...good.filter((f) => f.field !== "name").map((f) => (f.field === "rated_capacity_ah" ? { ...capacity, field: f.field, quote: "Capacity is 220 Ah" } : f)),
+    ...good.filter((f) => f.field !== "manufacturing_place").map((f) => (f.field === "rated_capacity_ah" ? { ...capacity, field: f.field, quote: "Capacity is 220 Ah" } : f)),
     { field: "colour", notStated: true },
   ];
   const r = await op.deliver(docId, bad);
   expect(r.ok).toBe(false);
   expect(r.text).toContain('unknown Field "colour"');
-  expect(r.text).toContain("missing Fields (give each a value or notStated): name");
+  expect(r.text).toContain("missing Fields (give each a value or notStated): manufacturing_place");
   expect(r.text).toContain(`Field "rated_capacity_ah": quote not found in the Document's text: "Capacity is 220 Ah"`);
-  expect((await op.deliver(docId, [{ field: "name", value: "x" }])).text).toMatch(/page|quote/);
+  expect((await op.deliver(docId, [{ field: "manufacturing_place", value: "x" }])).text).toMatch(/page|quote/);
   expect(board.ledger.calls.some((c) => c.call === "recordOutput")).toBe(false);
 
   expect((await op.deliver(docId, good)).text).toMatch(/^delivered/);

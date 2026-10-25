@@ -11,8 +11,8 @@ const row = (field: ApiField, challenge?: Parameters<typeof FieldRow>[0]["challe
   render(<FieldRow field={field} challenge={challenge} selected={false} expanded={false} tieBreak={false} canChallenge={false} onSelect={noop} onToggle={noop} onChallenge={noop} />);
 
 test("a converging or withheld Field shows its status but never a value", () => {
-  row({ name: "cap", label: "Rated capacity", tieBreak: false, status: "converging" });
-  row({ name: "volt", label: "Nominal voltage", tieBreak: false, status: "final", withheld: true });
+  row({ name: "cap", label: "Rated capacity", section: "Performance", author: "Supplier", tieBreak: false, status: "converging" });
+  row({ name: "volt", label: "Nominal voltage", section: "Performance", author: "Supplier", tieBreak: false, status: "final", withheld: true });
   expect(screen.getAllByText("· · ·")).toHaveLength(2);
   expect(screen.getByText("Converging")).toBeTruthy();
   expect(screen.getByText("Final")).toBeTruthy();
@@ -20,7 +20,7 @@ test("a converging or withheld Field shows its status but never a value", () => 
 
 test("a filed Challenge turns the row Challenged and names the challenged value", () => {
   row(
-    { name: "cap", label: "Rated capacity", tieBreak: false, status: "final", value: 80, unit: "Ah", display: "80 Ah", evidence: { page: 1, quote: "80 Ah", rects: [] } },
+    { name: "cap", label: "Rated capacity", section: "Performance", author: "Supplier", tieBreak: false, status: "final", value: 80, unit: "Ah", display: "80 Ah", evidence: { page: 1, quote: "80 Ah", rects: [] } },
     { id: "c1", status: "filed", value: "220 Ah (rated)", page: 1, quote: "Rated capacity 220 Ah" },
   );
   expect(screen.getByText("Challenged")).toBeTruthy();

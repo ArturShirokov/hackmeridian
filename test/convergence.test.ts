@@ -29,7 +29,7 @@ test("two extraction Sieves agree on capacity 3200 mAh vs 3.2 Ah nominal, so the
   );
   expect(field("rated_capacity_ah")).toMatchObject({ status: "final", value: 3.2, unit: "Ah", qualifier: "nominal" });
   expect(field("battery_chemistry")).toMatchObject({ status: "final", value: "LFP" });
-  expect(field("name")).toMatchObject({ status: "not stated", quotes: [] }); // both said Not stated
+  expect(field("manufacturing_place")).toMatchObject({ status: "not stated", quotes: [] }); // both said Not stated
   expect((await brand.page(`/documents/${docId}`)).text).toMatch(/final/);
 });
 
@@ -51,10 +51,10 @@ test("a different value, a different qualifier, or Not stated against a value is
 
 test("text is compared trimmed and case-folded", async () => {
   const { field } = await twoExtractions(
-    { name: { value: "Cell C-32", page: 1, quote: "Cell C-32" } },
-    { name: { value: "  cell c-32 ", page: 1, quote: "Cell   C-32" } },
+    { manufacturing_place: { value: "Cell C-32", page: 1, quote: "Cell C-32" } },
+    { manufacturing_place: { value: "  cell c-32 ", page: 1, quote: "Cell   C-32" } },
   );
-  expect(field("name")).toMatchObject({ status: "final", value: "Cell C-32" });
+  expect(field("manufacturing_place")).toMatchObject({ status: "final", value: "Cell C-32" });
 });
 
 test("a quote not found in the Document's text layer counts as disagreement, even when the values agree", async () => {

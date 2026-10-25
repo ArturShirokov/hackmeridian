@@ -29,7 +29,7 @@ test("upload stores the file name and Supplier; the list is newest first with st
   expect(await brand.documents()).toMatchObject([
     { id: b, name: "b.pdf", supplier: "Lumen", template: "textile", pages: 2 },
     { id: a, name: "a.pdf", supplier: "Voltaris", template: "battery", pages: 2,
-      pipelines: { ours: { status: "processing", counts: { final: 0, converging: 25, notStated: 0 } }, baseline: { status: "processing" } } },
+      pipelines: { ours: { status: "processing", counts: { final: 0, converging: 60, notStated: 0 } }, baseline: { status: "processing" } } },
   ]);
   expect(await brand.uploadRaw(new TextEncoder().encode("PK not a pdf"), "battery", { name: "x.docx" })).toMatchObject({ status: 400 });
   expect(await brand.uploadRaw(await sheet(), "shoes")).toMatchObject({ status: 400, body: { error: expect.stringMatching(/Template/) } });
@@ -53,8 +53,8 @@ test("config and Templates: terms per Pipeline with Sieve labels, the window len
   });
   const [battery, textile] = await brand.templates();
   expect(battery).toMatchObject({ name: "battery", label: "Battery" });
-  expect(battery!.fields).toHaveLength(25);
-  expect(textile!.fields).toHaveLength(18);
+  expect(battery!.fields).toHaveLength(60);
+  expect(textile!.fields).toHaveLength(37);
   expect(battery!.fields.find((f) => f.name === "rated_capacity_ah")).toMatchObject({ type: "quantity", unit: "Ah", qualifiers: ["rated", "nominal", "minimum", "typical"] });
   expect(battery!.examples).toHaveLength(3);
 });
@@ -146,7 +146,7 @@ test("export: the delivered values in the expected-file shape, corrections appli
   const fields = r.body.fields as Record<string, unknown>;
   expect(fields.rated_capacity_ah).toEqual({ value: 220, unit: "Ah", qualifier: "rated", page: 1, quote: "Rated capacity: 220 Ah" });
   expect(fields.battery_chemistry).toBe("Not stated");
-  expect(Object.keys(fields)).toHaveLength(25);
+  expect(Object.keys(fields)).toHaveLength(60);
   expect((await board.brand.export("nope")).status).toBe(404);
 });
 

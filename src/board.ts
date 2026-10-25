@@ -9,7 +9,7 @@ import type {
   ApiSpan, ApiStation, ApiWorker, DocStatus,
 } from "./api.js";
 import type { Challenge } from "./challenges.js";
-import { compositionSum, converge, fold, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
+import { combinedSupplierRequest, compositionSum, converge, fold, formatValue, supplierRequest, valueKey, type FieldResult } from "./converge.js";
 import { addUsdc, minUsdc, settlement, slashes, subUsdc, type EscrowRequest, type Ledger } from "./ledger.js";
 import { quoteRects, readPdf, type TextItem } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
@@ -861,11 +861,16 @@ export class JobBoard {
   private apiField(d: Doc, pipeline: string, { f, v, was }: { f: Field; v: Entry; was?: string }, withheld: boolean): ApiField {
     const tie = this.jobsOf(pipeline, d.meta.id).find((j) => j.job.sieve === "tiebreak");
     const c = this.challenges.of(d.meta.id, pipeline).findLast((c) => c.field === f.name);
-    const base = { name: f.name, label: f.label, tieBreak: !!tie?.job.template.fields.some((t) => t.name === f.name), ...(c && { challenge: this.challengeSummary(c) }) };
+    const base = { name: f.name, label: f.label, section: f.section, author: f.author, tieBreak: !!tie?.job.template.fields.some((t) => t.name === f.name), ...(c && { challenge: this.challengeSummary(c) }) };
     if (v.status === "converging" || v.status === "disagreeing") return { ...base, status: "converging" };
     if (withheld) return { ...base, status: v.status, withheld: true };
     if (v.status === "not stated")
-      return { ...base, status: v.status, quotes: v.quotes.map((q) => this.quote(d, q.page, q.quote)), supplierRequest: supplierRequest(f, d.meta, v.quotes) };
+      return {
+        ...base,
+        status: v.status,
+        quotes: v.quotes.map((q) => this.quote(d, q.page, q.quote)),
+        ...(f.author === "Supplier" && { supplierRequest: supplierRequest(f, d.meta, v.quotes) }),
+      };
     return {
       ...base,
       status: "final",
@@ -898,6 +903,9 @@ export class JobBoard {
     const withheld = this.withheld(d);
     const views = this.pipelinesOf(d).map((p): ApiPipelineView => {
       const e = this.escrows.get(escrowKey(id, p.name));
+      const entries = this.entries(d, p.name);
+      const notStated = withheld ? [] : entries.flatMap(({ f, v }) => (v.status === "not stated" ? [{ f, quotes: v.quotes }] : []));
+      const request = combinedSupplierRequest(d.meta, notStated);
       return {
         pipeline: p.name,
         label: p.label ?? p.name,
@@ -906,7 +914,9 @@ export class JobBoard {
         ...this.trace(d, p, withheld),
         ...(e && { deliveredAt: e.openedAt, escrow: this.escrowView(e) }),
         ...(!withheld && { markdown: this.checkedMarkdown(p.name, id) }),
-        fields: this.entries(d, p.name).map((x) => this.apiField(d, p.name, x, withheld)),
+        fields: entries.map((x) => this.apiField(d, p.name, x, withheld)),
+        ...(request && { supplierRequest: request }),
+        brandToProvide: notStated.filter(({ f }) => f.author === "Brand").map(({ f }) => f.name),
       };
     });
     return { ...this.summary(d), fileUrl: `/documents/${id}/file`, ...(d.meta.link && { storageLink: d.meta.link }), views, differs: this.differs(d) };
@@ -1108,7 +1118,7 @@ export class JobBoard {
         if (corrected) return { name: f.name, label: f.label, status: "final" as const, ...corrected };
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         if (v.status !== "not stated") return { name: f.name, label: f.label, ...v };
-        return { name: f.name, label: f.label, ...v, supplierRequest: supplierRequest(f, d.meta, v.quotes) };
+        return { name: f.name, label: f.label, ...v, ...(f.author === "Supplier" && { supplierRequest: supplierRequest(f, d.meta, v.quotes) }) };
       }),
     };
   }

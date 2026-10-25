@@ -27,10 +27,10 @@ test("the JSON export round-trips the delivered Fields exactly, every Field pres
 test("the JSON carries each Field's Author when the Template gives one", () => {
   const d = doc();
   const t = battery();
-  t.fields = t.fields.map((f) => (f.name === "rated_capacity_ah" ? { ...f, author: "Supplier" } : f));
+  t.fields = t.fields.filter((f) => f.name !== "manufacturing_place");
   const out = passport(d, d.views[0]!, t).fields;
   expect(out.rated_capacity_ah).toMatchObject({ author: "Supplier" });
-  expect(out.name).not.toHaveProperty("author");
+  expect(out.manufacturing_place).not.toHaveProperty("author");
 });
 
 test("the Markdown is a table per Template section, falling back to one table without sections", () => {
