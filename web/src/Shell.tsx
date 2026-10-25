@@ -88,7 +88,7 @@ function SignIn({ onPick }: { onPick(id: string): void }) {
   return (
     <main className="om-app" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div style={{ width: "100%", maxWidth: 420 }}>
-        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 28 }}>Origyn</div>
+        <div style={{ font: "500 30px/1 var(--serif)", marginBottom: 28 }}>doc2dpp</div>
         <div style={{ font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34", marginBottom: 10 }}>Sign in as</div>
         <ul aria-label="Sign in as" style={{ listStyle: "none", margin: 0, padding: 0, borderTop: "1px solid var(--rule)" }}>
           {users.map((u) => (
@@ -124,7 +124,7 @@ function Sidebar({ user, active, onSwitch }: { user: ApiUser; active: string; on
   const lit = NAV[role].find(([, to]) => to === active)?.[1];
   return (
     <aside className="om-desktop-only" style={{ width: 228, flex: "none", borderRight: "1px solid var(--rule)", display: "flex", flexDirection: "column", background: "var(--sidebar)" }}>
-      <Link to="/" style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>Origyn</Link>
+      <Link to="/" style={{ padding: "22px 22px 18px", font: "500 26px/1 var(--serif)", color: "var(--ink)", textDecoration: "none" }}>doc2dpp</Link>
       <div style={{ padding: "0 22px 16px", font: "600 11px/1 var(--sans)", letterSpacing: ".08em", textTransform: "uppercase", color: "#3D3A34" }}>{user.org}</div>
       <nav style={{ display: "flex", flexDirection: "column", borderTop: "1px solid var(--rule)" }}>
         {NAV[role].map(([label, to]) => (

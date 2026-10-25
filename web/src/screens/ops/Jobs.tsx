@@ -17,7 +17,7 @@ const TONE = {
 };
 const card = { border: `1px solid ${INK}`, background: "var(--surface)" } as const;
 
-export const connectCommand = (baseUrl: string) => `claude mcp add --transport http origyn-jobs ${baseUrl.replace(/\/$/, "")}/mcp`;
+export const connectCommand = (baseUrl: string) => `claude mcp add --transport http doc2dpp ${baseUrl.replace(/\/$/, "")}/mcp`;
 
 export function Jobs() {
   const { data: workers } = usePoll(api.workers, 1000);

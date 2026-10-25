@@ -23,5 +23,5 @@ export function useServerClock() {
 }
 
 export function NotFound() {
-  return <div style={{ flex: 1, overflow: "auto" }}><PageHeader eyebrow="Origyn" title="Page not found" /></div>;
+  return <div style={{ flex: 1, overflow: "auto" }}><PageHeader eyebrow="doc2dpp" title="Page not found" /></div>;
 }

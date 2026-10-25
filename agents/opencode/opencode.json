@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "job-board": { "type": "remote", "url": "http://127.0.0.1:3100/mcp", "enabled": true }
+    "doc2dpp": { "type": "remote", "url": "http://127.0.0.1:3100/mcp", "enabled": true }
   }
 }

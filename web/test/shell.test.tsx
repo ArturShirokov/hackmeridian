@@ -7,7 +7,7 @@ import { App } from "../src/Shell.tsx";
 const users = [
   { id: "ines", name: "Inês Duarte", role: "brand", org: "Voltaris", sub: "Product Compliance, Voltaris", brand: "brand" },
   { id: "arbiter", name: "Arbiter desk", role: "arbiter", org: "Arbiter", sub: "Neutral third party" },
-  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs the Origyn Pipeline", operator: "ours" },
+  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs our 5-Sieve Pipeline", operator: "ours" },
   { id: "baseline", name: "Baseline Operator", role: "operator", org: "Baseline", sub: "Runs the one-pass Baseline", operator: "baseline" },
 ];
 

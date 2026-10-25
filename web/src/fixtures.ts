@@ -19,7 +19,7 @@ const config: ApiConfig = {
   brand: { name: "Voltaris", reviewer: "Inês Duarte" },
   operators: [
     {
-      pipeline: "ours", label: "Origyn Pipeline", operator: "Origyn", bond: "50", fee: "5",
+      pipeline: "ours", label: "Origyn", operator: "Origyn", bond: "50", fee: "5",
       sieves: [
         { kind: "extract", label: "Original" }, { kind: "markdown", label: "Markdown" }, { kind: "faithfulness", label: "Faithfulness check" },
         { kind: "extract", label: "Markdown extraction" }, { kind: "tiebreak", label: "Tie-break" },
@@ -98,7 +98,7 @@ const doc1: ApiDocument = {
   fileUrl: "/fixtures/battery-01-voltaris-pack-spec.pdf",
   views: [
     {
-      pipeline: "ours", label: "Origyn Pipeline", operator: "Origyn", deliveredAt: t0 - 2 * min, fields: ours,
+      pipeline: "ours", label: "Origyn", operator: "Origyn", deliveredAt: t0 - 2 * min, fields: ours,
       markdown: "<!-- page 1 -->\n# Voltaris NMC-800 EV Battery Pack\n\n| Property | Value |\n|---|---|\n| Battery identifier | BAT-EU-2027-000214 |\n| Rated capacity | 220 Ah |\n| Nominal voltage | 360 V |\n\n<!-- page 2 -->\n## Chemistry\n\nLithium nickel manganese cobalt oxide (NMC 811), graphite anode\n",
       escrow: escrow("Origyn", 0, "e4b1c0ffee00000000000000000000000000000000000000000000000090af"),
       stations: [
@@ -128,7 +128,7 @@ const doc2: ApiDocument = {
   fileUrl: "/fixtures/battery-02-kestrel-18650-cell-datasheet.pdf",
   views: [
     {
-      pipeline: "ours", label: "Origyn Pipeline", operator: "Origyn", fields: doc2Ours,
+      pipeline: "ours", label: "Origyn", operator: "Origyn", fields: doc2Ours,
       stations: [
         station(0, "extract", "Original", "done", "11 values stated", "Claude Code"),
         station(1, "markdown", "Markdown", "done", "2 pages · 2 tables", "OpenCode"),
@@ -161,7 +161,7 @@ const arbiter: ApiArbiter = { open: [challenge], decided: [], record: { decided:
 
 const leaderboard: ApiLeaderRow[] = [
   {
-    operator: "Origyn", label: "Origyn Pipeline", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50",
+    operator: "Origyn", label: "Origyn", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50",
     accuracy: { correct: 146, fields: 150 }, link: "https://stellar.expert/explorer/testnet", series: [{ documentId: "doc-1", short: "Voltaris pack", balance: "50" }],
   },
   {
@@ -195,7 +195,7 @@ const workers: ApiWorker[] = [
 const users: ApiUser[] = [
   { id: "ines", name: "Inês Duarte", role: "brand", org: "Voltaris", sub: "Product Compliance, Voltaris", brand: "brand" },
   { id: "arbiter", name: "Arbiter desk", role: "arbiter", org: "Arbiter", sub: "Neutral third party" },
-  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs the Origyn Pipeline", operator: "ours" },
+  { id: "origyn", name: "Origyn Operator", role: "operator", org: "Origyn", sub: "Runs our 5-Sieve Pipeline", operator: "ours" },
   { id: "baseline", name: "Baseline Operator", role: "operator", org: "Baseline", sub: "Runs the one-pass Baseline", operator: "baseline" },
 ];
 let user: ApiUser | null = null;

@@ -1,6 +1,8 @@
-# Bonded document-to-passport Pipeline on Stellar
+# doc2dpp
 
-HackMeridian 2026. Supplier PDFs go in, structured Digital Product Passport data comes out, and every delivered
+Supplier documents in, passport data out, with money behind every Field.
+
+doc2dpp (Documents → Digital Product Passport), built for HackMeridian 2026 by Origyn. Supplier PDFs go in, structured Digital Product Passport data comes out, and every delivered
 Document has money behind it: a Bond in testnet USDC on Stellar that pays the Brand when a Field is wrong.
 Terms (Brand, Field, Sieve, Bond, Slash and so on) are defined in [GLOSSARY.md](GLOSSARY.md).
 
@@ -85,7 +87,7 @@ A Worker is any AI session that speaks MCP. It connects to the Job Board over st
 **Claude Code**
 
 ```bash
-claude mcp add --transport http job-board http://127.0.0.1:3000/mcp
+claude mcp add --transport http doc2dpp http://127.0.0.1:3000/mcp
 ```
 
 **OpenCode**: add this to `opencode.json` in the project root or `~/.config/opencode/opencode.json`:
@@ -93,7 +95,7 @@ claude mcp add --transport http job-board http://127.0.0.1:3000/mcp
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "mcp": { "job-board": { "type": "remote", "url": "http://127.0.0.1:3000/mcp", "enabled": true } }
+  "mcp": { "doc2dpp": { "type": "remote", "url": "http://127.0.0.1:3000/mcp", "enabled": true } }
 }
 ```
 
@@ -101,7 +103,7 @@ claude mcp add --transport http job-board http://127.0.0.1:3000/mcp
 `pi install npm:pi-mcp-adapter`, restart Pi, and put this in `.mcp.json` in the project root:
 
 ```json
-{ "mcpServers": { "job-board": { "url": "http://127.0.0.1:3000/mcp" } } }
+{ "mcpServers": { "doc2dpp": { "url": "http://127.0.0.1:3000/mcp" } } }
 ```
 
 Then give the session this prompt:

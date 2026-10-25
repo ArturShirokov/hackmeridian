@@ -13,7 +13,7 @@ export interface Sieve {
 
 export interface Pipeline {
   name: string;
-  /** Shown to the Brand: "Origyn Pipeline", "Baseline". */
+  /** Shown to the Brand: "Origyn" (our Operator), "Baseline". */
   label?: string;
   sieves: Sieve[];
 }
@@ -47,7 +47,7 @@ export const baseline: Pipeline = {
 /** Our Pipeline. Sieves run in order, each Job posted when the previous Sieve is handed in. */
 export const ours: Pipeline = {
   name: "ours",
-  label: "Origyn Pipeline",
+  label: "Origyn",
   sieves: [
     { kind: "extract", label: "Original", view: "original", instructions: extractFromOriginal },
     { kind: "markdown", label: "Markdown", view: "original", instructions: toMarkdown },

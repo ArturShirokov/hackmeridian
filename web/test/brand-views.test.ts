@@ -38,7 +38,7 @@ test("the Markdown is a table per Template section, falling back to one table wi
   const t = battery();
   t.fields = t.fields.map((f) => ({ ...f, section: f.name === "rated_capacity_ah" || f.name === "nominal_voltage_v" ? "Performance and durability" : "General" }));
   const md = passportMarkdown(d, d.views[0]!, t);
-  expect(md).toContain("# battery-01-voltaris-pack-spec · Origyn Pipeline\n");
+  expect(md).toContain("# battery-01-voltaris-pack-spec · Origyn\n");
   expect(md).toContain("## Performance and durability\n\n| Field | Value | Status | Page | Quote |\n|---|---|---|---|---|\n| Rated capacity | 220 Ah · rated | Final | 1 | Rated capacity 220 Ah |\n| Nominal voltage | 360 V · nominal | Final | 1 | Nominal voltage 360 V |\n");
   expect(md).toContain("| Initial internal resistance (pack) | Not stated | Not stated |  |  |");
   expect(md.indexOf("## General")).toBeLessThan(md.indexOf("## Performance"));

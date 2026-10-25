@@ -73,7 +73,7 @@ test("all four view tabs render for a delivered Document, for each Operator", ()
     { id: "s2", parent: "s1", label: "Table reader", view: "markdown", model: "script", start: 10, end: 20 },
   ];
   render(<ReviewView d={d} config={config} offset={0} file={vi.fn()} />);
-  for (const op of ["Origyn Pipeline", "Baseline"]) {
+  for (const op of ["Origyn", "Baseline"]) {
     fireEvent.click(screen.getByRole("tab", { name: new RegExp(op) }));
     fireEvent.click(screen.getByRole("tab", { name: "JSON" }));
     expect(screen.getByTestId("json").textContent).toContain('"rated_capacity_ah"');
@@ -154,5 +154,5 @@ test("arrow keys move between rows and C opens a Challenge on the selected Field
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.keyDown(window, { key: "ArrowDown" });
   fireEvent.keyDown(window, { key: "c" });
-  expect(screen.getByText("Origyn Pipeline delivered")).toBeTruthy();
+  expect(screen.getByText("Origyn delivered")).toBeTruthy();
 });
