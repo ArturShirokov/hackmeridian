@@ -2,14 +2,21 @@
 // and its web API (as the Brand), all in process.
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { PDFDocument, StandardFonts } from "pdf-lib";
-import { JobBoard, type Job } from "../src/board.js";
+import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
 import type { Pipeline } from "../src/pipelines.js";
 import { InMemoryStorage } from "../src/storage.js";
 import { FakeLedger } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
 import { webApp } from "../src/web.js";
 
-export function startBoard(opts: { jobTimeoutMs?: number; pipelines?: Pipeline[] } = {}) {
+export function startBoard(
+  opts: {
+    jobTimeoutMs?: number;
+    pipelines?: Pipeline[];
+    operators?: Record<string, OperatorTerms>;
+    challengeWindowMs?: number;
+  } = {},
+) {
   const storage = new InMemoryStorage();
   const ledger = new FakeLedger();
   let time = 0;
@@ -51,6 +58,7 @@ export function startBoard(opts: { jobTimeoutMs?: number; pipelines?: Pipeline[]
         id: string;
         template: string;
         fields: { name: string; status: "converging" | "final" | "disagreeing"; value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean }[];
+        escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number };
       };
     },
     async page(path: string) {
@@ -59,7 +67,10 @@ export function startBoard(opts: { jobTimeoutMs?: number; pipelines?: Pipeline[]
     },
   };
 
-  return { web, worker, brand, ledger, clock };
+  /** Run what main.ts runs every 5 s: settle escrows whose Challenge Window has closed. */
+  const tick = () => board.tick();
+
+  return { web, worker, brand, ledger, clock, tick };
 }
 
 /** A fixture PDF: one array of text lines per page. */

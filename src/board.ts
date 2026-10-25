@@ -1,9 +1,9 @@
 // The Job Board: owns Documents, Jobs and Sieve results. Workers reach it through mcp.ts,
 // the Brand through web.ts. It touches the outside world only through the Storage and Ledger adapters.
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import * as z from "zod";
 import { converge, type FieldResult } from "./converge.js";
-import type { Ledger } from "./ledger.js";
+import type { EscrowRequest, Ledger } from "./ledger.js";
 import { pageTexts } from "./pdf.js";
 import { baseline, type Pipeline, type SieveKind, type View } from "./pipelines.js";
 import type { DocumentMeta, Storage } from "./storage.js";
@@ -78,6 +78,20 @@ interface Doc {
   delivered: Map<string, FieldResult[]>;
 }
 
+/** What an Operator puts up and is paid per Document, in USDC decimal strings. */
+export interface OperatorTerms {
+  operator: string;
+  bond: string;
+  fee: string;
+}
+
+interface Escrow extends EscrowRequest {
+  escrowId: string;
+  /** When the Challenge Window closes, in ms since the epoch. */
+  closesAt: number;
+  status: "open" | "settling" | "settled";
+}
+
 interface JobState {
   job: Job;
   pipeline: string;
@@ -100,6 +114,10 @@ export class JobBoard {
   private lastPoll = new Date(0);
   private now: () => number;
   private jobTimeoutMs: number;
+  private operators: Record<string, OperatorTerms>;
+  private challengeWindowMs: number;
+  /** Keyed by `${documentId} ${pipeline}`. */
+  private escrows = new Map<string, Escrow>();
 
   constructor(opts: {
     storage: Storage;
@@ -110,9 +128,14 @@ export class JobBoard {
     now?: () => number;
     /** How long a Worker may hold a Job before it goes back on the board. */
     jobTimeoutMs?: number;
+    /** Bond and Fee by Pipeline name. A Pipeline not listed is run by an Operator of the same name for 10 + 1 USDC. */
+    operators?: Record<string, OperatorTerms>;
+    challengeWindowMs?: number;
   }) {
     this.now = opts.now ?? Date.now;
     this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
+    this.operators = opts.operators ?? {};
+    this.challengeWindowMs = opts.challengeWindowMs ?? 5 * 60_000;
     this.storage = opts.storage;
     this.ledger = opts.ledger;
     this.baseUrl = opts.baseUrl;
@@ -195,7 +218,7 @@ export class JobBoard {
     return s.job;
   }
 
-  submitJob(worker: string, jobId: string, result: unknown): SubmitOutcome {
+  async submitJob(worker: string, jobId: string, result: unknown): Promise<SubmitOutcome> {
     const s = this.jobs.find((j) => j.job.id === jobId);
     if (!s) return { ok: false, error: `unknown Job "${jobId}"` };
     if (s.takenBy !== worker) return { ok: false, error: `Job "${jobId}" is not taken by Worker "${worker}"` };
@@ -208,12 +231,51 @@ export class JobBoard {
     s.done = true;
     s.result = parsed.data.fields;
     const p = this.pipelines.find((p) => p.name === s.pipeline)!;
-    if (s.sieve + 1 < p.sieves.length) this.post(p, s.sieve + 1, doc.meta.id);
-    else {
-      const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.job.sieve === "extract");
-      doc.delivered.set(p.name, converge(doc.template, ran.map((j) => j.result!), doc.text));
+    if (s.sieve + 1 < p.sieves.length) {
+      this.post(p, s.sieve + 1, doc.meta.id);
+      return { ok: true };
+    }
+    const ran = this.jobs.filter((j) => j.pipeline === p.name && j.job.documentId === doc.meta.id && j.job.sieve === "extract");
+    const fields = converge(doc.template, ran.map((j) => j.result!), doc.text);
+    doc.delivered.set(p.name, fields);
+    try {
+      await this.openEscrow(doc, p.name, fields);
+    } catch (e) {
+      s.done = false;
+      delete s.result;
+      doc.delivered.delete(p.name);
+      return { ok: false, error: `could not open the escrow, try again: ${(e as Error).message}` };
     }
     return { ok: true };
+  }
+
+  /** Delivery: lock the Operator's Bond and the Brand's Fee behind a hash of the delivered Field values. */
+  private async openEscrow(doc: Doc, pipeline: string, fields: FieldResult[]) {
+    const terms = this.operators[pipeline] ?? { operator: pipeline, bond: "10", fee: "1" };
+    const req: EscrowRequest = {
+      documentId: doc.meta.id,
+      ...terms,
+      brand: doc.meta.uploader,
+      outputHash: createHash("sha256").update(JSON.stringify(fields)).digest("hex"),
+    };
+    const { escrowId } = await this.ledger.openEscrow(req);
+    this.escrows.set(`${doc.meta.id} ${pipeline}`, { ...req, escrowId, closesAt: this.now() + this.challengeWindowMs, status: "open" });
+  }
+
+  /** Settle every escrow whose Challenge Window has closed. main.ts calls this every 5 s. */
+  async tick(): Promise<void> {
+    for (const e of this.escrows.values()) {
+      if (e.status !== "open" || this.now() < e.closesAt) continue;
+      // ponytail: no Challenges exist yet, so every closed window settles clean; slashes come with Challenges.
+      e.status = "settling";
+      try {
+        await this.ledger.settleClean(e.escrowId);
+        e.status = "settled";
+      } catch (err) {
+        e.status = "open";
+        console.error(`settling escrow ${e.escrowId} failed:`, err);
+      }
+    }
   }
 
   documents(): DocumentMeta[] {
@@ -225,10 +287,19 @@ export class JobBoard {
     const d = this.docs.get(id);
     if (!d) return undefined;
     const values = d.delivered.get(this.pipelines[0]!.name) ?? [];
+    const e = this.escrows.get(`${id} ${this.pipelines[0]!.name}`);
     return {
       id,
       template: d.template.name,
       uploadedAt: d.meta.uploadedAt,
+      escrow: e && {
+        operator: e.operator,
+        bond: e.bond,
+        fee: e.fee,
+        outputHash: e.outputHash,
+        status: e.status === "settled" ? ("settled" as const) : ("open" as const),
+        msLeft: Math.max(0, e.closesAt - this.now()),
+      },
       fields: d.template.fields.map((f) => {
         const { field: _, ...v } = values.find((v) => v.field === f.name) ?? { field: f.name, status: "converging" as const };
         return { name: f.name, label: f.label, ...v };
