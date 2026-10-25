@@ -33,6 +33,7 @@ input,textarea{font-family:inherit}
     <nav style="margin-left:auto;display:flex;align-items:center;gap:28px;font:500 15px/1 'Inter Tight',sans-serif">
       <a href="#how" style="color:#141414;text-decoration:none">How it works</a>
       <a onClick="{{ goLeader }}" style="color:#141414;text-decoration:none;cursor:pointer">Leaderboard</a>
+      <button onClick="{{ openConnect }}" style="height:40px;padding:0 16px;background:transparent;color:#141414;border:1px solid #141414;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#ECE7DB">Connect an agent</button>
       <button onClick="{{ goUpload }}" style="height:40px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#36332E">Open demo</button>
     </nav>
   </header>
@@ -48,7 +49,7 @@ input,textarea{font-family:inherit}
         <span style="font:500 14px/1.4 'JetBrains Mono',monospace;color:#3D3A34">Fee <span style="color:#0B4A57">5.00 USDC</span> · Bond <span style="color:#0B4A57">50.00 USDC</span></span>
       </div>
     </div>
-    <div style="border:1px solid #141414;background:#FFFDF9">
+    <div onClick="{{ goDemo }}" role="button" title="Open the demo" style="border:1px solid #141414;background:#FFFDF9;cursor:pointer" style-hover="box-shadow:0 0 0 3px #141414">
       <div style="display:flex;align-items:center;gap:14px;padding:10px 14px;border-bottom:1px solid #D6CFBF">
         <span style="font:500 12px/1 'JetBrains Mono',monospace;color:#3D3A34">NMC-800 Cell Datasheet rev C</span>
         <span style="margin-left:auto;display:inline-flex;align-items:baseline;gap:6px;border:1px solid #0B4A57;padding:5px 9px;font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57">Bond <b style="font-weight:600;font-size:14px">50.00 USDC</b> · locked</span>
@@ -83,7 +84,7 @@ input,textarea{font-family:inherit}
       <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px">
         <div style="border-top:1px solid #141414;padding-top:16px;display:flex;flex-direction:column;gap:14px">
           <span style="font:500 13px/1 'JetBrains Mono',monospace;color:#3D3A34">01</span>
-          <div style="height:110px;display:flex;align-items:center;gap:10px"><div style="width:64px;height:84px;border:1px solid #141414;background:#FFFDF9;display:flex;flex-direction:column;gap:6px;padding:10px 8px"><div style="height:2px;background:#8E877A"></div><div style="height:2px;background:#8E877A;width:70%"></div><div style="height:2px;background:#8E877A"></div><div style="height:2px;background:#8E877A;width:50%"></div></div><span style="font:500 18px/1 'JetBrains Mono',monospace">→</span><div style="font:500 12px/1.4 'JetBrains Mono',monospace;border:1px solid #D6CFBF;padding:6px 8px">Battery<br>18 Fields</div></div>
+          <div style="height:110px;display:flex;align-items:center;gap:10px"><div style="width:64px;height:84px;border:1px solid #141414;background:#FFFDF9;display:flex;flex-direction:column;gap:6px;padding:10px 8px"><div style="height:2px;background:#8E877A"></div><div style="height:2px;background:#8E877A;width:70%"></div><div style="height:2px;background:#8E877A"></div><div style="height:2px;background:#8E877A;width:50%"></div></div><span style="font:500 18px/1 'JetBrains Mono',monospace">→</span><div style="font:500 12px/1.4 'JetBrains Mono',monospace;border:1px solid #D6CFBF;padding:6px 8px">Battery<br>60 Fields</div></div>
           <div style="font:600 18px/1.25 'Inter Tight',sans-serif">Upload</div>
           <p style="margin:0;font:400 15px/1.5 'Inter Tight',sans-serif;color:#3D3A34;text-wrap:pretty">Drop a Supplier Document and pick the Template: battery or textile.</p>
         </div>
@@ -123,7 +124,7 @@ input,textarea{font-family:inherit}
         </div>
         <div style="display:flex;flex-direction:column;gap:12px">
           <span style="font:400 30px/1.15 'Newsreader',serif">Every Bond and Slash is public on Stellar.</span>
-          <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 13px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ a3f9…c21e</a>
+          <a href="https://stellar.expert/explorer/testnet/tx/a3f98ea893ca0217a8a69e4fb3b71c52329203133dbf0f85771efdc939d9c21e" target="_blank" rel="noopener" style="font:500 13px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px" title="Stellar transaction a3f9…c21e">View on Stellar ↗ a3f9…c21e</a>
         </div>
       </div>
     </div>
@@ -153,6 +154,13 @@ input,textarea{font-family:inherit}
     <span style="font:600 14px/1.3 'Inter Tight',sans-serif">{{ who.name }}</span>
     <span style="font:400 13px/1.3 'Inter Tight',sans-serif;color:#3D3A34">{{ who.sub }}</span>
   </div>
+  <sc-if value="{{ isBrandSide }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:14px 22px 18px;border-top:1px solid #D6CFBF;display:flex;flex-direction:column;gap:6px">
+    <span style="font:500 12px/1.3 'Inter Tight',sans-serif;color:#2A2723">USDC balance held for Voltaris</span>
+    <span style="font:600 22px/1 'JetBrains Mono',monospace;color:#0B4A57">{{ balance }}</span>
+    <a href="https://stellar.expert/explorer/testnet/account/GCV0CQF7FEF23ADF45DQAQEF74Q76A624F2CB463AQQ63QFBBQ677HQ2" target="_blank" rel="noopener" style="font:500 11.5px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px" title="Stellar account GCV0…7HQ2">View on Stellar ↗ GCV0…7HQ2</a>
+  </div>
+  </sc-if>
 </aside>
 <main style="flex:1;min-width:0;display:flex;flex-direction:column;position:relative">
 
@@ -162,11 +170,11 @@ input,textarea{font-family:inherit}
     <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 28px;font:600 14px/1 'Inter Tight',sans-serif"><span>9:41</span><span style="font:500 12px/1 'JetBrains Mono',monospace">read-only</span></div>
     <div style="padding:8px 20px 16px;border-bottom:1px solid #D6CFBF">
       <div style="font:500 22px/1 'Newsreader',serif">Origyn</div>
-      <div style="margin-top:14px;font:600 17px/1.25 'Inter Tight',sans-serif">NMC-800 Cell Datasheet rev C</div>
-      <div style="margin-top:4px;font:400 14px/1.3 'Inter Tight',sans-serif;color:#3D3A34">Hunan Cellworks · Battery passport</div>
+      <div style="margin-top:14px;font:600 17px/1.25 'Inter Tight',sans-serif">{{ docTitle }}</div>
+      <div style="margin-top:4px;font:400 14px/1.3 'Inter Tight',sans-serif;color:#3D3A34">{{ docSub }}</div>
       <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font:500 13px/1.3 'JetBrains Mono',monospace">{{ mobileStatus }}</div>
       <sc-if value="{{ mobileDelivered }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="border:1px solid #0B4A57;color:#0B4A57;padding:6px 9px;font:500 13px/1 'JetBrains Mono',monospace">Bond <b style="font-weight:600">50.00 USDC</b> · {{ bondWord }}</span><span style="font:500 15px/1 'JetBrains Mono',monospace">{{ countdown }}</span></div>
+        <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="border:1px solid #0B4A57;color:#0B4A57;padding:6px 9px;font:500 13px/1 'JetBrains Mono',monospace">Bond <b style="font-weight:600">{{ mBond }} USDC</b> · {{ bondWord }}</span><span style="font:500 15px/1 'JetBrains Mono',monospace">{{ countdown }}</span></div>
       </sc-if>
     </div>
     <div style="flex:1;overflow:auto">
@@ -199,7 +207,6 @@ input,textarea{font-family:inherit}
           <div style="font:400 15px/1.4 'Inter Tight',sans-serif;color:#3D3A34">PDF, up to 50 MB · <span style="font-family:'JetBrains Mono',monospace;font-size:13px;border:1px solid #B5AE9F;padding:2px 6px">DOCX</span> coming soon</div>
           <div style="display:flex;gap:12px;margin-top:6px">
             <button onClick="{{ pickSample }}" style="height:44px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#36332E">Choose a Document</button>
-            <button onClick="{{ pickDocx }}" style="height:44px;padding:0 18px;background:transparent;color:#141414;border:1px solid #141414;font:500 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#ECE7DB">Try a .docx</button>
           </div>
         </sc-if>
         <sc-if value="{{ up.isFile }}" hint-placeholder-val="{{ false }}">
@@ -225,9 +232,8 @@ input,textarea{font-family:inherit}
           <div style="font:500 14px/1 'JetBrains Mono',monospace;color:#3D3A34">Uploading · {{ up.pct }}</div>
         </sc-if>
         <sc-if value="{{ up.isStored }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;align-items:center;gap:10px;font:600 22px/1.2 'Inter Tight',sans-serif"><span style="width:22px;height:22px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 'JetBrains Mono',monospace">✓</span>Stored on ICP</div>
+          <div style="display:flex;align-items:center;gap:10px;font:600 22px/1.2 'Inter Tight',sans-serif"><span style="width:22px;height:22px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 'JetBrains Mono',monospace">✓</span>Document stored</div>
           <div style="font:500 14px/1.3 'JetBrains Mono',monospace">{{ up.fileName }}</div>
-          <a href="https://dashboard.internetcomputer.org" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on ICP ↗ rwlgt…q4ma</a>
         </sc-if>
       </div>
       <div>
@@ -263,7 +269,7 @@ input,textarea{font-family:inherit}
         <div style="display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #E2DCCE;font:400 14px/1.35 'Inter Tight',sans-serif"><span style="color:#3D3A34">Template</span><span style="text-align:right">{{ sumTpl }}</span></div>
         <div style="display:flex;justify-content:space-between;gap:16px;padding:10px 0;font:400 14px/1.35 'Inter Tight',sans-serif"><span style="color:#3D3A34">Supplier</span><span style="text-align:right">{{ sumSup }}</span></div>
       </div>
-      <div style="padding:16px 20px;border-top:1px solid #D6CFBF;background:#F1EDE4;font:500 15px/1.6 'JetBrains Mono',monospace;color:#141414">Fee <span style="color:#0B4A57;font-weight:600">5.00 USDC</span> · backed by a <span style="color:#0B4A57;font-weight:600">50.00 USDC</span> Bond · Challenge Window 48 h</div>
+      <div style="padding:16px 20px;border-top:1px solid #D6CFBF;background:#F1EDE4;font:500 15px/1.6 'JetBrains Mono',monospace;color:#141414">Fee <span style="color:#0B4A57;font-weight:600">5.00 USDC</span> · backed by a <span style="color:#0B4A57;font-weight:600">50.00 USDC</span> Bond · Challenge Window 3 min demo · 48 h live</div>
       <div style="padding:20px">
         <button onClick="{{ start }}" style="width:100%;height:54px;background:{{ startBg }};color:#F7F5F0;border:0;font:600 17px/1 'Inter Tight',sans-serif;cursor:{{ startCur }}">Start</button>
         <div style="margin-top:10px;font:400 13px/1.4 'Inter Tight',sans-serif;color:#3D3A34">{{ startHint }}</div>
@@ -273,46 +279,107 @@ input,textarea{font-family:inherit}
 </div>
 </sc-if>
 
+<sc-if value="{{ dDocs }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow:auto">
+  <div style="padding:28px 40px 20px;border-bottom:1px solid #D6CFBF;display:flex;align-items:flex-end;gap:20px">
+    <div><div style="font:600 12px/1 'Inter Tight',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#2A2723">Voltaris</div><h1 style="margin:8px 0 0;font:600 30px/1.1 'Inter Tight',sans-serif">Documents</h1></div>
+    <button onClick="{{ goUpload }}" style="margin-left:auto;height:44px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#36332E">Upload a Document</button>
+  </div>
+  <div style="padding:20px 40px 40px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #141414;background:#FFFDF9">
+      <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;border-right:1px solid #D6CFBF"><span style="font:500 13px/1.2 'Inter Tight',sans-serif;color:#2A2723">Documents this month</span><span style="font:500 30px/1 'JetBrains Mono',monospace">{{ docTot.n }}</span></div>
+      <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;border-right:1px solid #D6CFBF"><span style="font:500 13px/1.2 'Inter Tight',sans-serif;color:#2A2723">Fields delivered</span><span style="font:500 30px/1 'JetBrains Mono',monospace">{{ docTot.fields }}</span></div>
+      <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px;border-right:1px solid #D6CFBF"><span style="font:500 13px/1.2 'Inter Tight',sans-serif;color:#2A2723">Open Supplier Requests</span><span style="font:500 30px/1 'JetBrains Mono',monospace;color:#6B4400">{{ docTot.sr }}</span></div>
+      <div style="padding:14px 18px;display:flex;flex-direction:column;gap:8px"><span style="font:500 13px/1.2 'Inter Tight',sans-serif;color:#2A2723">USDC received from Slashes</span><span style="font:500 30px/1 'JetBrains Mono',monospace;color:#0B4A57">{{ docTot.usdc }}</span></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <input value="{{ docQ }}" onChange="{{ onDocQ }}" placeholder="Search Documents or Suppliers" aria-label="Search" style="flex:1 1 280px;height:40px;padding:0 12px;border:1px solid #141414;background:#FFFDF9;font:400 15px/1 'Inter Tight',sans-serif;color:#141414;outline:none">
+      <select value="{{ docTpl }}" onChange="{{ onDocTpl }}" aria-label="Template" style="height:40px;padding:0 10px;border:1px solid #141414;background:#FFFDF9;font:500 14px/1 'Inter Tight',sans-serif;color:#141414"><option value="all">All Templates</option><option value="Battery">Battery</option><option value="Textile">Textile</option></select>
+      <select value="{{ docSup }}" onChange="{{ onDocSup }}" aria-label="Supplier" style="height:40px;padding:0 10px;border:1px solid #141414;background:#FFFDF9;font:500 14px/1 'Inter Tight',sans-serif;color:#141414"><option value="all">All Suppliers</option><option value="Hunan Cellworks">Hunan Cellworks</option><option value="Fiação do Ave">Fiação do Ave</option><option value="Ningde Anode Materials">Ningde Anode Materials</option><option value="Têxteis Barcelos">Têxteis Barcelos</option><option value="Voltaris (own Document)">Voltaris (own Document)</option></select>
+      <select value="{{ docSt }}" onChange="{{ onDocSt }}" aria-label="Status" style="height:40px;padding:0 10px;border:1px solid #141414;background:#FFFDF9;font:500 14px/1 'Inter Tight',sans-serif;color:#141414"><option value="all">Any status</option><option value="Processing">Processing</option><option value="Delivered">Delivered</option><option value="Settled">Settled</option></select>
+    </div>
+    <sc-if value="{{ docNote }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid #141414;background:#FFFDF9;font:400 14px/1.4 'Inter Tight',sans-serif">In this demo, NMC-800 Cell Datasheet rev C and Tech sheet SS27 shirting open. The other rows show the table's states.<button onClick="{{ closeDocNote }}" style="margin-left:auto;border:0;background:transparent;font:500 13px/1 'Inter Tight',sans-serif;text-decoration:underline;cursor:pointer">Dismiss</button></div>
+    </sc-if>
+    <div style="border:1px solid #141414;background:#FFFDF9">
+      <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) 70px minmax(0,1.5fr) 112px 150px 78px 84px 96px;gap:12px;padding:10px 16px;border-bottom:1px solid #141414;font:600 10.5px/1.25 'Inter Tight',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#2A2723"><span>Document</span><span>Supplier</span><span>Template</span><span>Operators</span><span>Status</span><span>Final · Not stated · Challenged</span><span>Bond</span><span>Window</span><span>Uploaded</span></div>
+      <sc-if value="{{ docsHas }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ docs }}" as="d" hint-placeholder-count="8">
+          <div onClick="{{ d.onClick }}" style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) 70px minmax(0,1.5fr) 112px 150px 78px 84px 96px;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid #E2DCCE;cursor:pointer" style-hover="background:#EFEADD">
+            <span style="font:500 14px/1.3 'Inter Tight',sans-serif;min-width:0;overflow-wrap:anywhere">{{ d.name }}</span>
+            <span style="font:400 14px/1.3 'Inter Tight',sans-serif">{{ d.sup }}</span>
+            <span style="font:400 13.5px/1.3 'Inter Tight',sans-serif">{{ d.tpl }}</span>
+            <span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ d.ops }}" as="o" hint-placeholder-count="2"><span style="border:1px solid #D6CFBF;padding:3px 6px;font:500 11.5px/1 'Inter Tight',sans-serif;white-space:nowrap">{{ o.n }}</span></sc-for></span>
+            <span style="display:flex;align-items:center;gap:7px;font:600 13px/1 'Inter Tight',sans-serif;color:{{ d.stFg }}">
+              <sc-if value="{{ d.isProc }}" hint-placeholder-val="{{ false }}"><span style="width:13px;height:13px;border:2px solid #D6CFBF;border-top-color:#141414;border-radius:50%;animation:om-spin .8s linear infinite"></span></sc-if>
+              <sc-if value="{{ d.notProc }}" hint-placeholder-val="{{ true }}"><span style="width:15px;height:15px;border-radius:50%;background:{{ d.icBg }};color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:700 9px/1 'JetBrains Mono',monospace">✓</span></sc-if>{{ d.st }}</span>
+            <span>
+              <sc-if value="{{ d.hasF }}" hint-placeholder-val="{{ true }}"><span style="display:flex;gap:10px;font:500 13px/1 'JetBrains Mono',monospace">
+                <span title="Final" style="display:flex;align-items:center;gap:4px"><span style="width:13px;height:13px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 8px/1 'JetBrains Mono',monospace">✓</span>{{ d.nf }}</span>
+                <span title="Not stated" style="display:flex;align-items:center;gap:4px;color:#6B4400"><span style="width:13px;height:13px;border:1px solid #B9862A;background:repeating-linear-gradient(135deg,#F1DDAE 0 2px,#FBF3E0 2px 4px)"></span>{{ d.nns }}</span>
+                <span title="Challenged" style="display:flex;align-items:center;gap:4px;color:#A3221B"><span style="width:13px;height:13px;border-radius:50%;border:1.5px solid #A3221B;display:inline-flex;align-items:center;justify-content:center;font:700 8px/1 'JetBrains Mono',monospace">!</span>{{ d.nc }}</span>
+              </span></sc-if>
+              <sc-if value="{{ d.noF }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723">—</span></sc-if>
+            </span>
+            <span style="font:500 13px/1 'JetBrains Mono',monospace;color:{{ d.bondFg }}">{{ d.bond }}</span>
+            <span style="font:500 13px/1 'JetBrains Mono',monospace">{{ d.left }}</span>
+            <span style="font:400 13px/1 'JetBrains Mono',monospace;color:#2A2723">{{ d.date }}</span>
+          </div>
+        </sc-for>
+      </sc-if>
+      <sc-if value="{{ docsEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:56px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center"><span style="font:400 30px/1.2 'Newsreader',serif">Upload your first Supplier Document.</span><button onClick="{{ goUpload }}" style="height:44px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Upload a Document</button></div>
+      </sc-if>
+      <sc-if value="{{ docsNoRes }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:40px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center"><span style="font:500 17px/1.3 'Inter Tight',sans-serif">No Documents match these filters.</span><button onClick="{{ clearDocFilters }}" style="height:38px;padding:0 14px;background:transparent;border:1px solid #141414;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">Clear filters</button></div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</sc-if>
+
 <sc-if value="{{ dPipeline }}" hint-placeholder-val="{{ false }}">
 <div style="flex:1;min-height:0;display:flex;flex-direction:column">
   <div style="padding:18px 32px;border-bottom:1px solid #D6CFBF;display:flex;align-items:center;gap:28px">
     <div style="min-width:0">
-      <div style="font:600 22px/1.2 'Inter Tight',sans-serif">NMC-800 Cell Datasheet rev C.pdf</div>
-      <div style="margin-top:5px;font:400 14px/1.3 'Inter Tight',sans-serif;color:#3D3A34">Hunan Cellworks · Battery passport · 18 Fields · 12 pages</div>
+      <div style="font:600 22px/1.2 'Inter Tight',sans-serif">{{ pTitle }}</div>
+      <div style="margin-top:5px;font:400 14px/1.3 'Inter Tight',sans-serif;color:#3D3A34">{{ pSub }}</div>
     </div>
     <div style="margin-left:auto;display:flex;align-items:center;gap:10px;font:600 14px/1 'Inter Tight',sans-serif">
       <sc-if value="{{ pipe.done }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 'JetBrains Mono',monospace">✓</span>Delivered</sc-if>
       <sc-if value="{{ pipe.notDone }}" hint-placeholder-val="{{ true }}"><span style="width:16px;height:16px;border:2px solid #D6CFBF;border-top-color:#141414;border-radius:50%;animation:om-spin .8s linear infinite"></span>{{ pipe.statusWord }}</sc-if>
     </div>
-    <div style="font:500 22px/1 'JetBrains Mono',monospace">{{ pipe.elapsed }}</div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Elapsed</span><span style="font:500 22px/1 'JetBrains Mono',monospace">{{ pipe.elapsed }}</span></div>
     <button onClick="{{ replay }}" style="height:36px;padding:0 14px;background:transparent;border:1px solid #8E877A;font:500 13px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="border-color:#141414">Replay</button>
   </div>
-  <div style="padding:18px 32px 20px;border-bottom:1px solid #D6CFBF;background:#F1EDE4;display:flex;flex-direction:column;gap:16px">
+  <div style="flex:none;max-height:56%;overflow:auto;padding:14px 32px 16px;border-bottom:1px solid #D6CFBF;background:#F1EDE4;display:flex;flex-direction:column;gap:12px">
     <sc-if value="{{ pipe.banner }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid {{ pipe.bannerBd }};background:#FFFDF9;font:500 14px/1.3 'Inter Tight',sans-serif;color:{{ pipe.bannerFg }}"><span style="font:700 13px/1 'JetBrains Mono',monospace">{{ pipe.bannerIcon }}</span>{{ pipe.bannerText }}</div>
     </sc-if>
     <sc-for list="{{ tracks }}" as="tr" hint-placeholder-count="2">
       <div style="display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:stretch">
-        <div style="display:flex;flex-direction:column;justify-content:center;gap:4px"><span style="font:600 16px/1.2 'Inter Tight',sans-serif">{{ tr.name }}</span><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#3D3A34">{{ tr.sub }}</span></div>
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:4px"><span style="font:600 16px/1.2 'Inter Tight',sans-serif">{{ tr.name }}</span><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723">{{ tr.sub }}</span><span style="font:400 11.5px/1 'JetBrains Mono',monospace;color:#2A2723">{{ tr.addr }}</span></div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:22px">
             <sc-for list="{{ tr.stations }}" as="st" hint-placeholder-count="5">
-              <div style="position:relative;border:{{ st.bw }} solid {{ st.bd }};background:{{ st.bg }};padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-height:92px;transition:border-color .3s,background .3s">
-                <sc-if value="{{ st.notFirst }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-18px;top:34px;font:500 14px/1 'JetBrains Mono',monospace;color:#8E877A">→</span></sc-if>
+              <div onClick="{{ st.onClick }}" title="{{ st.tip }}" style="cursor:pointer;position:relative;border:{{ st.bw }} solid {{ st.bd }};background:{{ st.bg }};padding:8px 10px;display:flex;flex-direction:column;gap:5px;color:{{ st.fg }};transition:border-color .3s,background .3s">
+                <sc-if value="{{ st.notFirst }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-18px;top:24px;font:500 14px/1 'JetBrains Mono',monospace;color:#8E877A">→</span></sc-if>
                 <div style="display:flex;align-items:flex-start;gap:8px">
-                  <span style="font:500 11px/1.35 'JetBrains Mono',monospace;color:#3D3A34">{{ st.num }}</span>
+                  <span style="font:500 11px/1.35 'JetBrains Mono',monospace;color:{{ st.fg2 }}">{{ st.num }}</span>
                   <span style="flex:1;font:600 13.5px/1.25 'Inter Tight',sans-serif">{{ st.name }}</span>
-                  <sc-if value="{{ st.isDone }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;flex:none;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 'JetBrains Mono',monospace">✓</span></sc-if>
+                  <sc-if value="{{ st.isDone }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;flex:none;border-radius:50%;background:{{ st.icBg }};color:{{ st.icFg }};display:inline-flex;align-items:center;justify-content:center;font:700 10px/1 'JetBrains Mono',monospace">✓</span></sc-if>
                   <sc-if value="{{ st.isRun }}" hint-placeholder-val="{{ false }}"><span style="width:16px;height:16px;flex:none;border:2px solid #D6CFBF;border-top-color:#141414;border-radius:50%;animation:om-spin .8s linear infinite"></span></sc-if>
                   <sc-if value="{{ st.isFail }}" hint-placeholder-val="{{ false }}"><span style="width:18px;height:18px;flex:none;border-radius:50%;border:1.5px solid #A3221B;color:#A3221B;display:inline-flex;align-items:center;justify-content:center;font:700 11px/1 'JetBrains Mono',monospace">×</span></sc-if>
                   <sc-if value="{{ st.isWait }}" hint-placeholder-val="{{ true }}"><span style="width:16px;height:16px;flex:none;border-radius:50%;border:1.5px dashed #8E877A"></span></sc-if>
                 </div>
-                <span style="display:inline-flex;align-items:center;gap:6px;align-self:flex-start;border:1px solid #D6CFBF;padding:4px 7px;font:500 12px/1 'Inter Tight',sans-serif;background:#F7F5F0"><span style="width:7px;height:7px;border-radius:50%;background:{{ st.dot }};animation:{{ st.dotAnim }}"></span>{{ st.worker }}</span>
+                <span style="display:flex;align-items:center;gap:6px;font:500 12px/1.25 'Inter Tight',sans-serif;color:{{ st.fg2 }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:7px;height:7px;flex:none;border-radius:50%;background:{{ st.dot }};animation:{{ st.dotAnim }}"></span><span style="font-weight:600;color:{{ st.fg }}">{{ st.via }}</span>· {{ st.looked }}</span>
                 <span style="font:500 12px/1.3 'JetBrains Mono',monospace;color:{{ st.metaFg }}">{{ st.meta }}</span>
               </div>
             </sc-for>
           </div>
-          <div style="height:3px;background:#DDD6C7;position:relative"><div style="position:absolute;left:0;top:0;height:3px;background:#141414;width:{{ tr.fill }};transition:width .35s linear"></div></div>
+          <div style="height:3px;background:#DDD6C7;position:relative;width:{{ tr.railW }}"><div style="position:absolute;left:0;top:0;height:3px;background:#141414;width:{{ tr.fill }};transition:width .35s linear"></div></div>
+          <span style="font:400 11.5px/1 'JetBrains Mono',monospace;color:#2A2723">self-reported, the Bond is the guarantee</span>
+          <sc-if value="{{ tr.hasSpan }}" hint-placeholder-val="{{ false }}"><div style="padding:8px 10px;border:1px solid #141414;background:#FFFDF9;font:500 12.5px/1.4 'JetBrains Mono',monospace;animation:om-in .2s ease-out">{{ tr.spanText }}</div></sc-if>
         </div>
       </div>
     </sc-for>
@@ -320,9 +387,9 @@ input,textarea{font-family:inherit}
   <div style="flex:1;min-height:0;overflow:auto">
     <div style="display:grid;grid-template-columns:260px minmax(0,1fr) 170px 70px 110px;gap:16px;padding:10px 32px;border-bottom:1px solid #D6CFBF;font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#3D3A34;position:sticky;top:0;background:#F7F5F0;z-index:1"><span>Field</span><span>Value</span><span>Status</span><span>Page</span><span></span></div>
     <sc-for list="{{ pipeRows }}" as="x" hint-placeholder-count="10">
-      <div style="display:grid;grid-template-columns:260px minmax(0,1fr) 170px 70px 110px;gap:16px;align-items:center;padding:0 32px;height:48px;border-bottom:1px solid #E2DCCE;background:{{ x.rowBg }};transition:background .4s">
-        <span style="font:500 15px/1.2 'Inter Tight',sans-serif">{{ x.name }}</span>
-        <span style="font:500 15px/1.2 'JetBrains Mono',monospace;color:{{ x.vfg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ x.disp }}</span>
+      <div onClick="{{ x.onClick }}" title="{{ x.tip }}" style="cursor:{{ x.cur }};display:grid;grid-template-columns:260px minmax(0,1fr) 170px 70px 110px;gap:16px;align-items:center;padding:0 32px;height:48px;border-bottom:1px solid #E2DCCE;background:{{ x.rowBg }};transition:background .4s">
+        <span style="font:500 14px/1.2 'Inter Tight',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ x.name }}">{{ x.name }}</span>
+        <span style="font:500 15px/1.2 'JetBrains Mono',monospace;color:{{ x.vfg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ x.disp }}">{{ x.disp }}</span>
         <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 5px;border:1px solid {{ x.b.bd }};background:{{ x.b.bg }};color:{{ x.b.fg }};font:600 11.5px/1 'Inter Tight',sans-serif;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;justify-self:start"><span style="width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:{{ x.b.ib }};color:{{ x.b.ic }};border:1.5px {{ x.b.ibs }} {{ x.b.ibd }};font:700 10px/1 'JetBrains Mono',monospace">{{ x.b.icon }}</span><span style="padding-bottom:3px;margin-bottom:-3px;background-image:{{ x.b.ul }};background-size:5px 2px;background-repeat:repeat-x;background-position:0 100%;animation:{{ x.b.anim }};text-decoration:{{ x.b.td }}">{{ x.b.label }}</span></span>
         <span style="font:500 13px/1 'JetBrains Mono',monospace;color:#3D3A34">{{ x.pageLbl }}</span>
         <span><sc-if value="{{ x.showTb }}" hint-placeholder-val="{{ false }}"><span style="border:1px solid #141414;padding:3px 6px;font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase">Tie-break</span></sc-if></span>
@@ -341,10 +408,10 @@ input,textarea{font-family:inherit}
     </sc-if>
     <sc-if value="{{ pipe.done }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;align-items:center;gap:22px;animation:om-in .4s ease-out;flex:1;min-width:0">
-        <span style="font:600 20px/1 'Inter Tight',sans-serif">Delivered.</span>
+        <span style="font:600 20px/1 'Inter Tight',sans-serif">Delivered in {{ pipe.elapsed }}.</span>
         <span style="font:500 20px/1 'JetBrains Mono',monospace;color:#0B4A57">Bond 50.00 USDC locked.</span>
-        <span style="font:500 20px/1 'JetBrains Mono',monospace">Challenge Window {{ countdown }}</span>
-        <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px;white-space:nowrap">View on Stellar ↗ 7c02…e91b</a>
+        <span style="font:500 20px/1 'JetBrains Mono',monospace">Challenge Window {{ countdown }} <span style="font:500 13px/1.3 'Inter Tight',sans-serif;color:#2A2723">starts when you open it · 3 min demo · 48 h live</span></span>
+        <a href="https://stellar.expert/explorer/testnet/tx/7c02d778017f78404d2b3dbb56dd30309713efa821e34cca324a600a7fb7e91b" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px;white-space:nowrap" title="Stellar transaction 7c02…e91b">View on Stellar ↗ 7c02…e91b</a>
         <button onClick="{{ goReviewBtn }}" style="margin-left:auto;height:48px;padding:0 22px;background:#141414;color:#F7F5F0;border:0;font:600 16px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#36332E">Review Document</button>
       </div>
     </sc-if>
@@ -356,8 +423,8 @@ input,textarea{font-family:inherit}
 <div style="flex:1;min-height:0;display:flex;flex-direction:column;position:relative">
   <div style="flex:none;padding:12px 24px;border-bottom:1px solid #141414;display:flex;align-items:center;gap:20px;background:#FFFDF9">
     <div style="min-width:0;flex:0 1 260px">
-      <div style="font:600 15px/1.25 'Inter Tight',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">NMC-800 Cell Datasheet rev C</div>
-      <div style="margin-top:3px;font:400 13px/1.2 'Inter Tight',sans-serif;color:#3D3A34">Hunan Cellworks · Battery passport</div>
+      <div style="font:600 15px/1.25 'Inter Tight',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ docTitle }}</div>
+      <div style="margin-top:3px;font:400 13px/1.2 'Inter Tight',sans-serif;color:#3D3A34">{{ docSub }}</div>
     </div>
     <sc-for list="{{ moneyChips }}" as="m" hint-placeholder-count="2">
       <div style="display:flex;flex-direction:column;gap:4px;border:1px solid {{ m.bd }};padding:7px 11px;color:#0B4A57;background:{{ m.bg }}">
@@ -369,12 +436,13 @@ input,textarea{font-family:inherit}
     <div style="display:flex;flex-direction:column;gap:6px;min-width:150px">
       <span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Challenge Window</span>
       <span style="font:500 21px/1 'JetBrains Mono',monospace;color:{{ cdFg }}">{{ countdown }}</span>
+      <span style="font:500 11px/1 'Inter Tight',sans-serif;color:#2A2723;white-space:nowrap">{{ cdNote }}</span>
       <div style="height:2px;background:#DDD6C7"><div style="height:2px;background:#141414;width:{{ cdPct }}"></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Output hash</span>
-      <span style="font:500 13px/1 'JetBrains Mono',monospace">sha256 e4b1…90af</span>
-      <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ 7c02…e91b</a>
+      <span style="font:500 13px/1 'JetBrains Mono',monospace">{{ outHash }}</span>
+      <a href="{{ outTxHref }}" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ {{ outTx }}</a>
     </div>
     <button onClick="{{ openExport }}" style="margin-left:auto;height:44px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#36332E">Export to passport</button>
   </div>
@@ -382,8 +450,8 @@ input,textarea{font-family:inherit}
     <div style="flex:none;display:flex;align-items:center;gap:18px;padding:12px 24px;border-bottom:1px solid #1D5A36;background:#EEF3EC;color:#1D5A36;font:600 15px/1.3 'Inter Tight',sans-serif">
       <span style="width:20px;height:20px;border-radius:50%;background:#1D5A36;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:700 11px/1 'JetBrains Mono',monospace">✓</span>
       <span>Settled. The Challenge Window closed. {{ settledText }}</span>
-      <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#1D5A36;text-underline-offset:3px">Bond release ↗ 51d8…0a7e</a>
-      <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#1D5A36;text-underline-offset:3px">Fee ↗ 9e3c…b412</a>
+      <a href="https://stellar.expert/explorer/testnet/tx/51d88955267e0c6b552349baf86db5006d4292de32d538d398f462d992880a7e" target="_blank" rel="noopener" style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#1D5A36;text-underline-offset:3px" title="Stellar transaction 51d8…0a7e">Bond release ↗ 51d8…0a7e</a>
+      <a href="https://stellar.expert/explorer/testnet/tx/9e3c11cbaaf1212b881c6a7a3a400fec15656c0ca8e98882697c78d2cd9bb412" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#1D5A36;text-underline-offset:3px" title="Stellar transaction 9e3c…b412">Fee ↗ 9e3c…b412</a>
     </div>
   </sc-if>
   <div style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,55fr) minmax(0,45fr)">
@@ -399,7 +467,7 @@ input,textarea{font-family:inherit}
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column">
         <div style="flex:none;display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid #D6CFBF;font:400 13px/1.3 'Inter Tight',sans-serif;color:#2A2723">
-          <span style="font:500 13px/1 'JetBrains Mono',monospace">p. {{ page }} of 12</span>
+          <span style="font:500 13px/1 'JetBrains Mono',monospace">p. {{ page }} of {{ docPages }}</span>
           <span style="min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ vCaption }}</span>
         </div>
         <sc-if value="{{ picking }}" hint-placeholder-val="{{ false }}">
@@ -407,16 +475,16 @@ input,textarea{font-family:inherit}
         </sc-if>
         <div ref="{{ viewerRef }}" style="flex:1;min-height:0;overflow:auto;position:relative;padding:24px 28px 48px">
           <div style="max-width:620px;margin:0 auto;background:#FFFFFF;border:1px solid #CFC8B8;min-height:760px;padding:40px 48px 36px;display:flex;flex-direction:column;font:400 14px/1.5 Helvetica,Arial,sans-serif;color:#1E1E1E">
-            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#555;border-bottom:1px solid #999;padding-bottom:8px;margin-bottom:26px"><span>HUNAN CELLWORKS · NMC-800-DS rev C</span><span>Page {{ page }} / 12</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#555;border-bottom:1px solid #999;padding-bottom:8px;margin-bottom:26px"><span>{{ docHdr }}</span><span>Page {{ page }} / {{ docPages }}</span></div>
             <div style="font-size:19px;font-weight:700;margin-bottom:16px">{{ vTitle }}</div>
             <div style="display:flex;flex-direction:column;gap:2px">
               <sc-for list="{{ vLines }}" as="l" hint-placeholder-count="6">
-                <div data-line="{{ l.id }}" onClick="{{ l.onClick }}" title="{{ l.title }}" style="position:relative;margin:0 -10px;padding:7px 10px;background:{{ l.bg }};outline:{{ l.ol }};outline-offset:-1px;cursor:{{ l.cur }};transition:background .25s">
+                <div data-line="{{ l.id }}" onClick="{{ l.onClick }}" title="{{ l.title }}" aria-label="{{ l.title }}" style="position:relative;margin:0 -10px;padding:7px 10px;background:{{ l.bg }};outline:{{ l.ol }};outline-offset:-1px;cursor:{{ l.cur }};transition:background .25s" style-hover="outline:{{ l.hov }}">
                   <sc-if value="{{ l.isH }}" hint-placeholder-val="{{ false }}"><div style="font-size:16px;font-weight:700">{{ l.t }}</div></sc-if>
                   <sc-if value="{{ l.isP }}" hint-placeholder-val="{{ true }}"><div>{{ l.t }}</div></sc-if>
                   <sc-if value="{{ l.isTh }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px;font-weight:700;border-bottom:1px solid #999;padding-bottom:4px"><span>{{ l.c0 }}</span><span>{{ l.c1 }}</span><span>{{ l.c2 }}</span></div></sc-if>
                   <sc-if value="{{ l.isRow }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px"><span>{{ l.c0 }}</span><span>{{ l.c1 }}</span><span>{{ l.c2 }}</span></div></sc-if>
-                  <sc-if value="{{ l.hasTag }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:8px;top:-9px;background:{{ l.tagBg }};color:#FFFFFF;font:600 10px/1 'Inter Tight',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px">{{ l.tag }}</span></sc-if>
+                  <sc-if value="{{ l.hasTag }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:8px;top:-9px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:{{ l.tagBg }};color:#FFFFFF;font:600 10px/1 'Inter Tight',sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px">{{ l.tag }}</span></sc-if>
                 </div>
               </sc-for>
             </div>
@@ -426,40 +494,61 @@ input,textarea{font-family:inherit}
       </div>
     </div>
     <div style="min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden">
+      <div role="tablist" aria-label="View" style="flex:none;display:flex;gap:2px;padding:8px 14px 0;background:#F1EDE4;border-bottom:1px solid #141414">
+        <sc-for list="{{ views }}" as="v" hint-placeholder-count="5">
+          <button role="tab" onClick="{{ v.onClick }}" style="height:34px;padding:0 12px;border:1px solid {{ v.bd }};border-bottom:0;margin-bottom:-1px;background:{{ v.bg }};font:{{ v.fw }} 13px/1 'Inter Tight',sans-serif;color:#141414;cursor:pointer">{{ v.label }}</button>
+        </sc-for>
+      </div>
       <div role="tablist" style="flex:none;display:flex;border-bottom:1px solid #141414;padding:0 20px;gap:4px">
         <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
           <button role="tab" onClick="{{ t.onClick }}" style="height:50px;padding:0 14px;background:transparent;border:0;border-bottom:3px solid {{ t.bd }};margin-bottom:-1px;font:{{ t.fw }} 15px/1 'Inter Tight',sans-serif;color:{{ t.fg }};cursor:pointer;display:flex;align-items:center;gap:8px">{{ t.label }}<span style="font:500 12px/1 'JetBrains Mono',monospace;color:#3D3A34">{{ t.meta }}</span></button>
         </sc-for>
         <span style="margin-left:auto;align-self:center;font:400 12px/1.3 'JetBrains Mono',monospace;color:#3D3A34">↑ ↓ move · Enter quote · C Challenge</span>
       </div>
-      <div style="flex:1;min-height:0;overflow:auto">
+      <sc-if value="{{ vReview }}" hint-placeholder-val="{{ true }}">
+      <div ref="{{ listRef }}" style="flex:1;min-height:0;overflow:auto;position:relative">
         <sc-if value="{{ notCompare }}" hint-placeholder-val="{{ true }}">
           <sc-if value="{{ hasNS }}" hint-placeholder-val="{{ true }}">
-            <div style="padding:14px 20px 6px;font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#6B4400">Not stated · {{ nsCount }}</div>
-            <sc-for list="{{ nsRows }}" as="x" hint-placeholder-count="1">
-              <div onClick="{{ x.onClick }}" style="margin:6px 20px 14px;border:1px solid #B9862A;background:#FFFBF1;cursor:pointer;outline:{{ x.ol }}">
-                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:repeating-linear-gradient(135deg,#F1DDAE 0 3px,#FBF3E0 3px 7px);border-bottom:1px solid #B9862A">
-                  <span style="font:600 15px/1.2 'Inter Tight',sans-serif;color:#141414">{{ x.name }}</span>
-                  <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 5px;border:1px solid #6B4400;background:#FBF3E0;color:#6B4400;font:600 11.5px/1 'Inter Tight',sans-serif;letter-spacing:0.05em;text-transform:uppercase"><span style="width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#6B4400;color:#FBF3E0;font:700 10px/1 'JetBrains Mono',monospace">–</span>Not stated</span>
+            <div style="margin:14px 20px 0;display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #B9862A;background:repeating-linear-gradient(135deg,#F1DDAE 0 3px,#FBF3E0 3px 7px)">
+              <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 14px/1.2 'Inter Tight',sans-serif;color:#141414">Not stated · {{ nsCount }} Fields</span><span style="font:500 12px/1.2 'Inter Tight',sans-serif;color:#3A2600">{{ nsSupCount }} from the Supplier · {{ nsBrandCount }} Brand to provide</span></span>
+              <sc-if value="{{ hasNsSup }}" hint-placeholder-val="{{ true }}"><button onClick="{{ onRequestAll }}" style="margin-left:auto;height:36px;padding:0 12px;background:#141414;color:#F7F5F0;border:0;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">Copy Supplier Request · {{ nsSupCount }} Fields</button></sc-if>
+            </div>
+            <div style="display:flex;flex-direction:column;margin:0 20px 6px">
+            <sc-for list="{{ nsRows }}" as="x" hint-placeholder-count="4">
+              <div data-row="{{ x.id }}" onClick="{{ x.onClick }}" style="border:1px solid #D9C08A;border-top:0;background:{{ x.bg }};outline:{{ x.ol }};outline-offset:-2px;cursor:pointer">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) auto auto 40px;gap:10px;align-items:center;padding:0 12px;min-height:46px">
+                  <span style="display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap"><span style="font:500 14px/1.25 'Inter Tight',sans-serif"><span style="font:500 11.5px/1 'JetBrains Mono',monospace;color:#2A2723;margin-right:6px">{{ x.no }}</span>{{ x.name }}</span><span style="border:1px solid #D6CFBF;padding:2px 5px;font:500 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2A2723">{{ x.author }}</span><sc-if value="{{ x.hs }}" hint-placeholder-val="{{ false }}"><span style="border:1px solid #141414;padding:2px 5px;font:600 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#141414">★ High-stake</span></sc-if></span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 4px;border:1px solid #B9862A;background:repeating-linear-gradient(135deg,#F1DDAE 0 3px,#FBF3E0 3px 7px);color:#6B4400;font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap"><span style="width:14px;height:14px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#6B4400;color:#FBF3E0;font:700 9px/1 'JetBrains Mono',monospace">–</span>Not stated</span>
+                  <span>
+                    <sc-if value="{{ x.isSup }}" hint-placeholder-val="{{ true }}"><button onClick="{{ x.onRequest }}" style="height:30px;padding:0 10px;background:transparent;border:1px solid #141414;font:600 12px/1 'Inter Tight',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#141414;color:#F7F5F0">Copy Supplier Request</button></sc-if>
+                    <sc-if value="{{ x.isBrand }}" hint-placeholder-val="{{ false }}"><span style="font:600 12.5px/1 'Inter Tight',sans-serif;color:#6B4400;white-space:nowrap">Brand to provide</span></sc-if>
+                    <sc-if value="{{ x.canChallenge }}" hint-placeholder-val="{{ false }}"><button onClick="{{ x.onChallenge }}" title="The Document does state it" style="margin-left:6px;height:30px;padding:0 10px;background:transparent;border:1px solid #141414;font:600 12px/1 'Inter Tight',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:#141414;color:#F7F5F0">Challenge</button></sc-if>
+                  </span>
+                  <span style="font:500 12.5px/1 'JetBrains Mono',monospace;color:#2A2723">{{ x.pageLbl }}</span>
                 </div>
-                <div style="padding:10px 14px 14px;display:flex;flex-direction:column;gap:8px">
-                  <span style="font:500 12px/1.3 'Inter Tight',sans-serif;color:#2A2723">The Sieves found competing statements and no single value:</span>
-                  <sc-for list="{{ x.quotes }}" as="q" hint-placeholder-count="2">
-                    <div onClick="{{ q.onClick }}" style="display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px;font:400 14px/1.45 'Inter Tight',sans-serif;color:#141414;cursor:pointer"><span style="font:500 12px/1.6 'JetBrains Mono',monospace;color:#6B4400">{{ q.pageLbl }}</span><span>“{{ q.text }}”</span></div>
-                  </sc-for>
-                  <div style="display:flex;justify-content:flex-end;margin-top:4px"><button onClick="{{ x.onRequest }}" style="height:38px;padding:0 14px;background:#141414;color:#F7F5F0;border:0;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">Copy Supplier Request</button></div>
-                </div>
+                <sc-if value="{{ x.isChal }}" hint-placeholder-val="{{ false }}"><div style="padding:0 12px 10px;font:600 12.5px/1.3 'Inter Tight',sans-serif;color:{{ x.chalFg }}">{{ x.chalText }}</div></sc-if>
+                <sc-if value="{{ x.expanded }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:2px 12px 12px;display:flex;flex-direction:column;gap:6px;animation:om-in .2s ease-out">
+                    <span style="font:500 12px/1.3 'Inter Tight',sans-serif;color:#2A2723">{{ x.qLabel }}</span>
+                    <sc-for list="{{ x.quotes }}" as="q" hint-placeholder-count="1">
+                      <div onClick="{{ q.onClick }}" style="display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px;font:400 13.5px/1.45 Helvetica,Arial,sans-serif;color:#141414;cursor:pointer"><span style="font:500 12px/1.6 'JetBrains Mono',monospace;color:#6B4400">{{ q.pageLbl }}</span><span>“{{ q.text }}”</span></div>
+                    </sc-for>
+                  </div>
+                </sc-if>
               </div>
             </sc-for>
+            </div>
           </sc-if>
           <div style="padding:10px 20px 6px;font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Fields · {{ rowCount }}</div>
           <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
-            <div style="border-bottom:1px solid #E2DCCE;background:{{ r.bg }};outline:{{ r.ol }};outline-offset:-2px">
+            <sc-if value="{{ r.isHead }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:baseline;gap:10px;padding:18px 20px 8px;border-bottom:1px solid #141414"><span style="font:600 14px/1.2 'Inter Tight',sans-serif">{{ r.title }}</span><span style="font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">{{ r.count }}</span></div></sc-if>
+            <sc-if value="{{ r.isField }}" hint-placeholder-val="{{ true }}">
+            <div data-row="{{ r.id }}" style="border-bottom:1px solid #E2DCCE;background:{{ r.bg }};outline:{{ r.ol }};outline-offset:-2px">
               <div onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) 128px 40px 92px;align-items:center;gap:10px;padding:0 20px;min-height:52px;cursor:pointer">
-                <span style="font:500 14.5px/1.25 'Inter Tight',sans-serif;display:flex;flex-direction:column;gap:3px">{{ r.name }}<sc-if value="{{ r.tb }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-start;border:1px solid #8E877A;padding:2px 5px;font:600 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2A2723">Tie-break</span></sc-if></span>
+                <span style="font:500 14.5px/1.25 'Inter Tight',sans-serif;display:flex;flex-direction:column;gap:3px"><span><span style="font:500 11.5px/1 'JetBrains Mono',monospace;color:#2A2723;margin-right:6px">{{ r.no }}</span>{{ r.name }}</span><span style="display:flex;gap:5px;flex-wrap:wrap"><span style="border:1px solid #D6CFBF;padding:2px 5px;font:500 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2A2723">{{ r.author }}</span><sc-if value="{{ r.hs }}" hint-placeholder-val="{{ false }}"><span style="border:1px solid #141414;padding:2px 5px;font:600 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#141414">★ High-stake</span></sc-if><sc-if value="{{ r.tb }}" hint-placeholder-val="{{ false }}"><span style="border:1px solid #8E877A;padding:2px 5px;font:600 9.5px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#2A2723">Tie-break</span></sc-if></span></span>
                 <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
                   <sc-if value="{{ r.isUph }}" hint-placeholder-val="{{ false }}"><span style="font:500 13px/1.2 'JetBrains Mono',monospace;color:#5E594F;text-decoration:line-through">{{ r.oldVal }}</span></sc-if>
-                  <span style="font:500 15px/1.25 'JetBrains Mono',monospace;color:#141414">{{ r.val }}<sc-if value="{{ r.hasQual }}" hint-placeholder-val="{{ false }}"><span style="color:#3D3A34"> · {{ r.qual }}</span></sc-if></span>
+                  <span title="{{ r.full }}" style="font:500 15px/1.25 'JetBrains Mono',monospace;color:#141414;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere">{{ r.val }}<sc-if value="{{ r.hasQual }}" hint-placeholder-val="{{ false }}"><span style="color:#3D3A34"> · {{ r.qual }}</span></sc-if></span>
                   <sc-if value="{{ r.isRej }}" hint-placeholder-val="{{ false }}"><span style="font:500 12px/1.2 'JetBrains Mono',monospace;color:#5E594F"><span style="text-decoration:line-through">{{ r.claimVal }}</span> challenge rejected</span></sc-if>
                 </span>
                 <span style="display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 5px;border:1px solid {{ r.b.bd }};background:{{ r.b.bg }};color:{{ r.b.fg }};font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap;justify-self:start"><span style="width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:{{ r.b.ib }};color:{{ r.b.ic }};border:1.5px {{ r.b.ibs }} {{ r.b.ibd }};font:700 10px/1 'JetBrains Mono',monospace">{{ r.b.icon }}</span><span style="text-decoration:{{ r.b.td }}">{{ r.b.label }}</span></span>
@@ -474,24 +563,70 @@ input,textarea{font-family:inherit}
                   </div>
                 </div>
               </sc-if>
+              <sc-if value="{{ r.hasRej }}" hint-placeholder-val="{{ false }}"><div style="margin:0 20px 12px;padding:9px 12px;border:1px dashed #6E685D;background:#F1EDE4;display:flex;flex-direction:column;gap:4px;animation:om-in .2s ease-out"><span style="font:600 13px/1.35 'Inter Tight',sans-serif">{{ r.rejText }}</span><span style="font:400 12.5px/1.4 Helvetica,Arial,sans-serif;color:#2A2723;text-decoration:line-through">{{ r.rejQuote }}</span></div></sc-if>
               <sc-if value="{{ r.isChal }}" hint-placeholder-val="{{ false }}"><div style="padding:0 20px 12px;font:600 13px/1.3 'Inter Tight',sans-serif;color:#A3221B">Under review by Arbiter · challenged value <span style="font-family:'JetBrains Mono',monospace">{{ r.claimVal }}</span></div></sc-if>
-              <sc-if value="{{ r.isUph }}" hint-placeholder-val="{{ false }}"><div style="padding:0 20px 12px;display:flex;align-items:center;gap:14px;font:600 13px/1.3 'JetBrains Mono',monospace;color:#0B4A57">Slash 5.00 USDC paid to Voltaris<a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ b81e…44d0</a></div></sc-if>
+              <sc-if value="{{ r.isUph }}" hint-placeholder-val="{{ false }}"><div style="padding:0 20px 12px;display:flex;align-items:center;gap:14px;font:600 13px/1.3 'JetBrains Mono',monospace;color:#0B4A57">Slash 5.00 USDC paid to Voltaris<a href="{{ r.slashHref }}" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ {{ r.slashTx }}</a></div></sc-if>
             </div>
+            </sc-if>
           </sc-for>
         </sc-if>
         <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
           <div style="padding:14px 20px;border-bottom:1px solid #D6CFBF;font:500 14px/1.3 'Inter Tight',sans-serif">{{ cmpSummary }}</div>
           <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.1fr) 84px;gap:10px;padding:10px 20px;border-bottom:1px solid #D6CFBF;font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723"><span>Field</span><span>Origyn Pipeline</span><span>Baseline</span><span></span></div>
           <sc-for list="{{ cmpRows }}" as="c" hint-placeholder-count="10">
-            <div onClick="{{ c.onClick }}" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.1fr) 84px;gap:10px;align-items:center;padding:0 20px;min-height:48px;border-bottom:1px solid #E2DCCE;background:{{ c.bg }};cursor:pointer">
+            <div data-row="{{ c.id }}" onClick="{{ c.onClick }}" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1.1fr) 84px;gap:10px;align-items:center;padding:0 20px;min-height:48px;border-bottom:1px solid #E2DCCE;background:{{ c.bg }};cursor:pointer">
               <span style="font:500 14px/1.25 'Inter Tight',sans-serif">{{ c.name }}</span>
-              <span style="font:500 14px/1.3 'JetBrains Mono',monospace;color:{{ c.afg }}">{{ c.a }}</span>
-              <span style="font:500 14px/1.3 'JetBrains Mono',monospace;color:#141414;font-weight:{{ c.bw }}">{{ c.b }}</span>
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0;padding:6px 0"><span title="{{ c.a }}" style="font:500 14px/1.3 'JetBrains Mono',monospace;color:{{ c.afg }};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere">{{ c.a }}</span><sc-if value="{{ c.canA }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.chA }}" style="align-self:flex-start;height:26px;padding:0 8px;background:transparent;border:1px solid #141414;font:600 11.5px/1 'Inter Tight',sans-serif;cursor:pointer;color:#141414" style-hover="background:#141414;color:#F7F5F0">Challenge</button></sc-if></span>
+              <span style="display:flex;flex-direction:column;gap:5px;min-width:0;padding:6px 0"><span title="{{ c.b }}" style="font:500 14px/1.3 'JetBrains Mono',monospace;color:{{ c.bfg }};font-weight:{{ c.bw }};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere">{{ c.b }}</span><sc-if value="{{ c.canB }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.chB }}" style="align-self:flex-start;height:26px;padding:0 8px;background:transparent;border:1px solid #141414;font:600 11.5px/1 'Inter Tight',sans-serif;cursor:pointer;color:#141414" style-hover="background:#141414;color:#F7F5F0">Challenge</button></sc-if></span>
               <span><sc-if value="{{ c.diff }}" hint-placeholder-val="{{ false }}"><span style="border:1.5px solid #141414;padding:3px 6px;font:700 11px/1 'Inter Tight',sans-serif;letter-spacing:.05em;text-transform:uppercase">≠ Differs</span></sc-if></span>
             </div>
           </sc-for>
         </sc-if>
       </div>
+      </sc-if>
+      <sc-if value="{{ vJson }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid #D6CFBF"><span style="font:500 13px/1.3 'Inter Tight',sans-serif">Passport output · {{ opName }} · keyed by Template Field</span><button onClick="{{ dlJson }}" style="margin-left:auto;height:34px;padding:0 12px;background:#141414;color:#F7F5F0;border:0;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">Download .json</button></div>
+        <div style="flex:1;min-height:0;overflow:auto;padding:14px 20px 32px;background:#FFFDF9">
+          <sc-for list="{{ jsonLines }}" as="j" hint-placeholder-count="12"><div style="white-space:pre;font:400 12.5px/1.6 'JetBrains Mono',monospace;color:{{ j.vc }}">{{ j.ind }}<sc-if value="{{ j.hasK }}" hint-placeholder-val="{{ false }}"><span style="color:#5E594F">"{{ j.k }}"</span><span style="color:#5E594F">: </span></sc-if>{{ j.v }}</div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vMd }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid #D6CFBF"><span style="font:500 13px/1.3 'Inter Tight',sans-serif">Fields as a table · {{ opName }}</span><button onClick="{{ dlMd }}" style="margin-left:auto;height:34px;padding:0 12px;background:#141414;color:#F7F5F0;border:0;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">Download .md</button></div>
+        <div style="flex:1;min-height:0;overflow:auto;padding:4px 20px 32px">
+          <sc-for list="{{ mdSecs }}" as="sec" hint-placeholder-count="3">
+            <div style="padding-top:18px">
+              <div style="font:600 15px/1.2 'Inter Tight',sans-serif;padding-bottom:8px">{{ sec.title }}</div>
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) 92px 40px 70px;gap:10px;padding:6px 0;border-top:1px solid #141414;border-bottom:1px solid #D6CFBF;font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#2A2723"><span>Field</span><span>Value</span><span>Status</span><span>Page</span><span>Author</span></div>
+              <sc-for list="{{ sec.rows }}" as="m" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.5fr) 92px 40px 70px;gap:10px;padding:7px 0;border-bottom:1px solid #E2DCCE;font:400 13px/1.35 'Inter Tight',sans-serif"><span>{{ m.name }}</span><span style="font:500 13px/1.35 'JetBrains Mono',monospace;color:{{ m.fg }}">{{ m.v }}</span><span>{{ m.st }}</span><span style="font:500 12px/1.35 'JetBrains Mono',monospace">{{ m.page }}</span><span>{{ m.author }}</span></div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ vSrc }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid #D6CFBF"><span style="font:500 13px/1.3 'Inter Tight',sans-serif">Source Markdown · p. {{ page }} · what the Pipeline read, beside the original page</span></div>
+        <div style="flex:1;min-height:0;overflow:auto;padding:24px 24px 40px;background:#FFFDF9"><pre style="margin:0;white-space:pre-wrap;font:400 13.5px/1.65 'JetBrains Mono',monospace;color:#141414">{{ srcMd }}</pre></div>
+      </sc-if>
+      <sc-if value="{{ vTrace }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid #D6CFBF"><span style="font:500 13px/1.3 'Inter Tight',sans-serif">Trace · {{ opName }} · {{ opAddr }}</span><span style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">Spans, nested</span></div>
+        <div style="flex:1;min-height:0;overflow:auto">
+          <sc-for list="{{ traceRows }}" as="tr" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 38%;gap:14px;align-items:center;padding:8px 20px;border-bottom:1px solid #E2DCCE">
+              <div style="padding-left:{{ tr.pad }};display:flex;flex-direction:column;gap:3px;min-width:0">
+                <span style="font:{{ tr.fw }} 14px/1.25 'Inter Tight',sans-serif">{{ tr.label }}</span>
+                <span style="font:400 12px/1.3 'Inter Tight',sans-serif;color:#2A2723"><b style="font-weight:600;color:#141414">{{ tr.via }}</b> · {{ tr.looked }}</span>
+                <span style="font:500 12px/1.3 'JetBrains Mono',monospace">{{ tr.result }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="position:relative;height:14px;background:#EEE9DE"><div style="position:absolute;top:2px;bottom:2px;left:{{ tr.left }};width:{{ tr.width }};background:{{ tr.bar }}"></div></div>
+                <span style="font:400 11px/1 'JetBrains Mono',monospace;color:#2A2723">{{ tr.time }}</span>
+              </div>
+            </div>
+          </sc-for>
+          <div style="padding:14px 20px 28px;font:400 12.5px/1.4 'JetBrains Mono',monospace;color:#2A2723">self-reported; the Bond is the guarantee</div>
+        </div>
+      </sc-if>
 
       <div style="position:absolute;inset:0;background:#FFFDF9;border-left:1px solid #141414;display:flex;flex-direction:column;transform:{{ panelX }};transition:transform .32s cubic-bezier(.3,.7,.2,1);z-index:4;box-shadow:-12px 0 24px rgba(20,20,20,.08)">
         <div style="flex:none;display:flex;align-items:center;padding:16px 22px;border-bottom:1px solid #141414">
@@ -503,6 +638,7 @@ input,textarea{font-family:inherit}
             <span style="font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">{{ pf.opName }} delivered</span>
             <span style="font:600 17px/1.2 'Inter Tight',sans-serif">{{ pf.name }}</span>
             <span style="font:500 26px/1.1 'JetBrains Mono',monospace">{{ pf.disp }}</span>
+            <sc-if value="{{ pf.isNS }}" hint-placeholder-val="{{ false }}"><span style="font:400 14px/1.45 'Inter Tight',sans-serif;color:#2A2723">Delivered as Not stated. If the Document does state it, point to the page that says so.</span></sc-if>
             <div style="border-left:0;background:#F1EDE4;padding:10px 12px;font:400 14px/1.5 Helvetica,Arial,sans-serif;display:grid;grid-template-columns:40px minmax(0,1fr);gap:8px"><span style="font:500 12px/1.6 'JetBrains Mono',monospace">{{ pf.pageLbl }}</span><span>“{{ pf.qPre }}<mark style="background:#E6DCC2;font-weight:700;padding:0 2px">{{ pf.qM }}</mark>{{ pf.qPost }}”</span></div>
           </div>
           <sc-if value="{{ pf.isClosed }}" hint-placeholder-val="{{ false }}">
@@ -512,10 +648,9 @@ input,textarea{font-family:inherit}
             <div style="border:1.5px solid #A3221B;padding:16px;display:flex;flex-direction:column;gap:10px;animation:om-in .3s ease-out">
               <span style="font:600 17px/1.2 'Inter Tight',sans-serif;color:#A3221B">Challenge filed</span>
               <span style="font:400 15px/1.5 'Inter Tight',sans-serif">The Arbiter compares the Document with both values. The Field is marked Challenged until the decision. Your challenged value: <b style="font:600 15px 'JetBrains Mono',monospace">{{ pf.claimVal }}</b>, {{ pf.claimPage }}.</span>
-              <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ 2d6a…f03c</a>
+              <a href="https://stellar.expert/explorer/testnet/tx/2d6a69ac1fd22c32a99af0644cbba8dc980dff1ec19dec433747c39467b6f03c" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px" title="Stellar transaction 2d6a…f03c">View on Stellar ↗ 2d6a…f03c</a>
               <div style="display:flex;gap:10px;margin-top:6px">
                 <button onClick="{{ closePanel }}" style="height:42px;padding:0 16px;background:transparent;border:1px solid #141414;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Back to Document</button>
-                <button onClick="{{ goArbiter }}" style="height:42px;padding:0 16px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Open Arbiter desk (demo)</button>
               </div>
             </div>
           </sc-if>
@@ -549,7 +684,7 @@ input,textarea{font-family:inherit}
     <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(20,20,20,.35);display:flex;align-items:center;justify-content:center;z-index:10">
       <div onClick="{{ stop }}" style="width:560px;background:#FFFDF9;border:1px solid #141414;animation:om-in .2s ease-out">
         <sc-if value="{{ srOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="padding:18px 22px;border-bottom:1px solid #D6CFBF;display:flex;align-items:center"><span style="font:600 18px/1 'Inter Tight',sans-serif">Supplier Request · Hunan Cellworks</span></div>
+          <div style="padding:18px 22px;border-bottom:1px solid #D6CFBF;display:flex;align-items:center"><span style="font:600 18px/1 'Inter Tight',sans-serif">Supplier Request · {{ docSupplier }}</span></div>
           <pre style="margin:0;padding:18px 22px;white-space:pre-wrap;font:400 14px/1.55 'JetBrains Mono',monospace;color:#141414;background:#F1EDE4">{{ srText }}</pre>
           <div style="padding:16px 22px;display:flex;gap:10px;justify-content:flex-end"><button onClick="{{ closeModal }}" style="height:42px;padding:0 16px;background:transparent;border:1px solid #141414;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Close</button><button onClick="{{ copySR }}" style="height:42px;padding:0 16px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">{{ srBtn }}</button></div>
         </sc-if>
@@ -557,7 +692,7 @@ input,textarea{font-family:inherit}
           <div style="padding:22px;display:flex;flex-direction:column;gap:14px">
             <div style="display:flex;align-items:center;gap:10px;font:600 20px/1.2 'Inter Tight',sans-serif"><span style="width:22px;height:22px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 'JetBrains Mono',monospace">✓</span>Sent to the DPP platform</div>
             <p style="margin:0;font:400 15px/1.55 'Inter Tight',sans-serif;color:#2A2723">{{ exportText }}</p>
-            <div style="font:500 13px/1.4 'JetBrains Mono',monospace">Passport ref DPP-VOL-NMC800-0412 · output hash e4b1…90af</div>
+            <div style="font:500 13px/1.4 'JetBrains Mono',monospace">Passport ref DPP-VOL-NMC800-0412 · output hash {{ outHash }}</div>
           </div>
           <div style="padding:0 22px 20px;display:flex;justify-content:flex-end"><button onClick="{{ closeModal }}" style="height:42px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Done</button></div>
         </sc-if>
@@ -575,7 +710,7 @@ input,textarea{font-family:inherit}
       <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Decided</span><span style="font:500 26px/1 'JetBrains Mono',monospace">{{ arb.rec.d }}</span></span>
       <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Upheld</span><span style="font:500 26px/1 'JetBrains Mono',monospace;color:#A3221B">{{ arb.rec.u }}</span></span>
       <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 10.5px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Rejected</span><span style="font:500 26px/1 'JetBrains Mono',monospace">{{ arb.rec.r }}</span></span>
-      <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">Record on Stellar ↗ 0f7a…d2c9</a>
+      <a href="https://stellar.expert/explorer/testnet/tx/0f7abc81002592cb62319e74a9b24a586b63d3260a20fdb7d850f8e65b86d2c9" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px" title="Stellar transaction 0f7a…d2c9">Record on Stellar ↗ 0f7a…d2c9</a>
     </div>
   </div>
   <sc-if value="{{ arb.empty }}" hint-placeholder-val="{{ false }}">
@@ -619,14 +754,14 @@ input,textarea{font-family:inherit}
       </div>
       <div style="min-height:0;overflow:auto;padding:22px 26px;display:flex;flex-direction:column;gap:20px;border-right:1px solid #D6CFBF">
         <div style="font:600 18px/1.2 'Inter Tight',sans-serif">{{ arb.d.field }} <span style="font-weight:400;color:#2A2723">· {{ arb.d.brand }}</span></div>
-        <div style="border:1.5px solid #A3221B;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
-          <span style="font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#A3221B">Delivered · {{ arb.d.op }}</span>
-          <span style="font:500 28px/1.1 'JetBrains Mono',monospace">{{ arb.d.delivered }}</span>
+        <div style="border:1.5px solid {{ arb.d.delBd }};padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+          <span style="font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#141414">Delivered · {{ arb.d.op }}</span>
+          <span style="font:500 28px/1.1 'JetBrains Mono',monospace;color:{{ arb.d.delFg }};text-decoration:{{ arb.d.delTd }}">{{ arb.d.delivered }}</span>
           <span style="font:400 13.5px/1.45 Helvetica,Arial,sans-serif;color:#2A2723">“{{ arb.d.delQ }}”</span>
         </div>
-        <div style="border:1.5px solid #141414;background:#ECE5D3;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+        <div style="border:1.5px solid #141414;background:{{ arb.d.claimBg }};padding:14px 16px;display:flex;flex-direction:column;gap:8px">
           <span style="font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase">Challenged · {{ arb.d.brand }}</span>
-          <span style="font:500 28px/1.1 'JetBrains Mono',monospace">{{ arb.d.claim }}</span>
+          <span style="font:500 28px/1.1 'JetBrains Mono',monospace;color:{{ arb.d.claimFg }};text-decoration:{{ arb.d.claimTd }}">{{ arb.d.claim }}</span>
           <span style="font:400 13.5px/1.45 Helvetica,Arial,sans-serif;color:#2A2723">“{{ arb.d.claimQ }}”</span>
         </div>
         <div style="border-top:1px solid #141414;padding-top:12px;display:flex;flex-direction:column;gap:6px">
@@ -659,7 +794,7 @@ input,textarea{font-family:inherit}
           <div style="border:1.5px solid {{ arb.d.resBd }};padding:14px 16px;display:flex;flex-direction:column;gap:10px;animation:om-in .3s ease-out">
             <span style="font:600 17px/1.25 'Inter Tight',sans-serif;color:{{ arb.d.resBd }}">{{ arb.d.resTitle }}</span>
             <span style="font:400 14px/1.5 'Inter Tight',sans-serif">{{ arb.d.resText }}</span>
-            <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ b81e…44d0</a>
+            <a href="{{ arb.d.txHref }}" target="_blank" rel="noopener" style="font:500 12px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:3px">View on Stellar ↗ {{ arb.d.tx }}</a>
           </div>
           <sc-if value="{{ arb.d.isFirst }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ backToDoc }}" style="height:46px;background:#141414;color:#F7F5F0;border:0;font:600 15px/1 'Inter Tight',sans-serif;cursor:pointer">See it in Voltaris’ Document</button>
@@ -687,9 +822,9 @@ input,textarea{font-family:inherit}
       <sc-if value="{{ lb.ready }}" hint-placeholder-val="{{ true }}">
         <sc-for list="{{ lb.rows }}" as="o" hint-placeholder-count="2">
           <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) repeat(6,minmax(0,1fr));gap:12px;align-items:center;padding:18px 20px;border-bottom:1px solid #E2DCCE">
-            <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 18px/1.2 'Inter Tight',sans-serif">{{ o.name }}</span><span style="font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">{{ o.sieves }}</span></span>
+            <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 18px/1.2 'Inter Tight',sans-serif"><span style="font:500 15px/1 'JetBrains Mono',monospace;color:#2A2723">{{ o.rank }}</span>  {{ o.name }}</span><span style="font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">{{ o.sieves }}</span></span>
             <sc-for list="{{ o.cells }}" as="c" hint-placeholder-count="6">
-              <span style="display:flex;flex-direction:column;gap:6px"><span style="font:500 24px/1 'JetBrains Mono',monospace;color:{{ c.fg }}">{{ c.v }}</span><a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener" style="font:500 11px/1 'JetBrains Mono',monospace;color:#0B4A57;text-underline-offset:2px">{{ c.h }} ↗</a></span>
+              <span style="display:flex;flex-direction:column;gap:6px"><sc-if value="{{ c.link }}" hint-placeholder-val="{{ true }}"><a href="{{ c.href }}" target="_blank" rel="noopener" title="View this transaction on Stellar" style="display:flex;flex-direction:column;gap:6px;text-decoration:none;color:{{ c.fg }}"><span style="font:500 24px/1 'JetBrains Mono',monospace;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:5px">{{ c.v }}</span><span style="font:500 11px/1 'JetBrains Mono',monospace;color:#0B4A57">{{ c.h }} ↗</span></a></sc-if><sc-if value="{{ c.plain }}" hint-placeholder-val="{{ false }}"><span style="font:500 24px/1 'JetBrains Mono',monospace;color:{{ c.fg }}">{{ c.v }}</span><span style="font:500 11px/1 'Inter Tight',sans-serif;color:#2A2723">{{ c.note }}</span></sc-if></span>
             </sc-for>
           </div>
         </sc-for>
@@ -705,7 +840,7 @@ input,textarea{font-family:inherit}
           <span style="font:600 17px/1 'Inter Tight',sans-serif">Bond balance over the demo's Documents</span>
           <span style="display:flex;gap:18px;font:500 13px/1 'Inter Tight',sans-serif"><span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:3px;background:#0B4A57"></span>Origyn Pipeline</span><sc-if value="{{ lb.two }}" hint-placeholder-val="{{ true }}"><span style="display:flex;align-items:center;gap:6px"><span style="width:18px;height:0;border-top:3px dashed #A3221B"></span>Baseline</span></sc-if></span>
         </div>
-        <div style="position:relative;border-left:1px solid #141414;border-bottom:1px solid #141414;height:260px">
+        <div style="position:relative;margin-left:58px;border-left:1px solid #141414;border-bottom:1px solid #141414;height:260px">
           <span style="position:absolute;left:-52px;top:32px;font:500 12px/1 'JetBrains Mono',monospace">50.00</span>
           <span style="position:absolute;left:-52px;top:72px;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">45.00</span>
           <span style="position:absolute;left:-52px;top:112px;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">40.00</span>
@@ -721,7 +856,7 @@ input,textarea{font-family:inherit}
             <span style="position:absolute;left:{{ sl.x }};top:{{ sl.y }};transform:translate(-50%,6px);font:600 11px/1 'JetBrains Mono',monospace;color:#A3221B;background:#F7F5F0;padding:2px 3px">−5.00</span>
           </sc-for>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));margin-top:8px">
+        <div style="display:grid;grid-template-columns:repeat(8,minmax(0,1fr));margin-top:8px;margin-left:58px">
           <sc-for list="{{ lb.docs }}" as="d" hint-placeholder-count="8"><span style="font:500 11.5px/1.3 'JetBrains Mono',monospace;color:#2A2723;text-align:center">{{ d }}</span></sc-for>
         </div>
       </div>
@@ -732,11 +867,43 @@ input,textarea{font-family:inherit}
 </div>
 </sc-if>
 
+<sc-if value="{{ dPipes }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;overflow:auto">
+  <div style="padding:28px 40px 20px;border-bottom:1px solid #D6CFBF"><div style="font:600 12px/1 'Inter Tight',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#2A2723">Operator</div><h1 style="margin:8px 0 0;font:600 30px/1.1 'Inter Tight',sans-serif">Pipelines</h1></div>
+  <div style="padding:24px 40px 40px;display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:28px;align-items:start">
+    <div style="border:1px solid #141414;background:#FFFDF9">
+      <div style="padding:16px 20px;border-bottom:1px solid #141414;display:flex;align-items:baseline;gap:12px"><span style="font:600 18px/1 'Inter Tight',sans-serif">Origyn Pipeline</span><span style="font:500 12.5px/1 'JetBrains Mono',monospace;color:#2A2723">5 Sieves · GA7Q…C21E</span></div>
+      <div style="padding:18px 20px;display:flex;flex-direction:column">
+        <sc-for list="{{ pp }}" as="sv" hint-placeholder-count="5">
+          <div style="display:flex;flex-direction:column">
+            <sc-if value="{{ sv.notFirst }}" hint-placeholder-val="{{ false }}"><span style="width:1px;height:18px;background:#141414;margin-left:19px"></span></sc-if>
+            <div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid #141414;padding:12px 14px">
+              <span style="font:500 13px/1 'JetBrains Mono',monospace">{{ sv.n }}</span>
+              <span style="display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font:600 15px/1.2 'Inter Tight',sans-serif">{{ sv.name }}</span><span style="font:400 13px/1.35 'Inter Tight',sans-serif;color:#2A2723">reads {{ sv.view }} · {{ sv.note }}</span></span>
+              <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid #D6CFBF;padding:5px 8px;font:500 12.5px/1 'Inter Tight',sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#2F7D4F"></span>{{ sv.worker }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid #D6CFBF;font:400 13.5px/1.5 'Inter Tight',sans-serif;color:#2A2723">★ High-stake Fields need Original and Markdown extraction to agree, never a majority. When they differ the Field is Not stated; Tie-break never makes them Final.</div>
+      </div>
+    </div>
+    <div style="border:1px solid #141414;background:#FFFDF9">
+      <div style="padding:16px 20px;border-bottom:1px solid #141414;display:flex;align-items:baseline;gap:12px"><span style="font:600 18px/1 'Inter Tight',sans-serif">Baseline</span><span style="font:500 12.5px/1 'JetBrains Mono',monospace;color:#2A2723">1 Sieve · GBL3…91FA</span></div>
+      <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid #141414;padding:12px 14px"><span style="font:500 13px/1 'JetBrains Mono',monospace">01</span><span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 15px/1.2 'Inter Tight',sans-serif">One-pass extraction</span><span style="font:400 13px/1.35 'Inter Tight',sans-serif;color:#2A2723">reads original PDF · every Field in one pass</span></span><span style="display:inline-flex;align-items:center;gap:6px;border:1px solid #D6CFBF;padding:5px 8px;font:500 12.5px/1 'Inter Tight',sans-serif"><span style="width:7px;height:7px;border-radius:50%;background:#2F7D4F"></span>OpenCode</span></div>
+        <span style="font:400 13.5px/1.5 'Inter Tight',sans-serif;color:#2A2723">No cross-check and no Tie-break. Run next to ours to show what the extra Sieves buy.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</sc-if>
+
 <sc-if value="{{ dJobs }}" hint-placeholder-val="{{ false }}">
 <div style="flex:1;overflow:auto">
   <div style="padding:28px 40px 20px;border-bottom:1px solid #D6CFBF;display:flex;align-items:flex-end;gap:20px">
     <div><div style="font:600 12px/1 'Inter Tight',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#2A2723">Operator</div><h1 style="margin:8px 0 0;font:600 30px/1.1 'Inter Tight',sans-serif">Job Board</h1></div>
-    <span style="margin-left:auto;font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723">board wss://jobs.origyn.dev · Stellar testnet</span>
+    <span style="margin-left:auto;font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723">{{ jb.opLine }} · board doc2dpp.wisecraft.dev · <a href="https://dashboard.internetcomputer.org/canister/rwlgt-iiaaa-aaaaa-aaaaa-cai" target="_blank" rel="noopener" style="color:#0B4A57;text-underline-offset:3px">Documents on ICP ↗ rwlgt…q4ma</a></span>
+    <button onClick="{{ openConnect }}" style="height:42px;padding:0 16px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer" style-hover="background:#36332E">Connect an agent</button>
   </div>
   <div style="padding:24px 40px 40px;display:flex;flex-direction:column;gap:28px">
     <div>
@@ -746,10 +913,11 @@ input,textarea{font-family:inherit}
       </sc-if>
       <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
         <sc-for list="{{ jb.workers }}" as="w" hint-placeholder-count="3">
-          <div style="border:1px solid #141414;background:#FFFDF9;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div onClick="{{ w.onClick }}" title="{{ w.tip }}" role="button" style="cursor:pointer;border:{{ w.bw }} solid #141414;background:#FFFDF9;padding:14px 16px;display:flex;flex-direction:column;gap:10px" style-hover="background:#F3EFE6">
             <div style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:#2F7D4F;animation:om-pulse 1.4s ease-in-out infinite"></span><span style="font:600 18px/1 'Inter Tight',sans-serif">{{ w.name }}</span><span style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">live</span></div>
             <div style="font:500 13px/1.4 'JetBrains Mono',monospace">{{ w.job }}</div>
             <div style="font:400 13px/1 'Inter Tight',sans-serif;color:#2A2723"><span style="font:600 15px/1 'JetBrains Mono',monospace;color:#141414">{{ w.done }}</span> Jobs done today</div>
+            <span style="font:500 12px/1 'Inter Tight',sans-serif;color:#2A2723">{{ w.hint }}</span>
           </div>
         </sc-for>
       </div>
@@ -787,12 +955,6 @@ input,textarea{font-family:inherit}
             </div>
           </div>
         </div>
-        <div style="border:1px solid #141414;background:#FFFDF9;padding:16px 18px;display:flex;flex-direction:column;gap:12px">
-          <span style="font:600 15px/1 'Inter Tight',sans-serif">Connect a Worker</span>
-          <span style="font:400 13.5px/1.45 'Inter Tight',sans-serif;color:#2A2723">Add the Job Board as an MCP server in any harness. The Worker takes open Jobs and returns results.</span>
-          <pre style="margin:0;padding:12px;background:#141414;color:#F7F5F0;font:400 12.5px/1.55 'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-all">{{ jb.cmd }}</pre>
-          <button onClick="{{ jb.copy }}" style="align-self:flex-start;height:36px;padding:0 14px;background:transparent;border:1px solid #141414;font:600 13px/1 'Inter Tight',sans-serif;cursor:pointer">{{ jb.copyLbl }}</button>
-        </div>
       </div>
     </div>
   </div>
@@ -800,6 +962,70 @@ input,textarea{font-family:inherit}
 </sc-if>
 
 </main>
+</sc-if>
+
+<sc-if value="{{ cx.open }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ cx.close }}" style="position:absolute;inset:0;z-index:30;background:rgba(20,20,20,.4);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 20px">
+  <div onClick="{{ stop }}" role="dialog" aria-label="Connect an agent" style="width:640px;max-width:100%;background:#FFFDF9;border:1px solid #141414;animation:om-in .2s ease-out">
+    <div style="display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid #141414">
+      <span style="font:600 20px/1 'Inter Tight',sans-serif">Connect an agent</span>
+      <span style="margin-left:14px;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">doc2dpp.wisecraft.dev/mcp</span>
+      <button onClick="{{ cx.close }}" aria-label="Close" style="margin-left:auto;width:36px;height:36px;border:1px solid #D6CFBF;background:transparent;font:500 18px/1 'Inter Tight',sans-serif;cursor:pointer">×</button>
+    </div>
+    <sc-if value="{{ cx.notDone }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:20px 22px;display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font:600 15px/1 'Inter Tight',sans-serif"><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723;margin-right:8px">1</span>Pick your agent</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ cx.agents }}" as="a" hint-placeholder-count="4">
+            <button onClick="{{ a.onClick }}" style="height:40px;padding:0 16px;border:{{ a.bw }} solid #141414;background:{{ a.bg }};color:{{ a.fg }};font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">{{ a.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+      <sc-if value="{{ cx.hasAgent }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px;animation:om-in .2s ease-out">
+          <span style="font:600 15px/1 'Inter Tight',sans-serif"><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723;margin-right:8px">2</span>Pick a role</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <sc-for list="{{ cx.roles }}" as="r" hint-placeholder-count="2">
+              <button onClick="{{ r.onClick }}" style="text-align:left;padding:14px 16px;border:{{ r.bw }} solid {{ r.bd }};background:{{ r.bg }};cursor:pointer;display:flex;flex-direction:column;gap:6px;color:#141414">
+                <span style="font:600 15px/1.25 'Inter Tight',sans-serif">{{ r.title }}</span>
+                <span style="font:400 13px/1.45 'Inter Tight',sans-serif;color:#2A2723">{{ r.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ cx.hasRole }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px;animation:om-in .2s ease-out">
+          <span style="font:600 15px/1 'Inter Tight',sans-serif"><span style="font:500 13px/1 'JetBrains Mono',monospace;color:#2A2723;margin-right:8px">3</span>Paste this</span>
+          <sc-for list="{{ cx.blocks }}" as="b" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:baseline;gap:10px"><span style="font:600 13px/1.2 'Inter Tight',sans-serif">{{ b.label }}</span><span style="font:400 12.5px/1.3 'Inter Tight',sans-serif;color:#2A2723">{{ b.hint }}</span><button onClick="{{ b.onCopy }}" style="margin-left:auto;height:28px;padding:0 10px;background:transparent;border:1px solid #141414;font:600 12px/1 'Inter Tight',sans-serif;cursor:pointer">{{ b.copyLbl }}</button></div>
+              <pre style="margin:0;padding:12px 14px;background:#141414;color:#F7F5F0;font:400 12.5px/1.6 'JetBrains Mono',monospace;white-space:pre-wrap;word-break:break-word;max-height:220px;overflow:auto">{{ b.code }}</pre>
+              <sc-if value="{{ b.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font:400 12.5px/1.4 'Inter Tight',sans-serif;color:#2A2723">{{ b.notePre }}<code style="font:500 12px/1 'JetBrains Mono',monospace;background:#ECE7DB;padding:2px 5px">{{ b.noteCode }}</code>{{ b.notePost }}</span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 22px;border-top:1px solid #141414">
+      <span style="font:400 13px/1.4 'Inter Tight',sans-serif;color:#2A2723">{{ cx.footNote }}</span>
+      <button onClick="{{ cx.check }}" style="margin-left:auto;height:44px;padding:0 18px;background:{{ cx.checkBg }};color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:{{ cx.checkCur }};display:flex;align-items:center;gap:10px"><sc-if value="{{ cx.checking }}" hint-placeholder-val="{{ false }}"><span style="width:14px;height:14px;border:2px solid #6E685D;border-top-color:#F7F5F0;border-radius:50%;animation:om-spin .8s linear infinite"></span></sc-if>{{ cx.checkLbl }}</button>
+    </div>
+    </sc-if>
+    <sc-if value="{{ cx.done }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:26px 22px;display:flex;flex-direction:column;gap:16px;animation:om-in .25s ease-out">
+        <div style="display:flex;align-items:center;gap:10px;font:600 20px/1.2 'Inter Tight',sans-serif"><span style="width:22px;height:22px;border-radius:50%;background:#141414;color:#F7F5F0;display:inline-flex;align-items:center;justify-content:center;font:700 12px/1 'JetBrains Mono',monospace">✓</span>{{ cx.doneTitle }}</div>
+        <div style="border:1px solid #141414;padding:14px 16px;display:flex;flex-direction:column;gap:8px;max-width:340px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="width:9px;height:9px;border-radius:50%;background:#2F7D4F;animation:om-pulse 1.4s ease-in-out infinite"></span><span style="font:600 17px/1 'Inter Tight',sans-serif">{{ cx.chipName }}</span><span style="margin-left:auto;font:500 12px/1 'JetBrains Mono',monospace;color:#2A2723">live</span></div>
+          <span style="font:500 13px/1.4 'JetBrains Mono',monospace">{{ cx.chipLine }}</span>
+        </div>
+        <span style="font:400 14px/1.5 'Inter Tight',sans-serif;color:#2A2723">{{ cx.doneText }}</span>
+        <div style="display:flex;gap:10px"><button onClick="{{ cx.goSee }}" style="height:44px;padding:0 18px;background:#141414;color:#F7F5F0;border:0;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">{{ cx.goLbl }}</button><button onClick="{{ cx.again }}" style="height:44px;padding:0 16px;background:transparent;border:1px solid #141414;font:600 14px/1 'Inter Tight',sans-serif;cursor:pointer">Connect another</button></div>
+      </div>
+    </sc-if>
+  </div>
+</div>
 </sc-if>
 </div>
 
@@ -828,10 +1054,16 @@ input,textarea{font-family:inherit}
         <button onClick="{{ setMobile }}" style="height:28px;padding:0 10px;border:0;background:{{ mBg }};color:{{ mFg }};font:500 12px/1 'Inter Tight',sans-serif;cursor:pointer">Mobile</button>
       </div>
     </sc-if>
-    <div style="display:flex;border:1px solid #6E685D">
-      <sc-for list="{{ roles }}" as="ro" hint-placeholder-count="3">
-        <button onClick="{{ ro.onClick }}" style="height:28px;padding:0 12px;border:0;background:{{ ro.bg }};color:{{ ro.fg }};font:600 12px/1 'Inter Tight',sans-serif;cursor:pointer">{{ ro.label }}</button>
-      </sc-for>
+    <div style="position:relative">
+      <button onClick="{{ toggleSign }}" style="height:30px;padding:0 12px;border:1px solid #F7F5F0;background:#F7F5F0;color:#141414;font:600 12px/1 'Inter Tight',sans-serif;cursor:pointer">Signed in as {{ meLabel }} ▴</button>
+      <sc-if value="{{ signOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;right:0;bottom:38px;min-width:280px;background:#FFFDF9;border:1px solid #141414;color:#141414;box-shadow:0 8px 24px rgba(0,0,0,.2)">
+          <div style="padding:10px 14px;border-bottom:1px solid #D6CFBF;font:600 11px/1 'Inter Tight',sans-serif;letter-spacing:.07em;text-transform:uppercase;color:#2A2723">Sign in as · demo accounts</div>
+          <sc-for list="{{ signList }}" as="u" hint-placeholder-count="4">
+            <button onClick="{{ u.onClick }}" style="display:flex;width:100%;align-items:center;gap:10px;padding:10px 14px;border:0;border-bottom:1px solid #EEE9DE;background:transparent;text-align:left;cursor:pointer;color:#141414" style-hover="background:#ECE7DB"><span style="width:12px;font:700 11px/1 'JetBrains Mono',monospace">{{ u.mark }}</span><span style="display:flex;flex-direction:column;gap:3px"><span style="font:{{ u.fw }} 14px/1.2 'Inter Tight',sans-serif">{{ u.name }}</span><span style="font:400 12px/1.2 'JetBrains Mono',monospace;color:#2A2723">{{ u.meta }}</span></span></button>
+          </sc-for>
+        </div>
+      </sc-if>
     </div>
   </div>
 </div>
@@ -852,51 +1084,209 @@ const B={
 };
 const r_=(id,c)=>({id,kind:'row',c}),p_=(id,t)=>({id,kind:'p',t}),th_=(id,c)=>({id,kind:'th',c}),h_=(id,t)=>({id,kind:'h',t});
 const PAGES=[
- {n:1,title:'NMC-800 Prismatic Cell · Product datasheet',lines:[h_('p1h','Hunan Cellworks Co., Ltd.'),p_('p1a','Document NMC-800-DS, revision C, issued 2026-06-14.'),p_('p1b','Manufactured at Plant 2, Wangcheng Economic Zone, Changsha, CN (Hunan Province).'),p_('p1c','This datasheet describes the NMC-800 prismatic lithium-ion cell for traction and stationary storage applications. Values are typical unless stated otherwise.')]},
- {n:2,title:'1 · Cell construction',lines:[p_('p2a','Cell chemistry: NMC 811 (LiNi0.8Mn0.1Co0.1O2), prismatic format.'),p_('p2b','Anode: synthetic graphite, SiOx-free.'),p_('p2c','Separator: ceramic-coated PE, 12 µm.'),p_('p2d','Casing: aluminium alloy 3003, laser welded, with burst vent.')]},
+ {n:1,title:'NMC-800 Prismatic Cell · Product datasheet',lines:[h_('p1h','Hunan Cellworks Co., Ltd.'),p_('p1a','Document NMC-800-DS, revision C, issued 2026-06-14.'),p_('p1e','Model: NMC-800-P80, prismatic lithium-ion cell.'),p_('p1b','Manufactured at Plant 2, Wangcheng Economic Zone, Changsha, CN (Hunan Province).'),p_('p1d','Registered office: Hunan Cellworks Co., Ltd., 88 Jinxing Road, Wangcheng District, Changsha 410200, CN.'),p_('p1f','Compliance contact: compliance@hunancellworks.cn'),p_('p1c','This datasheet describes the NMC-800 prismatic lithium-ion cell for traction and stationary storage applications. Values are typical unless stated otherwise.')]},
+ {n:2,title:'1 · Cell construction',lines:[p_('p2a','Cell chemistry: NMC 811 (LiNi0.8Mn0.1Co0.1O2), prismatic format.'),p_('p2b','Anode: synthetic graphite, SiOx-free.'),p_('p2c','Separator: ceramic-coated PE, 12 µm.'),p_('p2d','Casing: aluminium alloy 3003, laser welded, with burst vent.'),p_('p2e','Active materials: cathode LiNi0.8Mn0.1Co0.1O2, anode synthetic graphite, electrolyte LiPF6 in EC/EMC.')]},
  {n:3,title:'2 · Mechanical',lines:[th_('p3h',['Parameter','Value','Note']),r_('p3r1',['Mass','1.12 kg','± 0.02 kg']),r_('p3r2',['Dimensions (L × W × H)','148 × 27 × 102 mm','excl. terminals']),r_('p3r3',['Terminal type','M6 threaded','aluminium'])]},
  {n:4,title:'3 · Electrical characteristics',lines:[th_('p4h',['Parameter','Value','Condition']),r_('p4r1',['Rated capacity (nominal)','80.0 Ah','0.33 C, 25 °C']),r_('p4r2',['Minimum capacity','78.0 Ah','0.33 C, 25 °C']),r_('p4r3',['Nominal voltage','3.65 V','—']),r_('p4r4',['Voltage range','2.75 – 4.20 V','—']),r_('p4r5',['Energy density','261 Wh/kg','cell level']),r_('p4r6',['Max. continuous discharge','8.0 C','25 °C']),p_('p4n','Capacity measured per IEC 62660-1 after three formation cycles.')]},
- {n:5,title:'3 · Electrical characteristics (cont.)',lines:[th_('p5h',['Parameter','Value','Condition']),r_('p5r1',['Internal resistance','≤ 0.6 mΩ','AC 1 kHz, 50 % SoC']),r_('p5r2',['Internal resistance (DC)','≤ 0.9 mΩ','10 s pulse']),r_('p5r3',['Self-discharge','≤ 3 % / month','25 °C'])]},
+ {n:5,title:'3 · Electrical characteristics (cont.)',lines:[th_('p5h',['Parameter','Value','Condition']),r_('p5r1',['Internal resistance','≤ 0.6 mΩ','AC 1 kHz, 50 % SoC']),r_('p5r2',['Internal resistance (DC)','≤ 0.9 mΩ','10 s pulse']),r_('p5r3',['Self-discharge','≤ 3 % / month','25 °C']),r_('p5r4',['Power capability','1 150 W','10 s, 50 % SoC']),r_('p5r5',['Maximum permitted power','1 460 W','10 s pulse']),r_('p5r6',['Round-trip energy efficiency','95.5 %','initial, 0.33 C'])]},
  {n:6,title:'4 · Thermal',lines:[th_('p6h',['Parameter','Range','Note']),r_('p6r1',['Charge temperature','0 to 45 °C','—']),r_('p6r2',['Discharge temperature','−20 to 55 °C','—']),r_('p6r3',['Storage temperature','−20 to 45 °C','≤ 6 months'])]},
- {n:7,title:'5 · Lifetime',lines:[p_('p7a','Cycle life: 3 000 cycles at 1 C / 1 C, 25 °C, to 80 % SoH.'),p_('p7b','Calendar life: 10 years at 25 °C, 50 % SoC.')]},
- {n:8,title:'6 · Materials',lines:[p_('p8a','Electrolyte: LiPF6 in EC/EMC with additive package (VC < 2 %).'),p_('p8b','No substances above 0.1 % w/w from the REACH candidate list.')]},
- {n:9,title:'7 · Recycled content',lines:[th_('p9h',['Material','Recycled share','Basis']),r_('p9r1',['Recycled cobalt','16 %','mass balance, 2025']),r_('p9r2',['Recycled nickel','6 %','mass balance, 2025']),r_('p9r3',['Recycled lithium','per supplier declaration','not attached'])]},
- {n:10,title:'8 · Carbon footprint',lines:[p_('p10a','Carbon footprint: 61.3 kg CO₂e/kWh, cradle-to-gate, per Regulation (EU) 2023/1542 Annex II.'),p_('p10b','Verified by an accredited third party, report CF-24-0917.')]},
- {n:11,title:'9 · Supply chain notes',lines:[p_('p11a','Cathode precursor sourced from two refineries in Hunan and Jiangxi.'),p_('p11b','Secondary lithium share approx. 4–6 % depending on batch.')]},
- {n:12,title:'Revision history',lines:[th_('p12h',['Rev','Date','Change']),r_('p12a',['C','2026-06-14','Recycled content table added']),r_('p12b',['B','2025-11-02','Thermal limits updated']),r_('p12c',['A','2025-03-20','First issue'])]}
+ {n:7,title:'5 · Lifetime',lines:[p_('p7a','Cycle life: 3 000 cycles at 1 C / 1 C, 25 °C, to 80 % SoH.'),p_('p7b','Calendar life: 10 years at 25 °C, 50 % SoC.'),p_('p7c','Cycle-life reference test: IEC 62660-1, 1 C / 1 C at 25 °C.')]},
+ {n:8,title:'6 · Materials',lines:[p_('p8a','Electrolyte: LiPF6 in EC/EMC with additive package (VC < 2 %).'),p_('p8b','No substances above 0.1 % w/w from the REACH candidate list.'),p_('p8c','Transport: tested to UN 38.3, report UN-24-1182.'),p_('p8d','Critical raw materials present: cobalt, lithium, nickel.'),th_('p8h',['Element','Share of cell mass','Basis']),r_('p8r1',['Cobalt','4.1 %','calculated']),r_('p8r2',['Lithium','1.6 %','calculated']),r_('p8r3',['Nickel','33.2 %','calculated'])]},
+ {n:9,title:'7 · Recycled content',lines:[th_('p9h',['Material','Recycled share','Basis']),r_('p9r1',['Recycled cobalt','16 %','mass balance, 2025']),r_('p9r2',['Recycled nickel','6 %','mass balance, 2025']),r_('p9r3',['Recycled lithium','per supplier declaration','not attached']),r_('p9r4',['Recycled lead','0 %','no lead in cell']),p_('p9n','Of total cobalt, recycled pre-consumer 9 %, post-consumer 7 %.')]},
+ {n:10,title:'8 · Carbon footprint',lines:[p_('p10a','Carbon footprint: 61.3 kg CO₂e/kWh, cradle-to-gate, per Regulation (EU) 2023/1542 Annex II.'),p_('p10b','Verified by an accredited third party, report CF-24-0917.'),p_('p10c','Contribution by life-cycle stage (kg CO₂e/kWh): raw material acquisition and pre-processing 43.5, main production 16.6, distribution 1.2.')]},
+ {n:11,title:'9 · Supply chain notes',lines:[p_('p11a','Cathode precursor sourced from two refineries in Hunan and Jiangxi.'),p_('p11b','Secondary lithium share approx. 4–6 % depending on batch.'),p_('p11c','Cobalt refined in Jiangxi, CN. Mine of origin per due diligence report (available on request).')]},
+ {n:12,title:'Revision history and safety',lines:[th_('p12h',['Rev','Date','Change']),r_('p12a',['C','2026-06-14','Recycled content table added']),r_('p12b',['B','2025-11-02','Thermal limits updated']),r_('p12c',['A','2025-03-20','First issue']),p_('p12d','Safety: in case of fire, cool with large quantities of water. Do not open or crush cells.')]}
 ];
 const LINES={};
 PAGES.forEach(p=>p.lines.forEach(l=>{l.page=p.n;l.text=l.c?l.c.join('   '):l.t;LINES[l.id]=l;}));
-const FIELDS=[
- {id:'chem',name:'Chemistry',val:'NMC 811',qual:'',line:'p2a',m:'NMC 811'},
- {id:'cath',name:'Cathode material',val:'LiNi0.8Mn0.1Co0.1O2',qual:'',line:'p2a',m:'LiNi0.8Mn0.1Co0.1O2'},
- {id:'anode',name:'Anode material',val:'Graphite',qual:'synthetic',line:'p2b',m:'synthetic graphite'},
- {id:'cap',name:'Rated capacity',val:'80.0 Ah',qual:'nominal',line:'p4r1',m:'80.0 Ah',tb:true,alt:'80.0 Ah ⇄ 78.0 Ah'},
- {id:'volt',name:'Nominal voltage',val:'3.65 V',qual:'',line:'p4r3',m:'3.65 V'},
- {id:'vrange',name:'Voltage range',val:'2.75–4.20 V',qual:'',line:'p4r4',m:'2.75 – 4.20 V'},
- {id:'energy',name:'Energy density',val:'261 Wh/kg',qual:'cell level',line:'p4r5',m:'261 Wh/kg'},
- {id:'mass',name:'Mass',val:'1.12 kg',qual:'',line:'p3r1',m:'1.12 kg'},
- {id:'dim',name:'Dimensions',val:'148 × 27 × 102 mm',qual:'L × W × H',line:'p3r2',m:'148 × 27 × 102 mm'},
- {id:'ir',name:'Internal resistance',val:'≤ 0.6 mΩ',qual:'AC 1 kHz',line:'p5r1',m:'≤ 0.6 mΩ'},
- {id:'temp',name:'Operating temperature',val:'−20 to 55 °C',qual:'discharge',line:'p6r2',m:'−20 to 55 °C'},
- {id:'cycle',name:'Cycle life',val:'3 000 cycles',qual:'to 80 % SoH',line:'p7a',m:'3 000 cycles'},
- {id:'electro',name:'Electrolyte',val:'LiPF6 in EC/EMC',qual:'',line:'p8a',m:'LiPF6 in EC/EMC'},
- {id:'rco',name:'Recycled cobalt',val:'16 %',qual:'',line:'p9r1',m:'16 %',tb:true,alt:'16 % ⇄ 6 %'},
- {id:'rni',name:'Recycled nickel',val:'6 %',qual:'',line:'p9r2',m:'6 %'},
- {id:'rli',name:'Recycled lithium',val:'—',qual:'',line:'p9r3',m:'per supplier declaration',ns:true,alt:'declaration ⇄ 4–6 %',competing:['p9r3','p11b']},
- {id:'cf',name:'Carbon footprint',val:'61.3 kg CO₂e/kWh',qual:'cradle-to-gate',line:'p10a',m:'61.3 kg CO₂e/kWh',tb:true,alt:'61.3 ⇄ 61.3 kg CO₂e/kWh'},
- {id:'site',name:'Manufacturing site',val:'Changsha, CN',qual:'',line:'p1b',m:'Changsha, CN'}
+const TPAGES=[
+ {n:1,title:'SS27 Shirting · Technical sheet',lines:[h_('t1h','Fiação do Ave, Lda.'),p_('t1a','Article SS27-SH-0418: linen-cotton shirting, plain weave, 132 g/m².'),p_('t1f','Customer: Linho Norte, collection SS27.'),p_('t1e','Product: men’s long-sleeve shirt. Garment mass 0.21 kg (size M). Size range S–XXL (EU).'),p_('t1b','Final assembly: Fiação do Ave, Lda., Rua da Fábrica 120, 4760-108 Vila Nova de Famalicão, PT.'),p_('t1c','Facility ID (Open Supply Hub): PT2026FAV0012.'),p_('t1d','Manufacturer EORI: PT503218745.')]},
+ {n:2,title:'2 · Composition and certification',lines:[p_('t2a','Fibre composition: 55 % linen · 45 % organic cotton.'),p_('t2b','Organic cotton certified to GRS 4.0, certificate CU 1027451-GRS.'),p_('t2c','Recycled content: see GRS scope certificate.'),p_('t2d','Buttons: corozo nut. No non-textile parts of animal origin.'),p_('t2e','No coatings, membranes or laminates.')]},
+ {n:3,title:'3 · Chemistry and finishing',lines:[p_('t3a','Substances of concern: none above 0.1 % w/w (REACH SVHC list, Jan 2026).'),p_('t3b','PFAS: not used in fibre, finish or trims (test report SGS-PT-26-3310).'),p_('t3c','Dyeing: reactive dyes, piece-dyed. Finishing: enzyme wash, softener.')]},
+ {n:4,title:'4 · Performance and care',lines:[th_('t4h',['Test','Result','Method']),r_('t4r1',['Abrasion (Martindale)','20 000 cycles','ISO 12947-2']),r_('t4r2',['Pilling','grade 4','ISO 12945-2']),r_('t4r3',['Colour fastness to washing','grade 4–5','ISO 105-C06']),r_('t4r4',['Dimensional stability','−2.5 %','ISO 5077']),r_('t4r5',['Wash durability','50 cycles','ISO 6330']),p_('t4c','Care symbols (ISO 3758): wash 40 °C, do not bleach, tumble dry low, iron medium, do not dry clean.')]}
 ];
-const BASE_OVR={cap:{val:'8.0 Ah',qual:'',line:'p4r6',m:'8.0'},rli:{val:'4 %',qual:'',ns:false,line:'p11b',m:'4–6 %'},cycle:{qual:''}};
-const fieldsFor=op=>FIELDS.map(f=>{const g=op==='baseline'?{...f,...(BASE_OVR[f.id]||{}),tb:false}:{...f};g.page=LINES[g.line].page;return g;});
+TPAGES.forEach(p=>p.lines.forEach(l=>{l.page=p.n;l.text=l.c?l.c.join('   '):l.t;LINES[l.id]=l;}));
+const SECTIONS=[['G','General battery and manufacturer information'],['L','Symbols, labels and conformity'],['CF','Carbon footprint'],['M','Battery materials and composition'],['C','Circularity and resource efficiency'],['P','Performance and durability']];
+const TSECTIONS=[['T1','Product identification'],['T2','Materials and substances'],['T3','Durability'],['T4','Care and repair'],['T5','End of life and circularity'],['T6','Environmental footprint']];
+const F=(id,no,sec,name,author,num,unit,qual,line,m,o)=>({id,no,sec,name,author,num,unit,qual,line,m,val:num+(unit?' '+unit:''),...(o||{})});
+const N=(id,no,sec,name,author,line,o)=>({id,no,sec,name,author,num:'',unit:'',qual:'',line,m:'',val:'—',ns:true,...(o||{})});
+const FIELDS=[
+ N('cn','R2','G','Commodity code (CN)','Brand','p1e'),
+ N('opid','2','G','Operator identifier and information','Brand','p1d'),
+ F('man','3','G','Manufacturer identifier and information','Supplier','Hunan Cellworks Co., Ltd., 88 Jinxing Rd, Changsha 410200, CN','','','p1d','Hunan Cellworks Co., Ltd., 88 Jinxing Road, Wangcheng District, Changsha 410200, CN'),
+ F('contact','3a','G','Digital contact of manufacturer/importer (e-mail or web form)','Supplier','compliance@hunancellworks.cn','','','p1f','compliance@hunancellworks.cn'),
+ F('site','4','G','Manufacturing place','Supplier','Changsha, CN','','Plant 2','p1b','Changsha, CN'),
+ N('mdate','5','G','Manufacturing date','Supplier','p1a',{competing:['p1a']}),
+ N('warr','7','G','Warranty period','Brand','p1c'),
+ N('cat','8','G','Battery category','Supplier','p1c',{competing:['p1c']}),
+ F('mass','9','G','Battery mass','Supplier','1.12','kg','','p3r1','1.12 kg'),
+ F('ext','14','L','Extinguishing agent','Supplier','water','','large quantities','p12d','large quantities of water'),
+ N('labels','15','L','Meaning of labels and symbols','Brand','p12d'),
+ F('cf','18','CF','Carbon footprint per functional unit','Supplier','61.3','kgCO2e/kWh','cradle-to-gate','p10a','61.3 kg CO₂e/kWh',{hs:true}),
+ F('cf1','19','CF','CF contribution: raw material acquisition and pre-processing','Supplier','43.5','kgCO2e/kWh','','p10c','raw material acquisition and pre-processing 43.5'),
+ F('cf2','20','CF','CF contribution: main product production','Supplier','16.6','kgCO2e/kWh','','p10c','main production 16.6'),
+ F('cf3','21','CF','CF contribution: distribution','Supplier','1.2','kgCO2e/kWh','','p10c','distribution 1.2'),
+ N('cf4','22','CF','CF contribution: end of life and recycling','Supplier','p10c'),
+ F('chem','27','M','Battery chemistry','Supplier','NMC 811','','','p2a','NMC 811'),
+ F('crm','28','M','Critical raw materials','Supplier','cobalt, lithium, nickel','','','p8d','cobalt, lithium, nickel'),
+ F('mats','29','M','Materials used in cathode, anode and electrolyte','Supplier','LiNi0.8Mn0.1Co0.1O2 · synthetic graphite · LiPF6 in EC/EMC','','','p2e','cathode LiNi0.8Mn0.1Co0.1O2, anode synthetic graphite, electrolyte LiPF6 in EC/EMC'),
+ F('haz','30','M','Hazardous substances','Supplier','none above 0.1 % w/w','','REACH candidate list','p8b','No substances above 0.1 % w/w'),
+ N('impact','31','M','Impact of substances on environment, human health, safety','Supplier','p8b'),
+ N('parts','33','C','Part numbers for components','Supplier','p3r3'),
+ N('sp1','34','C','Postal address of sources for spare parts','Brand','p1d'),
+ N('sp2','35','C','E-mail address of sources for spare parts','Brand','p1f'),
+ N('sp3','36','C','Web address of sources for spare parts','Brand','p1f'),
+ F('rco','38a','C','Recycled cobalt share','Supplier','16','%','mass balance','p9r1','16 %',{hs:true}),
+ N('rli','38b','C','Recycled lithium share','Supplier','p9r3',{hs:true,competing:['p9r3','p11b'],alt:'declaration ⇄ 4–6 %'}),
+ F('rni','38c','C','Recycled nickel share','Supplier','6','%','mass balance','p9r2','6 %',{hs:true}),
+ F('rpb','38d','C','Recycled lead share','Supplier','0','%','no lead in cell','p9r4','0 %',{hs:true}),
+ N('ni_pre','39','C','Pre-consumer recycled nickel share','Supplier','p9r2'),
+ F('co_pre','40','C','Pre-consumer recycled cobalt share','Supplier','9','%','','p9n','pre-consumer 9 %'),
+ N('li_pre','41','C','Pre-consumer recycled lithium share','Supplier','p9r3'),
+ N('pb_pre','42','C','Pre-consumer recycled lead share','Supplier','p9r4'),
+ N('ni_post','43','C','Post-consumer recycled nickel share','Supplier','p9r2'),
+ F('co_post','44','C','Post-consumer recycled cobalt share','Supplier','7','%','','p9n','post-consumer 7 %'),
+ N('li_post','45','C','Post-consumer recycled lithium share','Supplier','p9r3'),
+ N('pb_post','46','C','Post-consumer recycled lead share','Supplier','p9r4'),
+ N('ren','47','C','Renewable content share','Supplier','p9h'),
+ N('bonus','47a','C','EU-recycling bonus applied (planned)','Supplier','p9h'),
+ N('eurec','47b','C','Share of recycled input from EU recyclers (planned)','Supplier','p9h'),
+ F('cap','51','P','Rated capacity','Supplier','80.0','Ah','nominal','p4r1','80.0 Ah',{tb:true,alt:'80.0 Ah ⇄ 78.0 Ah'}),
+ N('fade','53','P','Capacity fade','Supplier','p7a'),
+ F('vmin','56','P','Minimum voltage','Supplier','2.75','V','','p4r4','2.75'),
+ F('vmax','57','P','Maximum voltage','Supplier','4.20','V','','p4r4','4.20 V'),
+ F('volt','58','P','Nominal voltage','Supplier','3.65','V','','p4r3','3.65 V',{tb:true,alt:'3.65 V ⇄ 3.6 V'}),
+ F('pow','59','P','Original power capability','Supplier','1 150','W','10 s, 50 % SoC','p5r4','1 150 W'),
+ N('pfade','61','P','Power fade','Supplier','p5r4'),
+ F('pmax','62','P','Maximum permitted battery power','Supplier','1 460','W','10 s pulse','p5r5','1 460 W'),
+ F('rte','63','P','Initial round trip energy efficiency','Supplier','95.5','%','0.33 C','p5r6','95.5 %'),
+ N('rte50','64','P','Round trip energy efficiency at 50% of cycle-life','Supplier','p5r6'),
+ N('rtefade','66','P','Energy round trip efficiency fade','Supplier','p5r6'),
+ F('ir','68','P','Initial internal resistance of cell and pack','Supplier','≤ 0.6','mΩ','cell, AC 1 kHz','p5r1','≤ 0.6 mΩ'),
+ N('irinc','69','P','Internal resistance increase of pack','Supplier','p5r2'),
+ F('cal','70','P','Expected lifetime in calendar years','Supplier','10','years','25 °C, 50 % SoC','p7b','10 years'),
+ F('cycle','71','P','Expected lifetime: charge-discharge cycles','Supplier','3 000','cycles','to 80 % SoH','p7a','3 000 cycles'),
+ F('tref','73','P','Cycle-life reference test','Supplier','IEC 62660-1','','1 C / 1 C, 25 °C','p7c','IEC 62660-1',{tb:true,alt:'IEC 62660-1 ⇄ IEC 62620'}),
+ F('crate','74','P','C-rate of relevant cycle-life test','Supplier','1','A/Ah','charge and discharge','p7c','1 C / 1 C'),
+ F('thr','77','P','Capacity threshold for exhaustion','Supplier','80','%','SoH','p7a','80 % SoH'),
+ F('tlo','79','P','Idle temperature range, lower boundary','Supplier','−20','°C','storage','p6r3','−20'),
+ F('thi','80','P','Idle temperature range, upper boundary','Supplier','45','°C','storage, ≤ 6 months','p6r3','45 °C')
+];
+const TFIELDS=[
+ N('gtin','2.1.2','T1','Product unique identifier (GTIN/SKU)','Brand','t1a'),
+ F('brand','2.1.3','T1','Brand / trade name','Brand','Linho Norte','','','t1f','Linho Norte'),
+ F('mid','2.1.4','T1','Unique manufacturer identifier','Supplier','PT503218745','','EORI','t1d','PT503218745'),
+ F('fid','2.1.5','T1','Manufacturing facility identifier (final assembly)','Supplier','PT2026FAV0012','','Open Supply Hub','t1c','PT2026FAV0012'),
+ F('ctry','2.1.6','T1','Country of final assembly','Supplier','PT','','','t1b','PT'),
+ F('pcat','2.1.7','T1','Product category (garment / footwear type)','Supplier','men’s long-sleeve shirt','','','t1e','men’s long-sleeve shirt'),
+ F('pmass','2.1.8','T1','Product mass','Supplier','0.21','kg','size M','t1e','0.21 kg'),
+ N('pom','2.1.9','T1','Date placed on market','Brand','t1f'),
+ N('doc','2.1.10','T1','EU declaration of conformity identifier','Brand','t1a'),
+ F('size','2.1.11','T1','Size system / size','Brand','EU · S–XXL','','','t1e','S–XXL (EU)'),
+ F('fibre','2.2.1','T2','Fibre composition per fibre type (whole-number %, adds to 100)','Supplier','55 % linen · 45 % organic cotton','','GRS CU 1027451-GRS','t2a','55 % linen · 45 % organic cotton',{hs:true}),
+ N('rfib','2.2.2','T2','Recycled fibre content','Supplier','t2c',{hs:true,competing:['t2b','t2c']}),
+ N('rorig','2.2.3','T2','Recycled content origin (pre-/post-consumer)','Supplier','t2c'),
+ F('animal','2.2.4','T2','Presence of non-textile parts of animal origin','Supplier','none','','buttons: corozo nut','t2d','No non-textile parts of animal origin'),
+ F('coat','2.2.5','T2','Coatings, membranes and laminates','Supplier','none','','','t2e','No coatings, membranes or laminates'),
+ F('soc','2.2.6','T2','Substances of concern (identity, concentration range)','Supplier','none above 0.1 % w/w','','REACH SVHC, Jan 2026','t3a','none above 0.1 % w/w'),
+ F('pfas','2.2.7','T2','Presence of PFAS','Supplier','not present','','SGS-PT-26-3310','t3b','not used in fibre, finish or trims',{hs:true}),
+ F('dye','2.2.8','T2','Dyeing / finishing process class','Supplier','reactive, piece-dyed · enzyme wash','','','t3c','reactive dyes, piece-dyed'),
+ N('dur','2.3.1','T3','Physical durability score / class','Supplier','t4h'),
+ F('abr','2.3.2','T3','Abrasion resistance (Martindale cycles)','Supplier','20 000','cycles','ISO 12947-2','t4r1','20 000 cycles'),
+ F('pill','2.3.3','T3','Pilling resistance grade (1–5)','Supplier','4','grade','ISO 12945-2','t4r2','grade 4'),
+ F('cfw','2.3.4','T3','Colour fastness to washing grade (1–5)','Supplier','4–5','grade','ISO 105-C06','t4r3','grade 4–5'),
+ F('dimst','2.3.5','T3','Dimensional stability after washing','Supplier','−2.5','%','ISO 5077','t4r4','−2.5 %'),
+ N('micro','2.3.6','T3','Microfibre / microplastic release class','Supplier','t4h'),
+ F('life','2.3.7','T3','Expected lifetime (wash cycles)','Supplier','50','cycles','ISO 6330','t4r5','50 cycles'),
+ F('care','2.4.1','T4','Care instructions (ISO 3758 symbol codes)','Supplier','wash 40 · no bleach · tumble low · iron medium · no dry clean','','','t4c','wash 40 °C, do not bleach, tumble dry low, iron medium, do not dry clean'),
+ N('repair','2.4.2','T4','Repairability score','Brand','t4c'),
+ N('spare','2.4.3','T4','Availability of spare parts','Brand','t2d'),
+ N('rinst','2.4.4','T4','Repair instructions (link)','Brand','t4c'),
+ N('guar','2.4.5','T4','Commercial guarantee duration','Brand','t1f'),
+ N('recy','2.5.1','T5','Recyclability score / class','Brand','t2a'),
+ N('disas','2.5.2','T5','Disassembly information (link)','Brand','t2d'),
+ N('takeb','2.5.3','T5','Take-back / collection scheme reference (link)','Brand','t1f'),
+ N('pack','2.5.4','T5','Packaging material composition','Brand','t1a'),
+ N('tcf','2.6.1','T6','Carbon footprint per product (PEF-based)','Brand','t1a'),
+ N('water','2.6.2','T6','Water consumption per product','Brand','t1a'),
+ N('pef','2.6.3','T6','PEF study / methodology reference (link)','Brand','t1a')
+];
+const BASE_OVR={cap:{val:'8.0 Ah',num:'8.0',unit:'Ah',qual:'',line:'p4r6',m:'8.0'},rli:{val:'4–6 %',num:'4–6',unit:'%',qual:'',ns:false,line:'p11b',m:'4–6 %'},cycle:{qual:''}};
+const TBASE_OVR={fibre:{val:'55 % linen · 45 % cotton',qual:''}};
+let CUR='nmc';
+const fieldsFor=op=>{const D=DOCDATA[CUR];return D.fields.map(f=>{const g=op==='baseline'?{...f,...(D.ovr[f.id]||{}),tb:false}:{...f};g.page=LINES[g.line].page;return g;});};
 const disp=f=>f.qual?f.val+' · '+f.qual:f.val;
-const qparts=f=>{const t=LINES[f.line].text,i=t.indexOf(f.m);return i<0?{qPre:t,qM:'',qPost:''}:{qPre:t.slice(0,i),qM:f.m,qPost:t.slice(i+f.m.length)};};
+const qparts=f=>{const t=LINES[f.line].text,i=f.m?t.indexOf(f.m):-1;return i<0?{qPre:t,qM:'',qPost:''}:{qPre:t.slice(0,i),qM:f.m,qPost:t.slice(i+f.m.length)};};
 const fmt=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return [h,m,x].map(v=>String(v).padStart(2,'0')).join(':');};
-const ST=[{n:'Original',w:'Claude Code',s:0,e:6,meta:'12 pages read'},{n:'Markdown',w:'OpenCode',s:6,e:13,meta:'12 pages · 7 tables'},{n:'Faithfulness check',w:'Pi',s:13,e:18,meta:'pass · 0 drift'},{n:'Markdown extraction',w:'Claude Code',s:18,e:26,meta:'18 values · 15 agree'},{n:'Tie-break',w:'Pi',s:26,e:33,meta:'3 resolved · 1 Not stated'}];
-const SETTLE={cap:33,rco:34,cf:35,rli:35};
+const ST=[{n:'Original',w:'Claude Code',s:0,e:6},{n:'Markdown',w:'OpenCode',s:6,e:13},{n:'Faithfulness check',w:'Pi',s:13,e:18},{n:'Markdown extraction',w:'Claude Code',s:18,e:26},{n:'Tie-break',w:'Pi',s:26,e:33}];
+const SETTLE={cap:33,volt:34,tref:35,rli:35};
 const DONE=36;
+const TRACE={
+ origyn:{label:'Origyn Pipeline',looked:'NMC-800 Cell Datasheet rev C',via:'Job Board',result:'60 Fields · 27 Not stated',t:0,d:31,kids:[
+  {label:'Original',looked:'original PDF',via:'Claude Code',result:'12 pages read',t:0,d:5.4},
+  {label:'Markdown',looked:'original PDF',via:'OpenCode',result:'12 pages · 7 tables',t:5.4,d:6.3,kids:[{label:'Split pages',looked:'original PDF',via:'pdfplumber (script)',result:'12 pages',t:5.4,d:0.6},{label:'Tables to Markdown',looked:'p. 3–9, 12',via:'OpenCode',result:'7 tables',t:6.0,d:5.7}]},
+  {label:'Faithfulness check',looked:'Markdown vs PDF',via:'Pi',result:'pass · 0 drift',t:11.7,d:4.5,kids:[{label:'Diff p. 4 table',looked:'p. 4',via:'Pi',result:'row order matches',t:12.0,d:1.6}]},
+  {label:'Markdown extraction',looked:'Markdown',via:'Claude Code',result:'60 Fields · 40 agree with Original',t:16.2,d:7.2},
+  {label:'Tie-break',looked:'PDF, 3 Fields',via:'Pi',result:'3 resolved',t:23.4,d:6.3,kids:[{label:'Rated capacity',looked:'p. 4',via:'Pi',result:'80.0 Ah',t:23.6,d:1.8},{label:'Nominal voltage',looked:'p. 4',via:'Pi',result:'3.65 V',t:25.6,d:1.9},{label:'Cycle-life reference test',looked:'p. 7',via:'Pi',result:'IEC 62660-1',t:27.7,d:1.7}]},
+  {label:'High-stake agreement',looked:'Original + Markdown extraction',via:'script',result:'Recycled lithium → Not stated',t:29.7,d:1.2}]},
+ baseline:{label:'Baseline',looked:'NMC-800 Cell Datasheet rev C',via:'Job Board',result:'60 Fields',t:0,d:8.1,kids:[{label:'One-pass extraction',looked:'original PDF',via:'OpenCode',result:'60 Fields · 1 pass',t:0.2,d:7.8}]}
+};
+const TRACE_T={
+ origyn:{label:'Origyn Pipeline',looked:'Tech sheet SS27 shirting',via:'Job Board',result:'37 Fields · 18 Not stated',t:0,d:19,kids:[
+  {label:'Original',looked:'original PDF',via:'Claude Code',result:'4 pages read',t:0,d:3.5},
+  {label:'Markdown',looked:'original PDF',via:'OpenCode',result:'4 pages · 1 table',t:3.5,d:3.9,kids:[{label:'Table to Markdown',looked:'p. 4',via:'OpenCode',result:'1 table',t:4.0,d:2.6}]},
+  {label:'Faithfulness check',looked:'Markdown vs PDF',via:'Pi',result:'pass · 0 drift',t:7.4,d:2.6},
+  {label:'Markdown extraction',looked:'Markdown',via:'Claude Code',result:'37 Fields · 30 agree with Original',t:10,d:5},
+  {label:'High-stake agreement',looked:'Original + Markdown extraction',via:'script',result:'Recycled fibre content → Not stated',t:15,d:1.5}]},
+ baseline:{label:'Baseline',looked:'Tech sheet SS27 shirting',via:'Job Board',result:'37 Fields',t:0,d:5,kids:[{label:'One-pass extraction',looked:'original PDF',via:'OpenCode',result:'37 Fields · 1 pass',t:0.2,d:4.7}]}
+};
+const DOCDATA={
+ nmc:{pages:PAGES,fields:FIELDS,sections:SECTIONS,ovr:BASE_OVR,trace:TRACE,title:'NMC-800 Cell Datasheet rev C',file:'NMC-800 Cell Datasheet rev C.pdf',supplier:'Hunan Cellworks',sub:'Hunan Cellworks · Battery passport',tpl:'battery',hdr:'HUNAN CELLWORKS · NMC-800-DS rev C',product:'NMC-800 cell (Datasheet rev C)',reg:'EU battery passport',slug:'nmc-800-rev-c',sign:'Inês Duarte\nProduct Compliance, Voltaris'},
+ ss27:{pages:TPAGES,fields:TFIELDS,sections:TSECTIONS,ovr:TBASE_OVR,trace:TRACE_T,title:'Tech sheet SS27 shirting',file:'Tech sheet SS27 shirting.pdf',supplier:'Fiação do Ave',sub:'Fiação do Ave · Textile passport · Linho Norte',tpl:'textile',hdr:'FIAÇÃO DO AVE · SS27-SH-0418',product:'SS27 shirting (Tech sheet SS27-SH-0418)',reg:'EU textile passport',slug:'ss27-shirting',sign:'Product data team, Linho Norte'}
+};
+const DOCS=[
+ {id:'nmc',name:'NMC-800 Cell Datasheet rev C.pdf',sup:'Hunan Cellworks',tpl:'Battery',ops:['Origyn Pipeline','Baseline','Kestrel Data','Merrow Labs'],date:'25 Oct 2026'},
+ {id:'ss27',name:'Tech sheet SS27 shirting.pdf',sup:'Fiação do Ave',tpl:'Textile',ops:['Origyn Pipeline','Baseline'],st:'Delivered',f:[19,18,0],bond:'locked',left:'01:12:40',date:'25 Oct 2026'},
+ {id:'lfp2',name:'LFP-280 Cell Spec v2.pdf',sup:'Hunan Cellworks',tpl:'Battery',ops:['Origyn Pipeline','Kestrel Data'],st:'Delivered',f:[47,13,1],bond:'locked',left:'41:05:11',date:'24 Oct 2026'},
+ {id:'warr',name:'Warranty statement 2027 range.pdf',sup:'Voltaris (own Document)',tpl:'Battery',ops:['Origyn Pipeline'],st:'Processing',f:null,bond:'—',left:'—',date:'24 Oct 2026'},
+ {id:'jersey',name:'SS27 jersey GRS certificate.pdf',sup:'Fiação do Ave',tpl:'Textile',ops:['Origyn Pipeline','Baseline'],st:'Settled',f:[33,4,0],bond:'released',left:'—',date:'21 Oct 2026'},
+ {id:'pouch',name:'Pouch 60Ah Test Report.pdf',sup:'Ningde Anode Materials',tpl:'Battery',ops:['Origyn Pipeline','Merrow Labs'],st:'Settled',f:[39,21,0],bond:'released',left:'—',date:'18 Oct 2026'},
+ {id:'nmc622',name:'NMC-622 Datasheet rev B.pdf',sup:'Hunan Cellworks',tpl:'Battery',ops:['Origyn Pipeline','Baseline'],st:'Settled',f:[44,16,1],bond:'slashed',left:'—',date:'15 Oct 2026'},
+ {id:'denim',name:'SS26 denim composition.pdf',sup:'Têxteis Barcelos',tpl:'Textile',ops:['Origyn Pipeline','Baseline'],st:'Settled',f:[30,7,1],bond:'slashed',left:'—',date:'9 Oct 2026'}
+];
+const srTextFor=(list,D)=>'Hello '+D.supplier+' team,\n\nFor the '+D.product+' we need '+(list.length===1?'one value':list.length+' values')+' for our '+D.reg+':\n\n'+list.map(f=>'- '+f.no+' '+f.name+(f.competing?' (the Document says: "'+f.competing.map(l=>LINES[l].text).join('" / "')+'")':'')).join('\n')+'\n\nCould you send the document and page that states '+(list.length===1?'it':'each one')+'?\n\nThank you,\n'+D.sign;
+const keyOf=f=>f.name.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+const mdOfPage=p=>('# '+p.title+'\n\n'+p.lines.map(l=>l.kind==='h'?'## '+l.t+'\n\n':l.kind==='p'?l.t+'\n\n':l.kind==='th'?'| '+l.c.join(' | ')+' |\n|'+l.c.map(()=>'---').join('|')+'|\n':'| '+l.c.join(' | ')+' |\n').join('')).trim();
+const dlFile=(name,text,type)=>{const b=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();};
+const REJECTED={nmc:{p4r2:{field:'cap',note:'Read for Rated capacity, not used: qualifier is minimum, Rated capacity is nominal'}}};
+const fullHex=seed=>{let h=2166136261;for(const ch of seed){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}let out='';for(let i=0;i<7;i++){h=Math.imul(h^(h>>>13),1597334677)>>>0;out+=h.toString(16).padStart(8,'0');}return out;};
+const shortOf=seed=>{const h=fullHex('s:'+seed);return h.slice(0,4)+'…'+h.slice(-4);};
+const TXH=short=>{const m=String(short).match(/^([0-9a-f]{4})…([0-9a-f]{4})$/);return 'https://stellar.expert/explorer/testnet/tx/'+(m?m[1]+fullHex(short)+m[2]:fullHex(String(short))+'00000000');};
+const OUT={nmc:{origyn:{hash:'e4b1…90af',tx:'7c02…e91b'},baseline:{hash:'91c7…3be2',tx:'c93d…7a20'}},ss27:{origyn:{hash:'5a0d…e771',tx:'1f62…09cd'},baseline:{hash:'0b3e…a4f8',tx:'d71a…5c03'}}};
+const PP=[['01','Original','original PDF','Claude Code','first independent read of every Field'],['02','Markdown','original PDF → Markdown','OpenCode','normalises pages and tables'],['03','Faithfulness check','Markdown vs PDF','Pi','on failure the Markdown is redone once'],['04','Markdown extraction','Markdown','Claude Code','second independent read'],['05','Tie-break','PDF, Fields still apart','Pi','never for ★ High-stake Fields']].map(([n,name,view,worker,note],i)=>({n,name,view,worker,note,notFirst:i>0}));
+const MCP_URL='https://doc2dpp.wisecraft.dev/mcp';
+const AGENTS=[['claude','Claude Code'],['opencode','OpenCode'],['pi','Pi'],['other','Other MCP client']];
+const CFG={
+ claude:{label:'Terminal',hint:'run once',code:'claude mcp add --transport http doc2dpp '+MCP_URL},
+ opencode:{label:'opencode.json',hint:'project or ~/.config/opencode',code:'{\n  "$schema": "https://opencode.ai/config.json",\n  "mcp": {\n    "doc2dpp": {\n      "type": "remote",\n      "url": "'+MCP_URL+'",\n      "enabled": true\n    }\n  }\n}',note:['or run ','opencode mcp add','']},
+ pi:{label:'Pi MCP config',hint:'Pi 1.0+ (native MCP)',code:'{\n  "mcpServers": {\n    "doc2dpp": {\n      "url": "'+MCP_URL+'"\n    }\n  }\n}',note:['Pi 1.0+ (native MCP). Older versions need an MCP adapter.','','']},
+ other:{label:'MCP server URL',hint:'streamable HTTP',code:MCP_URL}
+};
+const sampleFor=tp=>tp==='textile'?{name:'Tech sheet SS27 shirting.pdf',meta:'4 pages · 0.6 MB · PDF',sample:true}:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:'12 pages · 2.4 MB · PDF',sample:true};
+const supFor=tp=>tp==='textile'?'Fiação do Ave':'Hunan Cellworks';
+const PROMPTS={
+ worker:'You are a Worker in Origyn\'s Pipeline on the doc2dpp Job Board. You hold no money.\n\nLoop:\n1. Call next_job to take one Sieve Job.\n2. Do only what that Sieve asks, using only the Document view it gives you.\n3. For every Field, return the value with its page and verbatim quote, or Not stated when the Document does not clearly give it. Never guess.\n4. Hand the result in with submit_job.\n5. If next_job returns nothing, wait 30 seconds and call it again.',
+ operator:'You are an Operator on doc2dpp, identified by your Stellar address.\n\n1. Call claim_document to take one whole Document. This locks your Bond from your Stellar wallet.\n2. Extract every Field of its Template: value, unit, qualifier, page and verbatim quote, or Not stated when the Document does not clearly give it.\n3. Call deliver with all Fields. The Challenge Window opens; any Field that does not match the Document can be Challenged and Slashed.\n4. Optional: call report_span for each unit of work, so your Trace shows on the Sieve track. It is self-reported; the Bond is the guarantee.'
+};
 const DEFAULT_CHAL={fieldId:'cap',op:'baseline',status:'filed',claimVal:'80.0 Ah',claimLine:'p4r1'};
-const SR_TEXT='Hello Hunan Cellworks team,\n\nFor the NMC-800 cell (Datasheet rev C) we need one value for our EU battery passport:\n\nRecycled lithium content (%), with the document and page that states it.\n\nRev C says "per supplier declaration (not attached)" on p. 9 and "approx. 4–6 % depending on batch" on p. 11. Could you send the supplier declaration, or confirm a single figure?\n\nThank you,\nInês Duarte\nProduct Compliance, Voltaris';
+const SR_OLD='Hello Hunan Cellworks team,\n\nFor the NMC-800 cell (Datasheet rev C) we need one value for our EU battery passport:\n\nRecycled lithium content (%), with the document and page that states it.\n\nRev C says "per supplier declaration (not attached)" on p. 9 and "approx. 4–6 % depending on batch" on p. 11. Could you send the supplier declaration, or confirm a single figure?\n\nThank you,\nInês Duarte\nProduct Compliance, Voltaris';
+const USERS=[{id:'ines',name:'Inês Duarte',org:'Voltaris',kind:'Brand',role:'brand',sub:'Product Compliance, Voltaris'},{id:'arb',name:'Maren Holt',org:'Arbiter',kind:'Arbiter',role:'arbiter',sub:'Neutral Arbiter'},{id:'origyn',name:'Origyn',org:'Origyn',kind:'Operator',role:'operator',addr:'GA7Q…C21E',sub:'Operator · GA7Q…C21E'},{id:'baseline',name:'Baseline',org:'Baseline',kind:'Operator',role:'operator',addr:'GBL3…91FA',sub:'Operator · GBL3…91FA'}];
+const OPS=[
+ {id:'origyn',name:'Origyn Pipeline',sub:'5 Sieves',addr:'GA7Q…C21E',trace:[{label:'Original',looked:'original PDF',via:'Claude Code',result:'12 pages read',s:0,e:6},{label:'Markdown',looked:'original PDF',via:'OpenCode',result:'12 pages · 7 tables',s:6,e:13},{label:'Faithfulness check',looked:'Markdown vs PDF',via:'Pi',result:'pass · 0 drift',s:13,e:18},{label:'Markdown extraction',looked:'Markdown',via:'Claude Code',result:'60 Fields · 40 agree',s:18,e:26},{label:'Tie-break',looked:'PDF, 3 Fields',via:'Pi',result:'3 resolved · 27 Not stated',s:26,e:33}]},
+ {id:'baseline',name:'Baseline',sub:'1 Sieve',addr:'GBL3…91FA',trace:[{label:'One-pass extraction',looked:'original PDF',via:'OpenCode',result:'60 Fields · 1 pass',s:0,e:9}]},
+ {id:'kestrel',name:'Kestrel Data',sub:'3 steps reported',addr:'GDK2…5W7P',trace:[{label:'OCR + layout',looked:'original PDF',via:'Tesseract 5',result:'12 pages · 7 tables',s:0,e:7},{label:'Field extraction',looked:'OCR text',via:'Llama 3.1 70B',result:'60 Fields',s:7,e:16},{label:'Unit check',looked:'extracted values',via:'pint',result:'2 units normalised',s:16,e:20}]},
+ {id:'merrow',name:'Merrow Labs',sub:'no Trace sent',addr:'GCM9…E04D',trace:null,e:14}
+];
 const SUPPLIERS=[{name:'Hunan Cellworks',meta:'4 Documents'},{name:'Hunan Cellworks (Plant 2)',meta:'1 Document'},{name:'Fiação do Ave',meta:'3 Documents'},{name:'Ningde Anode Materials',meta:'1 Document'}];
 const ARB_X=[
  {doc:'Tech sheet SS27 shirting.pdf',brand:'Linho Norte',supplier:'Fiação do Ave',field:'Fibre composition',op:'Baseline',filed:'14 min ago',left:'01:12:40',page:2,title:'2 · Composition and certification',
@@ -912,18 +1302,23 @@ class Component extends DCLogic {
     tpl:'battery',supplier:'',supFocus:false,file:null,up:'idle',upPct:0,auto:false,storedAt:0,drag:false,
     tick:0,pipeMode:'live',secs:null,win:'open',
     op:'origyn',sel:'cap',exp:'cap',page:4,panel:null,chal:null,modal:null,srCopied:false,
-    arbSel:0,arbDec:{},arbPhase:0,arbEmpty:false,arbNote:'',lbMode:'default',jobsMode:'default',cmdCopied:false};
+    user:'ines',signOpen:false,conn:null,joined:[],pdoc:'nmc',chals:[],spanSel:null,jbSel:null,doc:'nmc',view:'review',srFor:'all',docTpl:'all',docSup:'all',docSt:'all',docQ:'',docsMode:'default',docNote:false,arbSel:0,arbDec:{},arbPhase:0,arbEmpty:false,arbNote:'',lbMode:'default',jobsMode:'default',cmdCopied:false};
   viewerRef=React.createRef();
+  listRef=React.createRef();
+  live={self:null};
   acc=0;
   W(){return this.props.windowMode==='live 48 h'?172800:180;}
-  componentDidMount(){
-    this.iv=setInterval(()=>this.step(),100);
-    this.cd=setInterval(()=>this.countdown(),1000);
-    this.kd=e=>this.onKey(e);window.addEventListener('keydown',this.kd);
+  startTimers(){
+    window.__omCur=this;
+    if(window.__omIv)return;
+    let n=0;
+    window.__omIv=setInterval(()=>{const c=window.__omCur;if(!c)return;n++;try{c.step();if(n%10===0)c.countdown();}catch(e){console.warn(e&&e.message);}},100);
+    window.addEventListener('keydown',e=>{const c=window.__omCur;if(c)c.onKey(e);});
   }
-  componentWillUnmount(){clearInterval(this.iv);clearInterval(this.cd);window.removeEventListener('keydown',this.kd);}
+  componentDidMount(){this.startTimers();}
   componentDidUpdate(pp,ps){
-    const s=this.state;
+    const s=(window.__omCur||this).state;if(!ps)return;
+    if(s.screen==='review'&&(ps.sel!==s.sel||ps.rejNote!==s.rejNote)){const L=this.listRef.current;const el=L&&L.querySelector('[data-row="'+s.sel+'"]');if(el){const top=el.getBoundingClientRect().top-L.getBoundingClientRect().top;if(top<40||top>L.clientHeight-160)L.scrollTo({top:Math.max(0,L.scrollTop+top-120),behavior:'smooth'});}}
     if(s.screen==='review'&&(ps.sel!==s.sel||ps.page!==s.page||ps.op!==s.op||ps.screen!==s.screen)){
       const v=this.viewerRef.current;if(!v)return;
       const f=fieldsFor(s.op==='baseline'?'baseline':'origyn').find(x=>x.id===s.sel);
@@ -933,37 +1328,51 @@ class Component extends DCLogic {
     }
   }
   step(){
-    const s=this.state,sp=this.props.pipelineSpeed??1;
+    const s=this.state;if(!s)return;const sp=Number(this.props.pipelineSpeed)||1;
     if(s.screen==='pipeline'&&s.pipeMode==='live'&&s.tick<DONE){
       this.acc+=100*sp;
-      if(this.acc>=350){this.acc=0;const t=s.tick+1;this.setState(t>=DONE?{tick:t,secs:s.secs==null?this.W():s.secs}:{tick:t});}
+      if(this.acc>=350){this.acc=0;const t=s.tick+1;this.setState({tick:t});}
     }
     if(s.up==='uploading'&&s.auto){const p=Math.min(100,s.upPct+9);this.setState(p>=100?{up:'stored',upPct:100,storedAt:Date.now()}:{upPct:p});}
-    if(s.up==='stored'&&s.auto&&Date.now()-s.storedAt>1100){this.setState({auto:false,up:'idle',screen:'pipeline',tick:0,pipeMode:'live',secs:null,win:'open',chal:null,panel:null});}
+    if(s.up==='stored'&&s.auto&&Date.now()-s.storedAt>1100){this.acc=0;this.setState(s.tpl==='textile'?{auto:false,up:'idle',screen:'pipeline',pdoc:'ss27',tick:0,pipeMode:'live'}:{auto:false,up:'idle',screen:'pipeline',pdoc:'nmc',tick:0,pipeMode:'live',secs:null,win:'open',chal:null,chals:[],panel:null});}
   }
   countdown(){
     const s=this.state;
-    if(s.secs!=null&&s.win==='open'&&s.secs>0){const n=s.secs-1;this.setState(n<=0?{secs:0,win:'settled',panel:null}:{secs:n});}
+    if(s.secs!=null&&s.win==='open'&&s.secs>0&&!s.panel){const n=s.secs-1;this.setState(n<=0?{secs:0,win:'settled',panel:null}:{secs:n});}
   }
   set=(o)=>this.setState(o);
-  goReview(extra){this.setState(st=>({screen:'review',role:'brand',statesOpen:false,mobile:st.mobile,secs:st.secs==null?this.W():st.secs,...(extra||{})}));}
+  goReview(extra){this.setState(st=>{const d=(extra&&extra.doc)||st.doc;return {screen:'review',role:'brand',statesOpen:false,mobile:st.mobile,secs:st.secs==null&&d==='nmc'?this.W():st.secs,...(extra||{})};});}
+  scrollSel(line,doList){
+    const run=()=>{
+      const c=window.__omCur||this;
+      const L=c.listRef&&c.listRef.current;
+      if(doList&&L){const el=L.querySelector('[data-row="'+c.state.sel+'"]');if(el){const top=el.getBoundingClientRect().top-L.getBoundingClientRect().top;if(top<40||top>L.clientHeight-180)L.scrollTop=Math.max(0,L.scrollTop+top-120);}}
+      const V=c.viewerRef&&c.viewerRef.current;
+      if(V){const el=line&&V.querySelector('[data-line="'+line+'"]');if(el){const top=el.getBoundingClientRect().top-V.getBoundingClientRect().top;V.scrollTop=Math.max(0,V.scrollTop+top-160);}else V.scrollTop=0;}
+    };
+    Promise.resolve().then(run);setTimeout(run,80);setTimeout(run,320);
+  }
   selectField(id,toggle){
     const s=this.state,op=s.op==='baseline'?'baseline':'origyn';
     const f=fieldsFor(op).find(x=>x.id===id);if(!f)return;
-    this.setState({sel:id,page:f.page,exp:toggle&&s.exp===id?null:id});
+    this.setState({sel:id,page:f.page,exp:toggle&&s.exp===id?null:id,rejNote:null});
+    this.scrollSel(f.line,!toggle);
   }
-  openPanel(id){
-    const s=this.state;if(s.op==='compare')return;
-    this.setState({panel:{fieldId:id,op:s.op,pickLine:null,value:'',err:null,filed:false},sel:id,exp:id});
+  openPanel(id,opArg){
+    const s=this.state;const op=opArg||s.op;if(op==='compare'||CUR!=='nmc'||s.win==='settled')return;
+    if([s.chal,...(s.chals||[])].filter(Boolean).some(c=>c.fieldId===id&&c.op===op))return;
+    const f=fieldsFor(op).find(x=>x.id===id);
+    this.setState({op,panel:{fieldId:id,op,pickLine:null,value:'',err:null,filed:false},sel:id,exp:id,page:f?f.page:s.page,view:'review'});
+    if(f)this.scrollSel(f.line,true);
   }
   rowIds(){const s=this.state,fs=fieldsFor(s.op==='baseline'?'baseline':'origyn');if(s.op==='compare')return fs.map(f=>f.id);return [...fs.filter(f=>f.ns),...fs.filter(f=>!f.ns)].map(f=>f.id);}
   onKey(e){
     const s=this.state;
-    if(e.key==='Escape'){this.setState({panel:null,modal:null,statesOpen:false});return;}
+    if(e.key==='Escape'){this.setState({panel:null,modal:null,statesOpen:false,conn:null});return;}
     if(s.screen!=='review'||s.mobile)return;
     const tg=(e.target&&e.target.tagName)||'';if(tg==='INPUT'||tg==='TEXTAREA')return;
     const ids=this.rowIds(),i=ids.indexOf(s.sel);
-    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const j=Math.max(0,Math.min(ids.length-1,i+(e.key==='ArrowDown'?1:-1)));const op=s.op==='baseline'?'baseline':'origyn';const f=fieldsFor(op).find(x=>x.id===ids[j]);this.setState({sel:ids[j],page:f.page,exp:s.exp?ids[j]:null});}
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const j=Math.max(0,Math.min(ids.length-1,i+(e.key==='ArrowDown'?1:-1)));const op=s.op==='baseline'?'baseline':'origyn';const f=fieldsFor(op).find(x=>x.id===ids[j]);this.setState({sel:ids[j],page:f.page,exp:s.exp?ids[j]:null});this.scrollSel(f.line,true);}
     else if(e.key==='Enter'){this.setState({exp:s.exp===s.sel?null:s.sel});}
     else if((e.key==='c'||e.key==='C')&&s.win==='open'&&!s.panel){this.openPanel(s.sel);}
   }
@@ -977,38 +1386,46 @@ class Component extends DCLogic {
     const s=this.state,p=s.panel;if(!p)return;
     if(!p.pickLine){this.setState({panel:{...p,err:'Pick the line on the Document that states the value first.'}});return;}
     if(!p.value.trim()){this.setState({panel:{...p,err:'Enter the value the Document states.'}});return;}
-    this.setState({panel:{...p,filed:true,err:null},chal:{fieldId:p.fieldId,op:p.op,status:'filed',claimVal:p.value.trim(),claimLine:p.pickLine},arbDec:{},arbPhase:0,arbEmpty:false});
+    const nc={fieldId:p.fieldId,op:p.op,status:'filed',claimVal:p.value.trim(),claimLine:p.pickLine};
+    this.setState(s.chal?{panel:{...p,filed:true,err:null},chals:[...(s.chals||[]),nc],arbEmpty:false}:{panel:{...p,filed:true,err:null},chal:nc,arbDec:{},arbPhase:0,arbEmpty:false});
   }
   decide(i,dec){
     const s=this.state;
     this.setState({arbDec:{...s.arbDec,[i]:dec},arbPhase:dec==='upheld'?1:0});
     if(i===0)this.setState(st=>({chal:{...(st.chal||DEFAULT_CHAL),status:dec}}));
+    else if(i>=3)this.setState(st=>({chals:(st.chals||[]).map((c,k)=>k===i-3?{...c,status:dec}:c)}));
     if(dec==='upheld'){setTimeout(()=>this.setState({arbPhase:2}),60);setTimeout(()=>this.setState({arbPhase:3}),1300);}
   }
+  meId(){const s=this.state,DEF={brand:'ines',arbiter:'arb',operator:'origyn'};const u=USERS.find(x=>x.id===s.user);return u&&u.role===s.role?u.id:DEF[s.role];}
+  signInAs(u){this.setState({user:u.id,signOpen:false});this.setRole(u.role);}
   setRole(r){
     const s=this.state;
-    if(r==='brand')this.setState({role:'brand',screen:s.secs!=null?'review':'upload',statesOpen:false});
+    if(r==='brand')this.setState({role:'brand',screen:'documents',statesOpen:false});
     else if(r==='arbiter')this.setState({role:'arbiter',screen:'arbiter',statesOpen:false,panel:null});
     else this.setState({role:'operator',screen:'jobs',statesOpen:false,panel:null});
   }
-  storyGo(i){
-    const W=this.W();
-    const base={statesOpen:false,stSel:{}};
-    [()=>this.setState({...base,screen:'landing',role:'brand',panel:null}),
-     ()=>this.setState({...base,screen:'upload',role:'brand',up:'idle',file:null,auto:false,upPct:0}),
-     ()=>{this.acc=0;this.setState({...base,screen:'pipeline',role:'brand',tick:0,pipeMode:'live',secs:null,win:'open',chal:null,panel:null});},
-     ()=>this.goReview({...base,op:'origyn',panel:null,sel:'cap',exp:'cap',page:4}),
-     ()=>this.goReview({...base,op:'baseline',sel:'cap',exp:'cap',page:4,win:'open',chal:null,arbDec:{},arbPhase:0,panel:{fieldId:'cap',op:'baseline',pickLine:null,value:'',err:null,filed:false}}),
-     ()=>this.setState(st=>({...base,screen:'arbiter',role:'arbiter',arbSel:0,arbEmpty:false,panel:null,chal:st.chal||DEFAULT_CHAL})),
-     ()=>this.setState({...base,screen:'leaderboard',role:this.state.role==='arbiter'?'brand':this.state.role,lbMode:'default'}),
-     ()=>this.setState({...base,screen:'jobs',role:'operator',jobsMode:'default'})][i]();
+  storyGo(k){
+    const base={statesOpen:false,stSel:{},view:'review'};
+    const A={
+     landing:()=>this.setState({...base,screen:'landing',role:'brand',panel:null}),
+     upload:()=>this.setState({...base,screen:'upload',role:'brand',up:'idle',file:null,auto:false,upPct:0}),
+     documents:()=>this.setState({...base,screen:'documents',role:'brand',panel:null,docNote:false}),
+     pipeline:()=>{this.acc=0;this.setState({...base,screen:'pipeline',pdoc:'nmc',role:'brand',tick:0,pipeMode:'live',secs:null,win:'open',chal:null,chals:[],panel:null});},
+     review:()=>this.goReview({...base,doc:'nmc',op:'origyn',panel:null,sel:'cap',exp:'cap',page:4}),
+     challenge:()=>{const st=this.state;const had=[st.chal,...(st.chals||[])].filter(Boolean).some(c=>c.fieldId==='cap'&&c.op==='baseline');if(st.win==='settled'||had){this.goReview({...base,doc:'nmc',op:'baseline',sel:'cap',exp:'cap',page:4,panel:null});return;}this.goReview({...base,doc:'nmc',op:'baseline',sel:'cap',exp:'cap',page:4,panel:{fieldId:'cap',op:'baseline',pickLine:null,value:'',err:null,filed:false}});},
+     arbiter:()=>this.setState(st=>({...base,screen:'arbiter',role:'arbiter',arbSel:0,arbEmpty:false,panel:null,chal:st.chal||DEFAULT_CHAL})),
+     leaderboard:()=>this.setState({...base,screen:'leaderboard',role:this.state.role==='arbiter'?'brand':this.state.role,lbMode:'default'}),
+     jobs:()=>this.setState({...base,screen:'jobs',role:'operator',jobsMode:'default'})};
+    A[k]();
   }
   statesFor(screen){
     const W=this.W(),S=(label,o)=>({label,o});
     const m={
       landing:[S('Default',{})],
-      upload:[S('Default',{up:'idle',file:null,auto:false}),S('Document chosen',{up:'idle',file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:'12 pages · 2.4 MB · PDF'},supplier:'Hunan Cellworks',auto:false}),S('Wrong file type',{up:'wrong',file:{name:'Tech sheet SS27 shirting.docx',meta:''},auto:false}),S('Upload failed',{up:'failed',auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}}),S('Uploading',{up:'uploading',upPct:62,auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}}),S('Stored on ICP',{up:'stored',auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}})],
-      pipeline:[S('Live run',{pipeMode:'live',tick:0,secs:null}),S('Waiting for a Worker',{pipeMode:'waiting',tick:0}),S('Sieve re-run',{pipeMode:'rerun',tick:11}),S('Every Field Final',{pipeMode:'allfinal',tick:DONE,secs:this.state.secs??W})],
+      pipelines:[S('Default',{})],
+      documents:[S('Default',{docsMode:'default',docQ:'',docTpl:'all',docSup:'all',docSt:'all'}),S('No Documents yet',{docsMode:'empty'}),S('Filter with no results',{docsMode:'default',docQ:'LFP-900',docTpl:'all',docSup:'all',docSt:'all'})],
+      upload:[S('Default',{up:'idle',file:null,auto:false}),S('Document chosen',{up:'idle',file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:'12 pages · 2.4 MB · PDF'},supplier:'Hunan Cellworks',auto:false}),S('Wrong file type',{up:'wrong',file:{name:'Tech sheet SS27 shirting.docx',meta:''},auto:false}),S('Upload failed',{up:'failed',auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}}),S('Uploading',{up:'uploading',upPct:62,auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}}),S('Stored',{up:'stored',auto:false,file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:''}})],
+      pipeline:[S('Live run',{pipeMode:'live',tick:0,secs:null}),S('Waiting for a Worker',{pipeMode:'waiting',tick:0}),S('Sieve re-run',{pipeMode:'rerun',tick:11}),S('Done · every Field settled',{pipeMode:'allfinal',tick:DONE,secs:this.state.secs??W})],
       review:[S('Window open',{win:'open',secs:W,chal:null,panel:null}),S('Settled',{win:'settled',secs:0,panel:null}),S('Field Challenged',{win:'open',op:'baseline',sel:'cap',exp:'cap',page:4,panel:null,chal:{...DEFAULT_CHAL}}),S('Field Upheld',{op:'baseline',sel:'cap',exp:'cap',page:4,panel:null,chal:{...DEFAULT_CHAL,status:'upheld'}}),S('Challenge · open form',{win:'open',op:'baseline',sel:'cap',page:4,chal:null,panel:{fieldId:'cap',op:'baseline',pickLine:null,value:'',err:null,filed:false}}),S('Challenge · quote not found',{win:'open',op:'baseline',sel:'cap',page:4,chal:null,panel:{fieldId:'cap',op:'baseline',pickLine:null,value:'80.0 Ah',err:'Quote not found on p. 4. Click the table row or sentence that holds the value.',filed:false}}),S('Challenge · window closed',{win:'settled',secs:0,op:'baseline',sel:'cap',page:4,panel:{fieldId:'cap',op:'baseline',pickLine:null,value:'',err:null,filed:false}}),S('Challenge · filed',{win:'open',op:'baseline',sel:'cap',page:4,chal:{...DEFAULT_CHAL},panel:{fieldId:'cap',op:'baseline',pickLine:'p4r1',value:'80.0 Ah',err:null,filed:true}})],
       arbiter:[S('Open queue',{arbEmpty:false,arbDec:{},arbPhase:0,arbSel:0,chal:{...DEFAULT_CHAL}}),S('Empty queue',{arbEmpty:true}),S('Decided',{arbEmpty:false,arbSel:0,arbDec:{0:'upheld'},arbPhase:3,chal:{...DEFAULT_CHAL,status:'upheld'}})],
       leaderboard:[S('Default',{lbMode:'default'}),S('Only one Operator',{lbMode:'one'}),S('Loading from Stellar',{lbMode:'loading'})],
@@ -1018,61 +1435,70 @@ class Component extends DCLogic {
   }
 
   renderVals(){
+    window.__omCur=this;
+    if(!window.__omIv)setTimeout(()=>this.startTimers(),0);
     const s=this.state,W=this.W(),secs=s.secs==null?W:s.secs;
     const scr=s.screen;
+    CUR=scr==='review'&&DOCDATA[s.doc]?s.doc:scr==='pipeline'&&DOCDATA[s.pdoc]?s.pdoc:'nmc';const D=DOCDATA[CUR];
     const isApp=scr!=='landing';
     const mobileAvail=scr==='pipeline'||scr==='review';
     const showMobile=s.mobile&&mobileAvail;
     const sel=(a,b)=>a===b;
-    const NAVS={brand:[['Documents','review'],['Upload','upload'],['Leaderboard','leaderboard']],arbiter:[['Challenges','arbiter']],operator:[['Job Board','jobs'],['Pipelines','jobs'],['Leaderboard','leaderboard']]};
-    const activeNav={pipeline:'review'}[scr]||scr;
+    const NAVS={brand:[['Documents','documents'],['Upload','upload'],['Leaderboard','leaderboard']],arbiter:[['Challenges','arbiter']],operator:[['Job Board','jobs'],['Pipelines','pipelines'],['Leaderboard','leaderboard']]};
+    const activeNav={pipeline:'documents',review:'documents'}[scr]||scr;
     let firstHit=false;
     const nav=NAVS[s.role].map(([label,to])=>{let a=activeNav===to&&!firstHit;if(a)firstHit=true;return {label,bg:a?'#E4DED0':'transparent',fg:INK,fw:a?600:500,dot:a?INK:'transparent',onClick:()=>{if(to==='review')this.goReview({});else this.setState({screen:to,statesOpen:false});}};});
-    const who={brand:{name:'Inês Duarte',sub:'Product Compliance, Voltaris'},arbiter:{name:'Arbiter desk',sub:'Neutral third party'},operator:{name:'Origyn',sub:'Operator console'}}[s.role];
-    const roleLabel={brand:'Voltaris',arbiter:'Arbiter',operator:'Operator'}[s.role];
+    const me=USERS.find(u=>u.id===this.meId());
+    const who={name:me.name,sub:me.sub};
+    const roleLabel=me.role==='brand'?me.org:me.kind;
     // story
-    const storyIdx={landing:0,upload:1,pipeline:2,review:s.panel?4:3,arbiter:5,leaderboard:6,jobs:7}[scr];
-    const story=[['01','Landing'],['02','Upload'],['03','Pipeline'],['04','Review'],['05','Challenge'],['06','Arbiter'],['07','Leaderboard'],['08','Job Board']].map(([n,label],i)=>({n,label,bg:i===storyIdx?PAPER:'transparent',fg:i===storyIdx?INK:PAPER,bd:i===storyIdx?PAPER:'#4A463F',onClick:()=>this.storyGo(i)}));
-    const roles=[['Brand','brand'],['Arbiter','arbiter'],['Operator','operator']].map(([label,r])=>({label,bg:s.role===r?PAPER:'transparent',fg:s.role===r?INK:PAPER,onClick:()=>this.setRole(r)}));
+    const storyKey=scr==='review'&&s.panel?'challenge':scr;
+    const story=[['01','Landing','landing'],['02','Upload','upload'],['02b','Documents','documents'],['03','Pipeline','pipeline'],['04','Review','review'],['05','Challenge','challenge'],['06','Arbiter','arbiter'],['07','Leaderboard','leaderboard'],['08','Job Board','jobs']].map(([n,label,k])=>({n,label,bg:k===storyKey?PAPER:'transparent',fg:k===storyKey?INK:PAPER,bd:k===storyKey?PAPER:'#4A463F',onClick:()=>this.storyGo(k)}));
+    const signList=USERS.map(u=>({name:u.name,meta:u.kind+' · '+(u.addr||u.org),mark:u.id===me.id?'✓':'',fw:u.id===me.id?600:400,onClick:()=>this.signInAs(u)}));
+    const bal=(10+5*[s.chal,...(s.chals||[])].filter(c=>c&&c.status==='upheld').length).toFixed(2);
     const sts=this.statesFor(scr);const cur=s.stSel[scr]||sts[0]?.label||'Default';
     const stateItems=sts.map(x=>({label:x.label,mark:x.label===cur?'✓':'',fw:x.label===cur?600:400,onClick:()=>{this.acc=0;this.setState({...x.o,statesOpen:false,stSel:{...s.stSel,[scr]:x.label}});}}));
-    const scrName={landing:'Landing',upload:'Upload',pipeline:'Live Pipeline',review:'Document review',arbiter:'Arbiter desk',leaderboard:'Leaderboard',jobs:'Job Board'}[scr];
+    const scrName={pipelines:'Pipelines',documents:'Documents',landing:'Landing',upload:'Upload',pipeline:'Live Pipeline',review:'Document review',arbiter:'Arbiter desk',leaderboard:'Leaderboard',jobs:'Job Board'}[scr];
 
     // upload
     const f=s.file;
     const up={isEmpty:!f&&s.up==='idle',isFile:!!f&&s.up==='idle',isWrong:s.up==='wrong',isFailed:s.up==='failed',isUploading:s.up==='uploading',isStored:s.up==='stored',fileName:f?f.name:'',fileMeta:f?f.meta:'',pct:s.upPct+' %',zoneBd:s.drag?INK:(s.up==='wrong'||s.up==='failed'?RED:'#8E877A'),zoneBg:s.drag?'#ECE7DB':'#FFFDF9'};
     up.pct=s.upPct+'%';
-    const tplCards=[{k:'battery',name:'Battery',count:'18 Fields',ex:['Rated capacity · Ah','Recycled cobalt · %','Carbon footprint · kg CO₂e/kWh']},{k:'textile',name:'Textile',count:'14 Fields',ex:['Fibre composition · %','GRS certificate no.','Country of spinning']}].map(t=>({...t,bd:s.tpl===t.k?INK:'#D6CFBF',bw:s.tpl===t.k?'2px':'1px',bg:s.tpl===t.k?'#FFFDF9':'transparent',onClick:()=>this.setState({tpl:t.k})}));
+    const tplCards=[{k:'battery',name:'Battery',count:'60 Fields',ex:['Rated capacity · Ah','Recycled cobalt · %','Carbon footprint · kg CO₂e/kWh']},{k:'textile',name:'Textile',count:'37 Fields',ex:['Fibre composition · %','GRS certificate no.','Country of spinning']}].map(t=>({...t,bd:s.tpl===t.k?INK:'#D6CFBF',bw:s.tpl===t.k?'2px':'1px',bg:s.tpl===t.k?'#FFFDF9':'transparent',onClick:()=>this.setState(st=>({tpl:t.k,...(st.file&&st.file.sample?{file:sampleFor(t.k),supplier:supFor(t.k)}:{})}))}));
     const q=s.supplier.toLowerCase();
     const sugg=SUPPLIERS.filter(x=>!q||x.name.toLowerCase().includes(q)).filter(x=>x.name!==s.supplier).map(x=>({...x,onPick:e=>{e.preventDefault();this.setState({supplier:x.name,supFocus:false});}}));
     const canStart=!!f&&(s.up==='idle'||s.up==='failed');
-    const sample=()=>this.setState({file:{name:'NMC-800 Cell Datasheet rev C.pdf',meta:'12 pages · 2.4 MB · PDF'},up:'idle',supplier:s.supplier||'Hunan Cellworks'});
+    const sample=()=>this.setState({file:sampleFor(s.tpl),up:'idle',supplier:s.supplier||supFor(s.tpl)});
 
     // pipeline
     const mode=s.pipeMode,tk=s.tick;
     const pdone=(mode==='live'&&tk>=DONE)||mode==='allfinal';
-    const stState=(i)=>{
-      if(mode==='waiting')return 'wait';
-      if(mode==='allfinal')return 'done';
-      if(mode==='rerun')return ['done','run','fail','wait','wait'][i];
-      const x=ST[i];return tk>=x.e?'done':tk>=x.s?'run':'wait';
-    };
-    const mkSt=(x,i,st,meta)=>({num:'0'+(i+1),name:x.n,worker:x.w,notFirst:i>0,isDone:st==='done',isRun:st==='run',isFail:st==='fail',isWait:st==='wait',
-      bd:st==='fail'?RED:st==='run'?INK:st==='done'?'#141414':'#CFC8B8',bw:st==='run'||st==='fail'?'1.5px':'1px',bg:st==='wait'?'transparent':'#FFFDF9',
-      dot:mode==='waiting'?'#B5AE9F':st==='run'?'#2F7D4F':'#6E685D',dotAnim:st==='run'?'om-pulse 1s ease-in-out infinite':'none',
-      meta:meta!=null?meta:(st==='done'?x.meta:st==='run'?'working…':mode==='waiting'?'no Worker yet':'—'),metaFg:st==='fail'?RED:'#2A2723'});
-    const oStations=ST.map((x,i)=>{const st=stState(i);let meta=null;if(mode==='rerun'&&i===1)meta='re-run 1 of 1';if(mode==='rerun'&&i===2)meta='failed · p. 4 table drift';return mkSt(x,i,st,meta);});
-    const bst=mode==='waiting'?'wait':(mode==='live'&&tk<9?(tk>=0?'run':'wait'):'done');
-    const bStations=[mkSt({n:'One-pass extraction',w:'OpenCode',meta:'18 values · 1 pass'},0,bst,null)];
-    const tracks=[{name:'Origyn Pipeline',sub:'5 Sieves',stations:oStations,fill:(mode==='allfinal'?100:mode==='waiting'?0:mode==='rerun'?28:Math.min(100,tk/33*100))+'%'},
-      {name:'Baseline',sub:'1 Sieve',stations:bStations,fill:(bst==='done'?20:mode==='waiting'?0:Math.min(20,tk/9*20))+'%'}];
-    const pipeRows=FIELDS.map((fl,i)=>{
-      const ct=7+i*0.7,stt=SETTLE[fl.id]??(19+i*0.75);
+    const tAt=mode==='rerun'?11:tk;
+    const stOf=(op,x,i)=>{if(mode==='waiting')return 'wait';if(mode==='allfinal')return 'done';if(mode==='rerun'&&op==='origyn')return ['done','run','fail','wait','wait'][i];return tAt>=x.e?'done':tAt>=x.s?'run':'wait';};
+    const mkSt=(x,i,st,black)=>({num:'0'+(i+1),name:x.label,looked:x.looked,via:x.via,notFirst:i>0,isDone:st==='done',isRun:st==='run',isFail:st==='fail',isWait:st==='wait',
+      bd:st==='fail'?RED:black||st==='run'||st==='done'?INK:'#CFC8B8',bw:st==='run'||st==='fail'?'1.5px':'1px',bg:black?INK:(st==='wait'?'transparent':'#FFFDF9'),fg:black?PAPER:INK,fg2:black?'#D6CFBF':'#2A2723',icBg:black?PAPER:INK,icFg:black?INK:PAPER,
+      dot:mode==='waiting'?'#B5AE9F':st==='run'?'#2F7D4F':(black?'#8E877A':'#6E685D'),dotAnim:st==='run'?'om-pulse 1s ease-in-out infinite':'none',
+      meta:x.metaOverride||(st==='done'?x.result:st==='run'?'working…':mode==='waiting'?'no Worker yet':'—'),metaFg:st==='fail'?RED:(black?'#F7F5F0':'#2A2723')});
+    const tracks=OPS.map(op=>{
+      const steps=(op.trace||[{label:'Black box',looked:'input not reported',via:'No Trace sent',result:'60 Fields delivered',s:0,e:op.e}]).map(x=>CUR==='ss27'?{...x,result:x.result.replace('60 Fields','37 Fields').replace('27 Not stated','18 Not stated').replace('12 pages','4 pages').replace('7 tables','1 table').replace('40 agree','30 agree')}:x);
+      const stations=steps.map((x,i)=>{let y=x;if(mode==='rerun'&&op.id==='origyn'&&i===1)y={...x,metaOverride:'re-run 1 of 1'};if(mode==='rerun'&&op.id==='origyn'&&i===2)y={...x,metaOverride:'failed · p. 4 table drift'};return mkSt(y,i,stOf(op.id,x,i),!op.trace);});
+      const last=steps[steps.length-1].e;
+      const frac=mode==='allfinal'?1:mode==='waiting'?0:(mode==='rerun'&&op.id==='origyn')?0.28:Math.min(1,tAt/last);
+      const n=steps.length,sk=s.spanSel&&s.spanSel.op===op.id?s.spanSel.i:-1,sx=sk>=0?steps[sk]:null;
+      return {name:op.name,sub:op.sub,addr:op.addr,
+        stations:stations.map((st,i)=>({...st,tip:op.trace?'Span '+st.num+' · '+st.name+' · via '+st.via+' · looked at '+st.looked:'No Trace sent',onClick:()=>this.setState({spanSel:sk===i?null:{op:op.id,i}}),bd:sk===i?INK:st.bd,bw:sk===i?'2px':st.bw})),
+        fill:(frac*100)+'%',railW:n===5?'100%':'calc((100% - 88px) * '+n+' / 5 + '+((n-1)*22)+'px)',hasSpan:!!sx,
+        spanText:sx?(op.trace?'Span '+String(sk+1).padStart(2,'0')+' · '+sx.label+' · looked at '+sx.looked+' · via '+sx.via+' · '+sx.result:'No Trace sent. Only the delivered Fields and the Bond are known.'):''};
+    });
+    const PF=D.fields,PN=PF.length,dk=CUR;
+    const pipeRows=PF.map((fl,i)=>{
+      const ct=7+i*(18/PN),stt=SETTLE[fl.id]??(fl.hs&&fl.ns?35:19+i*(13.2/PN));
       let k='queued';
       const t=mode==='waiting'?-1:tk;
-      if(mode==='allfinal')k='final';else if(t>=stt&&mode!=='rerun')k=fl.ns?'ns':'final';else if(t>=ct)k='conv';
-      const dv=k==='final'?(mode==='allfinal'&&fl.ns?'5 %':disp(fl)):k==='ns'?'—':k==='conv'?(fl.alt||fl.val):'· · ·';
-      return {name:fl.name,disp:dv,b:B[k],vfg:k==='queued'?'#8E877A':k==='conv'?'#3D3A34':k==='ns'?'#6B4400':INK,pageLbl:k==='queued'?'':'p. '+LINES[fl.line].page,showTb:fl.tb&&(k==='final'||k==='ns'||(k==='conv'&&t>=26)),rowBg:k==='ns'?'#FBF3E0':'transparent'};
+      if(mode==='allfinal')k=fl.ns?'ns':'final';else if(t>=stt&&mode!=='rerun')k=fl.ns?'ns':'final';else if(t>=ct)k='conv';
+      const dv=k==='final'?disp(fl):k==='ns'?'—':k==='conv'?(fl.alt||fl.val):'· · ·';
+      const sK=k==='final'||k==='ns';
+      return {onClick:()=>{if(!sK)return;this.goReview({doc:dk,op:'origyn',sel:fl.id,exp:fl.id,page:LINES[fl.line].page,panel:null,view:'review'});this.scrollSel(fl.line,true);},cur:sK?'pointer':'default',tip:sK?'Open in Review':'Still converging',name:fl.no+'  '+fl.name,disp:dv,b:B[k],vfg:k==='queued'?'#8E877A':k==='conv'?'#3D3A34':k==='ns'?'#6B4400':INK,pageLbl:k==='queued'?'':'p. '+LINES[fl.line].page,showTb:fl.tb&&(k==='final'||k==='ns'||(k==='conv'&&t>=26)),rowBg:k==='ns'?'#FBF3E0':'transparent'};
     });
     const cnt=k=>pipeRows.filter(r=>r.b===B[k]).length;
     const pipe={done:pdone,notDone:!pdone,statusWord:mode==='waiting'?'Waiting for a Worker':'Processing',elapsed:mode==='waiting'?'00:00':'00:'+String(Math.min(59,Math.round((mode==='allfinal'?DONE:tk)*0.9))).padStart(2,'0'),
@@ -1081,118 +1507,187 @@ class Component extends DCLogic {
 
     // review
     const vop=s.op==='baseline'?'baseline':'origyn';
-    const fs=fieldsFor(vop);
-    const settled=s.win==='settled';
-    const ch=s.chal;
+    const settled=CUR==='nmc'&&s.win==='settled';
+    const chList=CUR==='nmc'?[s.chal,...(s.chals||[])].filter(Boolean):[];
+    const ch=chList[0]||null;
+    const chOf=(id,op)=>chList.find(c=>c.fieldId===id&&c.op===op)||null;
+    const fs=fieldsFor(vop).map(f=>{const c=chOf(f.id,vop);return c&&c.status==='upheld'&&LINES[c.claimLine]?{...f,line:c.claimLine,m:LINES[c.claimLine].text.includes(c.claimVal)?c.claimVal:'',page:LINES[c.claimLine].page,competing:null}:f;});
     const rowOf=(fl,op)=>{
-      const c=ch&&ch.fieldId===fl.id&&ch.op===op?ch:null;
+      const c=chOf(fl.id,op);
       let k=fl.ns?'ns':'final';if(c)k={filed:'chal',upheld:'uph',rejected:'rej'}[c.status];
       const isSel=s.sel===fl.id;
-      return {id:fl.id,name:fl.name,val:k==='uph'?c.claimVal:fl.val,qual:k==='uph'?'':fl.qual,hasQual:k!=='uph'&&!!fl.qual,oldVal:disp(fl),claimVal:c?c.claimVal:'',
+      return {id:fl.id,no:fl.no,hs:!!fl.hs,name:fl.name,author:fl.author,val:k==='uph'?c.claimVal:fl.val,qual:k==='uph'?'':fl.qual,hasQual:k!=='uph'&&!!fl.qual,oldVal:disp(fl),claimVal:c?c.claimVal:'',
         pageLbl:'p. '+fl.page,b:B[k],tb:op==='origyn'&&!!fl.tb,isUph:k==='uph',isChal:k==='chal',isRej:k==='rej',
-        canChallenge:!settled&&!c&&!fl.ns,expanded:s.exp===fl.id,...qparts(fl),
+        canChallenge:!settled&&!c&&!fl.ns&&CUR==='nmc',full:k==='uph'?c.claimVal:disp(fl),slashTx:shortOf('slash'+fl.id+op),slashHref:TXH(shortOf('slash'+fl.id+op)),hasRej:!!(s.rejNote&&s.rejNote.field===fl.id&&op==='origyn'&&isSel),rejText:s.rejNote?s.rejNote.note:'',rejQuote:s.rejNote?'p. '+s.rejNote.page+' · “'+s.rejNote.text+'”':'',expanded:s.exp===fl.id,...qparts(fl),
         bg:isSel?'#EFEADD':'transparent',ol:k==='chal'?'1.5px solid '+RED:'none',
         onClick:()=>this.selectField(fl.id,true),onChallenge:e=>{e.stopPropagation();this.openPanel(fl.id);}};
     };
     const nsList=s.op==='compare'?[]:fs.filter(x=>x.ns);
-    const nsRows=nsList.map(fl=>({name:fl.name,ol:s.sel===fl.id?'2px solid #6B4400':'none',onClick:()=>this.selectField(fl.id,false),
-      quotes:fl.competing.map(lid=>({pageLbl:'p. '+LINES[lid].page,text:LINES[lid].text,onClick:e=>{e.stopPropagation();this.setState({sel:fl.id,page:LINES[lid].page});}})),
-      onRequest:e=>{e.stopPropagation();this.setState({modal:'sr',srCopied:false});}}));
-    const rows=fs.filter(x=>!x.ns||s.op==='compare').filter(x=>!x.ns).map(fl=>rowOf(fl,vop));
+    const nsSup=nsList.filter(x=>x.author==='Supplier');
+    const nsRows=nsList.map(fl=>{const sel=s.sel===fl.id;const qs=fl.competing||[fl.line];const cN=chOf(fl.id,vop);return {canChallenge:!settled&&!cN&&CUR==='nmc',onChallenge:e=>{e.stopPropagation();this.openPanel(fl.id,vop);},isChal:!!cN,chalText:cN?({filed:'Challenged · under review by Arbiter · ',upheld:'Upheld · corrected to ',rejected:'Challenge rejected · '}[cN.status]+cN.claimVal):'',chalFg:cN&&cN.status==='rejected'?'#5E594F':RED,id:fl.id,name:fl.name,no:fl.no,hs:!!fl.hs,author:fl.author,pageLbl:'p. '+fl.page,isSup:fl.author==='Supplier',isBrand:fl.author==='Brand',expanded:sel,bg:sel?'#FBF3E0':'#FFFDF9',ol:sel?'2px solid #6B4400':'none',
+      qLabel:fl.competing?'Competing statements, no single value':'Where it would normally be',onClick:()=>this.selectField(fl.id,false),
+      quotes:qs.map(lid=>({pageLbl:'p. '+LINES[lid].page,text:LINES[lid].text,onClick:e=>{e.stopPropagation();this.setState({sel:fl.id,page:LINES[lid].page});}})),
+      onRequest:e=>{e.stopPropagation();this.setState({modal:'sr',srFor:fl.id,srCopied:false});}};});
+    const mainF=fs.filter(x=>!x.ns);
+    const rows=[];D.sections.forEach(([k,title])=>{const list=mainF.filter(x=>x.sec===k);if(!list.length)return;rows.push({isHead:true,isField:false,title,count:list.length+' Fields'});list.forEach(fl=>rows.push({...rowOf(fl,vop),isHead:false,isField:true}));});
     const of=fieldsFor('origyn'),bf=fieldsFor('baseline');
-    const cmpRows=of.map((a,i)=>{const b=bf[i];const ad=a.ns?'Not stated':disp(a);const bd=disp(b);const diff=ad!==bd;return {name:a.name,a:ad,b:bd,diff,afg:a.ns?'#6B4400':INK,bw:diff?700:500,bg:s.sel===a.id?'#EFEADD':'transparent',onClick:()=>this.selectField(a.id,false)};});
+    const cmpRows=of.map((a,i)=>{const b=bf[i];const cA=chOf(a.id,'origyn'),cB=chOf(b.id,'baseline');const ad=cA&&cA.status==='upheld'?cA.claimVal:a.ns?'Not stated':disp(a);const bd=cB&&cB.status==='upheld'?cB.claimVal:b.ns?'Not stated':disp(b);const diff=ad!==bd;const okW=!settled&&CUR==='nmc';return {canA:diff&&okW&&!cA,canB:diff&&okW&&!cB,chA:e=>{e.stopPropagation();this.openPanel(a.id,'origyn');},chB:e=>{e.stopPropagation();this.openPanel(b.id,'baseline');},id:a.id,name:a.no+'  '+a.name,a:ad,b:bd,diff,afg:a.ns?'#6B4400':INK,bfg:b.ns?'#6B4400':INK,bw:diff?700:500,bg:s.sel===a.id?'#EFEADD':'transparent',onClick:()=>this.selectField(a.id,false)};});
     const nDiff=cmpRows.filter(c=>c.diff).length;
     const tabs=[['Origyn Pipeline','origyn','5 Sieves'],['Baseline','baseline','1 Sieve'],['Compare','compare',nDiff+' differ']].map(([label,k,meta])=>({label,meta,bd:s.op===k?INK:'transparent',fw:s.op===k?600:500,fg:INK,onClick:()=>this.setState({op:k,panel:null})}));
-    const bondFor=op=>{const sl=ch&&ch.op===op&&ch.status==='upheld';return {label:'Bond · '+(op==='origyn'?'Origyn Pipeline':'Baseline'),amt:sl?'45.00':'50.00',state:sl?'slashed':settled?'released':'locked',hasSplit:sl,split:'5.00 USDC slashed to Voltaris',bd:sl?RED:'#0B4A57',bg:'#FFFDF9'};};
+    const bondFor=op=>{const nS=chList.filter(c=>c.op===op&&c.status==='upheld').length;const sl=nS>0;return {label:'Bond · '+(op==='origyn'?'Origyn Pipeline':'Baseline'),amt:(50-5*nS).toFixed(2),state:sl?'slashed':settled?'released':'locked',hasSplit:sl,split:(5*nS).toFixed(2)+' USDC slashed to Voltaris',bd:sl?RED:'#0B4A57',bg:'#FFFDF9'};};
     const moneyChips=(s.op==='compare'?[bondFor('origyn'),bondFor('baseline')]:[bondFor(vop)]).concat([{label:'Fee',amt:'5.00',state:settled?'paid':'held',hasSplit:false,split:'',bd:'#8FB0B6',bg:'transparent'}]);
     // viewer
     const fmap={};fs.forEach(x=>{if(!fmap[x.line])fmap[x.line]=x;});
-    if(vop==='origyn')fs.filter(x=>x.ns).forEach(x=>x.competing.forEach(l=>{fmap[l]=fmap[l]||x;}));
+    if(vop==='origyn')fs.filter(x=>x.ns).forEach(x=>(x.competing||[]).forEach(l=>{fmap[l]=fmap[l]||x;}));
     const selF=fs.find(x=>x.id===s.sel)||fs[0];
-    const pg=PAGES[s.page-1];
+    const pg=D.pages[s.page-1]||D.pages[0];
     const panel=s.panel;
     const picking=!!panel&&!panel.filed&&!settled;
-    const chalLine=ch&&ch.op===vop&&ch.status==='filed'?fs.find(x=>x.id===ch.fieldId)?.line:null;
+    const chalLines=chList.filter(c=>c.op===vop&&c.status==='filed').map(c=>(fs.find(x=>x.id===c.fieldId)||{}).line);
     const vLines=pg.lines.map(l=>{
-      const fl=fmap[l.id];let bg='transparent',ol='none',tag='',tagBg=INK;
+      const fl=s.view==='src'?null:fmap[l.id];let bg='transparent',ol='none',tag='',tagBg=INK;
       if(panel&&panel.pickLine===l.id){bg='#EFE9DA';ol='2px dashed '+INK;tag='Your quote';}
-      else if(chalLine===l.id){ol='2px solid '+RED;tag='Challenged';tagBg=RED;}
-      else if(selF&&(selF.line===l.id||(selF.competing&&selF.competing.includes(l.id)))){bg=selF.ns?HATCH:'#ECE5D3';ol='2px solid '+(selF.ns?'#6B4400':INK);tag=selF.name;tagBg=selF.ns?'#6B4400':INK;}
+      else if(chalLines.includes(l.id)){ol='2px solid '+RED;tag='Challenged';tagBg=RED;}
+      else if(s.view!=='src'&&selF&&(selF.line===l.id||(selF.competing&&selF.competing.includes(l.id)))){bg=selF.ns?HATCH:'#ECE5D3';ol='2px solid '+(selF.ns?'#6B4400':INK);tag=selF.name;tagBg=selF.ns?'#6B4400':INK;}
       else if(fl){bg=fl.ns?HATCH:'transparent';ol=fl.ns?'1px solid #B9862A':'1px dashed #8E877A';}
-      const clickable=picking||!!fl;
-      return {id:l.id,t:l.t||'',c0:l.c?l.c[0]:'',c1:l.c?l.c[1]:'',c2:l.c?l.c[2]:'',isH:l.kind==='h',isP:l.kind==='p',isTh:l.kind==='th',isRow:l.kind==='row',bg,ol,tag,tagBg,hasTag:!!tag,cur:clickable?'pointer':'default',title:fl?fl.name:'',
-        onClick:()=>{if(picking)this.pickLine(l);else if(fl)this.selectField(fl.id,false);}};
+      const rj=!fl&&vop==='origyn'&&s.view!=='src'?(REJECTED[CUR]||{})[l.id]:null;
+      const clickable=picking||!!fl||!!rj;
+      const hov=ol!=='none'?ol:(rj?'1px dashed #6E685D':'1px solid #C9C1B0');
+      return {hov,id:l.id,t:l.t||'',c0:l.c?l.c[0]:'',c1:l.c?l.c[1]:'',c2:l.c?l.c[2]:'',isH:l.kind==='h',isP:l.kind==='p',isTh:l.kind==='th',isRow:l.kind==='row',bg,ol,tag,tagBg,hasTag:!!tag,cur:clickable?'pointer':'help',title:picking?'Use this line as your quote':fl?fl.name:rj?rj.note:'Not a passport Field',
+        onClick:()=>{if(picking)this.pickLine(l);else if(fl)this.selectField(fl.id,false);else if(rj){this.selectField(rj.field,false);this.setState({rejNote:{field:rj.field,note:rj.note,page:l.page,text:l.text}});this.scrollSel(l.id,true);}}};
     });
     const onPage=selF&&(LINES[selF.line].page===s.page||(selF.competing||[]).some(l=>LINES[l].page===s.page));
     const vCaption=onPage?('Highlighted: '+selF.name+' — “'+(selF.ns?'competing statements':selF.m)+'”'):(fs.filter(x=>x.page===s.page).length+' Fields quoted on this page');
-    const thumbs=PAGES.map(p=>{const has=fs.some(x=>x.page===p.n);const isSelPage=selF&&selF.page===p.n;return {n:p.n,aria:'Page '+p.n,bd:s.page===p.n?INK:'#CFC8B8',bw:s.page===p.n?'2px':'1px',mark:has,markBg:isSelPage?INK:'#8E877A',onClick:()=>this.setState({page:p.n})};});
+    const thumbs=D.pages.map(p=>{const has=fs.some(x=>x.page===p.n);const isSelPage=selF&&selF.page===p.n;return {n:p.n,aria:'Page '+p.n,bd:s.page===p.n?INK:'#CFC8B8',bw:s.page===p.n?'2px':'1px',mark:has,markBg:isSelPage?INK:'#8E877A',onClick:()=>this.setState({page:p.n})};});
     // panel
-    let pf={opName:'',name:'',disp:'',pageLbl:'',qPre:'',qM:'',qPost:'',isClosed:false,isFiled:false,isForm:false,value:'',hasPick:false,noPick:true,pickPage:'',pickText:'',hasErr:false,err:'',claimVal:'',claimPage:''};
+    let pf={isNS:false,opName:'',name:'',disp:'',pageLbl:'',qPre:'',qM:'',qPost:'',isClosed:false,isFiled:false,isForm:false,value:'',hasPick:false,noPick:true,pickPage:'',pickText:'',hasErr:false,err:'',claimVal:'',claimPage:''};
     if(panel){const pfl=fieldsFor(panel.op).find(x=>x.id===panel.fieldId);const pl=panel.pickLine?LINES[panel.pickLine]:null;
-      pf={opName:panel.op==='baseline'?'Baseline':'Origyn Pipeline',name:pfl.name,disp:disp(pfl),pageLbl:'p. '+pfl.page,...qparts(pfl),isClosed:settled&&!panel.filed,isFiled:panel.filed,isForm:!panel.filed&&!settled,value:panel.value,hasPick:!!pl,noPick:!pl,pickPage:pl?'p. '+pl.page:'',pickText:pl?pl.text:'',hasErr:!!panel.err,err:panel.err||'',claimVal:panel.value,claimPage:pl?'p. '+pl.page:''};}
+      pf={isNS:!!pfl.ns,opName:panel.op==='baseline'?'Baseline':'Origyn Pipeline',name:pfl.name,disp:pfl.ns?'Not stated':disp(pfl),pageLbl:'p. '+pfl.page,...qparts(pfl),isClosed:settled&&!panel.filed,isFiled:panel.filed,isForm:!panel.filed&&!settled,value:panel.value,hasPick:!!pl,noPick:!pl,pickPage:pl?'p. '+pl.page:'',pickText:pl?pl.text:'',hasErr:!!panel.err,err:panel.err||'',claimVal:panel.value,claimPage:pl?'p. '+pl.page:''};}
     const nFinalO=of.filter(x=>!x.ns).length;
+    const srList=s.srFor==='all'?nsSup:fs.filter(x=>x.id===s.srFor);
+    const srNow=srTextFor(srList.length?srList:nsSup,D);
+    const VIEWS=[['Review','review'],['JSON','json'],['Markdown','md'],['Source Markdown','src'],['Trace','trace']];
+    const views=VIEWS.map(([label,k])=>({label,bg:s.view===k?'#FFFDF9':'transparent',bd:s.view===k?INK:'transparent',fw:s.view===k?600:500,onClick:()=>this.setState({view:k,panel:k==='review'?s.panel:null})}));
+    const opName=vop==='baseline'?'Baseline':'Origyn Pipeline',opAddr=vop==='baseline'?'GBL3…91FA':'GA7Q…C21E';
+    let jsonLines=[],jsonText='',mdSecs=[],mdText='',srcMd='',traceRows=[];
+    if(s.view==='json'){const o={document:D.file,supplier:D.supplier,template:D.tpl,operator:opName,operator_address:opAddr,output_hash:OUT[CUR][vop].hash,fields:{}};
+      fs.forEach(f=>{const r=rowOf(f,vop);const x={};if(!f.ns){x.value=r.isUph?r.val:f.num;if(f.unit)x.unit=f.unit;if(f.qual)x.qualifier=f.qual;}x.page=f.page;x.quote=LINES[f.line].text;x.status=r.b.label;x.author=f.author;o.fields[f.no.replace(/\./g,'_')+'_'+keyOf(f)]=x;});
+      jsonText=JSON.stringify(o,null,2);
+      jsonLines=jsonText.split('\n').map(line=>{const m=line.match(/^(\s*)"([^"]+)": (.*)$/);if(m)return {ind:m[1],hasK:true,k:m[2],v:m[3],vc:m[3].indexOf('"Not stated"')>=0?'#6B4400':INK};const m2=line.match(/^(\s*)(.*)$/);return {ind:m2[1],hasK:false,k:'',v:m2[2],vc:'#5E594F'};});}
+    if(s.view==='md'){const lines=['# '+D.title+' · '+opName,''];
+      mdSecs=D.sections.map(([k,title])=>{const list=fs.filter(f=>f.sec===k);lines.push('## '+title,'','| Field | Value | Status | Page | Author |','|---|---|---|---|---|');
+        const rws=list.map(f=>{const r=rowOf(f,vop);const v=f.ns?'Not stated':(r.isUph?r.val:disp(f));lines.push('| '+f.no+' '+f.name+' | '+v+' | '+r.b.label+' | '+f.page+' | '+f.author+' |');return {name:f.no+'  '+f.name,v,st:r.b.label,page:'p. '+f.page,author:f.author,fg:f.ns?'#6B4400':INK};});lines.push('');return {title,rows:rws};});
+      mdText=lines.join('\n');}
+    if(s.view==='src')srcMd=mdOfPage(pg);
+    if(s.view==='trace'){const root=D.trace[vop];const T=root.d;const flat=(n,dep)=>{traceRows.push({label:(dep?'↳ ':'')+n.label,looked:n.looked,via:n.via,result:n.result,pad:(dep*20)+'px',fw:dep?500:600,left:(n.t/T*100)+'%',width:Math.max(1.5,n.d/T*100)+'%',bar:dep===0?INK:dep===1?'#4A463F':'#9C9484',time:'+'+n.t.toFixed(1)+' s · '+n.d.toFixed(1)+' s'});(n.kids||[]).forEach(c=>flat(c,dep+1));};flat(root,0);}
+    const viewVals={views,vReview:s.view==='review',vJson:s.view==='json',vMd:s.view==='md',vSrc:s.view==='src',vTrace:s.view==='trace',jsonLines,mdSecs,srcMd,traceRows,opName,opAddr,
+      dlJson:()=>dlFile(D.slug+'.'+vop+'.json',jsonText,'application/json'),dlMd:()=>dlFile(D.slug+'.'+vop+'.md',mdText,'text/markdown')};
 
     // mobile
     let mRows,mobileStatus,mobileDelivered;
     if(scr==='pipeline'){mRows=pipeRows.map(r=>({...r}));mobileStatus=pdone?'Delivered':(pipe.nFinal+' Final · '+pipe.nConv+' Converging · '+pipe.nNS+' Not stated');mobileDelivered=pdone;}
-    else{const ff=fs;mRows=[...ff.filter(x=>x.ns),...ff.filter(x=>!x.ns)].map(fl=>{const r=rowOf(fl,vop);return {name:r.name,pageLbl:r.pageLbl,disp:fl.ns?'—':(r.isUph?r.val:disp(fl)),b:r.b,vfg:fl.ns?'#6B4400':INK};});mobileStatus=(vop==='origyn'?'Origyn Pipeline':'Baseline')+' · '+nFinalO+' Final · 1 Not stated';mobileDelivered=true;}
+    else{const ff=fs;mRows=[...ff.filter(x=>x.ns),...ff.filter(x=>!x.ns)].map(fl=>{const r=rowOf(fl,vop);return {name:fl.no+'  '+r.name,pageLbl:r.pageLbl,disp:fl.ns?'—':(r.isUph?r.val:disp(fl)),b:r.b,vfg:fl.ns?'#6B4400':INK};});{const nU2=chList.filter(c=>c.op===vop&&c.status==='upheld').length;mobileStatus=(vop==='origyn'?'Origyn Pipeline':'Baseline')+' · '+fs.filter(x=>!x.ns).length+' Final · '+fs.filter(x=>x.ns).length+' Not stated'+(nU2?' · '+nU2+' Upheld':'');}mobileDelivered=true;}
 
     const base={
       sLanding:scr==='landing',showApp:isApp,showMobile,mobileAvail,
       dUpload:scr==='upload',dPipeline:scr==='pipeline'&&!showMobile,dReview:scr==='review'&&!showMobile,
-      dArbiter:scr==='arbiter',dLeader:scr==='leaderboard',dJobs:scr==='jobs',
-      nav,who,roleLabel,story,roles,showDock:this.props.showStoryDock??true,
+      dArbiter:scr==='arbiter',dPipes:scr==='pipelines',dLeader:scr==='leaderboard',dJobs:scr==='jobs',
+      nav,who,roleLabel,story,signList,signOpen:s.signOpen,toggleSign:()=>this.setState({signOpen:!s.signOpen,statesOpen:false}),meLabel:me.name+' · '+(me.role==='brand'?me.org:me.kind),isBrandSide:s.role==='brand',balance:bal,showDock:this.props.showStoryDock??true,
       statesOpen:s.statesOpen,stateItems,stateCur:cur,stateScreen:scrName,toggleStates:()=>this.setState({statesOpen:!s.statesOpen}),
       dBg:s.mobile?'transparent':PAPER,dFg:s.mobile?PAPER:INK,mBg:s.mobile?PAPER:'transparent',mFg:s.mobile?INK:PAPER,
       setDesktop:()=>this.setState({mobile:false}),setMobile:()=>this.setState({mobile:true,panel:null}),
-      goLanding:()=>this.storyGo(0),goUpload:()=>this.storyGo(1),goLeader:()=>this.setState({screen:'leaderboard',role:'brand'}),
+      goLanding:()=>this.storyGo('landing'),goUpload:()=>this.storyGo('upload'),goLeader:()=>this.setState({screen:'leaderboard',role:'brand'}),
       // upload
       up,tplCards,supplier:s.supplier,onSupplier:e=>this.setState({supplier:e.target.value}),supFocus:()=>this.setState({supFocus:true}),supBlur:()=>this.setState({supFocus:false}),
       showSugg:s.supFocus&&sugg.length>0,sugg,
       pickSample:sample,pickDocx:()=>this.setState({up:'wrong',file:{name:'Tech sheet SS27 shirting.docx',meta:''}}),clearFile:()=>this.setState({file:null,up:'idle'}),
       onDragOver:e=>{e.preventDefault();if(!s.drag)this.setState({drag:true});},onDragLeave:()=>this.setState({drag:false}),
       onDrop:e=>{e.preventDefault();const fl=e.dataTransfer.files&&e.dataTransfer.files[0];if(!fl){this.setState({drag:false});return;}const ok=/\.pdf$/i.test(fl.name);this.setState({drag:false,file:{name:fl.name,meta:(fl.size/1048576).toFixed(1)+' MB · PDF'},up:ok?'idle':'wrong'});},
-      sumDoc:f&&s.up!=='wrong'?f.name:'—',sumTpl:s.tpl==='battery'?'Battery passport · 18 Fields':'Textile passport · 14 Fields',sumSup:s.supplier||'—',
+      sumDoc:f&&s.up!=='wrong'?f.name:'—',sumTpl:s.tpl==='battery'?'Battery passport · 60 Fields':'Textile passport · 37 Fields',sumSup:s.supplier||'—',
       startBg:canStart?INK:'#8E877A',startCur:canStart?'pointer':'not-allowed',startHint:canStart?'The Pipeline starts as soon as the Document is stored.':'Choose a PDF Document to start.',
       start:()=>{if(!canStart)return;this.setState({up:'uploading',upPct:0,auto:true});},
       // pipeline
-      pipe,tracks,pipeRows,countdown:fmt(secs),replay:()=>{this.acc=0;this.setState({tick:0,pipeMode:'live',secs:null,win:'open',stSel:{...s.stSel,pipeline:'Live run'}});},
-      goReviewBtn:()=>this.goReview({op:'origyn',sel:'cap',exp:'cap',page:4}),
+      pipe,tracks,pipeRows,countdown:CUR==='ss27'?'01:12:40':fmt(secs),docTitle:D.title,docSub:D.sub,docHdr:D.hdr,docPages:String(D.pages.length),docSupplier:D.supplier,outHash:OUT[CUR][vop].hash,outTx:OUT[CUR][vop].tx,outTxHref:TXH(OUT[CUR][vop].tx),cdNote:CUR==='ss27'?'48 h live window':s.panel?'paused while you Challenge':'3 min demo · 48 h live',mBond:bondFor(vop).amt,pTitle:D.file,pSub:D.supplier+' · '+(D.tpl==='battery'?'Battery':'Textile')+' passport · '+D.fields.length+' Fields · '+D.pages.length+' pages',goDemo:()=>this.storyGo('review'),pp:PP,replay:()=>{this.acc=0;this.setState({tick:0,pipeMode:'live',secs:null,win:'open',stSel:{...s.stSel,pipeline:'Live run'}});},
+      goReviewBtn:()=>this.goReview(s.pdoc==='ss27'?{doc:'ss27',op:'origyn',sel:'fibre',exp:'fibre',page:2,view:'review'}:{doc:'nmc',op:'origyn',sel:'cap',exp:'cap',page:4}),
       // review
-      moneyChips,cdPct:(secs/W*100)+'%',cdFg:settled?'#5E594F':INK,settled,settledText:ch&&ch.status==='upheld'&&vop==='baseline'?'Baseline Bond 45.00 USDC released after a 5.00 USDC Slash. Fee paid.':'Bond 50.00 USDC released. Fee 5.00 USDC paid.',
+      moneyChips,cdPct:CUR==='ss27'?'2.5%':(secs/W*100)+'%',cdFg:settled?'#5E594F':INK,settled,settledText:ch&&ch.status==='upheld'&&vop==='baseline'?'Baseline Bond 45.00 USDC released after a 5.00 USDC Slash. Fee paid.':'Bond 50.00 USDC released. Fee 5.00 USDC paid.',
       openExport:()=>this.setState({modal:'export'}),tabs,notCompare:s.op!=='compare',isCompare:s.op==='compare',
-      hasNS:nsRows.length>0,nsCount:nsRows.length,nsRows,rows,rowCount:rows.length,cmpRows,cmpSummary:nDiff+' differences in 18 Fields. Click a row to see its quote.',
-      thumbs,page:s.page,vTitle:pg.title,vLines,vCaption,viewerRef:this.viewerRef,picking,
+      hasNS:nsRows.length>0,nsCount:nsRows.length,nsRows,rows,rowCount:mainF.length,nsSupCount:nsSup.length,nsBrandCount:nsList.length-nsSup.length,hasNsSup:nsSup.length>0,onRequestAll:()=>this.setState({modal:'sr',srFor:'all',srCopied:false}),cmpRows,cmpSummary:nDiff+' differences in '+of.length+' Fields. Click a row to see its quote.',
+      thumbs,page:s.page,vTitle:pg.title,vLines,vCaption,viewerRef:this.viewerRef,listRef:this.listRef,picking,
       panelX:panel?'translateX(0)':'translateX(102%)',pf,closePanel:()=>this.setState({panel:null}),onPanelValue:e=>this.setState({panel:{...s.panel,value:e.target.value}}),
       clearPick:()=>this.setState({panel:{...s.panel,pickLine:null}}),fileChallenge:()=>this.fileChallenge(),
       goArbiter:()=>this.setState({screen:'arbiter',role:'arbiter',panel:null,arbSel:0,arbEmpty:false}),
-      modalOpen:!!s.modal,srOpen:s.modal==='sr',exportOpen:s.modal==='export',srText:SR_TEXT,srBtn:s.srCopied?'Copied':'Copy message',
-      copySR:()=>{try{navigator.clipboard.writeText(SR_TEXT);}catch(e){}this.setState({srCopied:true});},
-      exportText:(vop==='origyn'?nFinalO+' Final Fields from the Origyn Pipeline':'18 Fields from the Baseline')+' were sent to the DPP platform for NMC-800. '+(vop==='origyn'?'Recycled lithium is held back as Not stated until Hunan Cellworks answers the Supplier Request.':''),
+      modalOpen:!!s.modal,srOpen:s.modal==='sr',exportOpen:s.modal==='export',srText:srNow,srBtn:s.srCopied?'Copied':'Copy message',
+      copySR:()=>{try{navigator.clipboard.writeText(srNow);}catch(e){}this.setState({srCopied:true});},
+      exportText:(vop==='origyn'?nFinalO+' Final Fields from the Origyn Pipeline':bf.filter(x=>!x.ns).length+' Fields from the Baseline')+' were sent to the DPP platform for '+D.title+'. '+(fs.length-fs.filter(x=>!x.ns).length)+' Not stated Fields are held back until the Supplier answers or the Brand provides them.',
       closeModal:()=>this.setState({modal:null}),stop:e=>e.stopPropagation(),
-      mRows,mobileStatus,mobileDelivered,bondWord:settled?'released':'locked'
+      ...viewVals,mRows,mobileStatus,mobileDelivered,bondWord:bondFor(vop).state
     };
-    return {...base,...this.vals68(s,W,secs)};
+    return {...base,...this.vals68(s,W,secs),...this.valsDocs(s,bal),...this.valsConn(s)};
   }
-  vals68(s,W,secs){
+  valsConn(s){
+    const c=s.conn||{};const set=o=>this.setState(st=>({conn:{...(st.conn||{}),...o}}));
+    const an=(AGENTS.find(a=>a[0]===c.agent)||[])[1]||'';
+    const cfg=CFG[c.agent];
+    const blocks=[];
+    if(cfg&&c.role){blocks.push({k:'cfg',label:cfg.label,hint:cfg.hint,code:cfg.code,hasNote:!!cfg.note,notePre:cfg.note?cfg.note[0]:'',noteCode:cfg.note?cfg.note[1]:'',notePost:cfg.note?cfg.note[2]:''});
+      blocks.push({k:'prompt',label:'Starter prompt',hint:'paste into '+an,code:PROMPTS[c.role],hasNote:false,notePre:'',noteCode:'',notePost:''});}
+    const ready=!!(c.agent&&c.role);
+    const isW=c.role==='worker';
+    return {openConnect:()=>this.setState({conn:{agent:null,role:null,phase:'form',copied:null},statesOpen:false,signOpen:false}),
+      cx:{open:!!s.conn,notDone:c.phase!=='done',done:c.phase==='done',checking:c.phase==='checking',hasAgent:!!c.agent,hasRole:ready,
+        close:()=>this.setState({conn:null}),
+        agents:AGENTS.map(([k,label])=>({label,bg:c.agent===k?INK:'transparent',fg:c.agent===k?PAPER:INK,bw:c.agent===k?'2px':'1px',onClick:()=>set({agent:k,copied:null})})),
+        roles:[['worker','Worker in Origyn\'s Pipeline','Does Sieve Jobs from the Job Board. No wallet, no Bond.'],['operator','Operator','Claims whole Documents and posts its own Bond from its Stellar wallet.']].map(([k,title,sub])=>({title,sub,bd:c.role===k?INK:'#D6CFBF',bw:c.role===k?'2px':'1px',bg:c.role===k?'#FFFFFF':'transparent',onClick:()=>set({role:k,copied:null})})),
+        blocks:blocks.map(b=>({...b,copyLbl:c.copied===b.k?'Copied':'Copy',onCopy:()=>{try{navigator.clipboard.writeText(b.code);}catch(e){}set({copied:b.k});}})),
+        footNote:ready?'Paste both, then start the agent.':'Pick an agent and a role.',
+        checkLbl:c.phase==='checking'?'Waiting for your agent…':'Check connection',checkBg:ready?INK:'#8E877A',checkCur:ready?'pointer':'not-allowed',
+        check:()=>{if(!ready||c.phase==='checking')return;set({phase:'checking'});setTimeout(()=>{this.setState(st=>({conn:st.conn?{...st.conn,phase:'done'}:null,joined:[...st.joined,{agent:an,role:c.role}]}));},1400);},
+        doneTitle:an+(isW?' is live on the Job Board':' is on the Leaderboard'),
+        chipName:isW?an+' · you':'Your agent · '+an,
+        chipLine:isW?'Worker · waiting for next_job':'Operator · GNEW…7Q2K · 0 Documents',
+        doneText:isW?'It takes Sieve Jobs for Origyn\'s Pipeline and hands them back with submit_job.':'Its first claim_document locks a Bond. Every Document it delivers, and every Slash, shows on its Leaderboard row.',
+        goLbl:isW?'Open Job Board':'Open Leaderboard',
+        goSee:()=>this.setState(isW?{conn:null,screen:'jobs',role:'operator',jobsMode:'default'}:{conn:null,screen:'leaderboard',lbMode:'default',role:this.state.role==='arbiter'?'brand':this.state.role}),
+        again:()=>this.setState({conn:{agent:null,role:null,phase:'form',copied:null}})}};
+  }
+  valsDocs(s,bal){
+    const nmcSt=s.secs==null&&s.tick<DONE?'Processing':s.win==='settled'?'Settled':'Delivered';
+    const ch=s.chal;
+    const nmc={...DOCS[0],st:nmcSt,f:nmcSt==='Processing'?null:[33,27,[s.chal,...(s.chals||[])].filter(Boolean).length],bond:nmcSt==='Processing'?'—':(ch&&ch.status==='upheld'?'slashed':nmcSt==='Settled'?'released':'locked'),left:nmcSt==='Delivered'?(s.secs==null?'starts on open':fmt(s.secs)):'—'};
+    const all=s.docsMode==='empty'?[]:[nmc,...DOCS.slice(1)];
+    const q=s.docQ.trim().toLowerCase();
+    const list=all.filter(d=>(s.docTpl==='all'||d.tpl===s.docTpl)&&(s.docSup==='all'||d.sup===s.docSup)&&(s.docSt==='all'||d.st===s.docSt)&&(!q||(d.name+' '+d.sup).toLowerCase().includes(q)));
+    const docs=list.map(d=>({name:d.name,sup:d.sup,tpl:d.tpl,ops:d.ops.map(o=>({n:o})),st:d.st,stFg:d.st==='Settled'?'#1D5A36':INK,icBg:d.st==='Settled'?'#1D5A36':INK,isProc:d.st==='Processing',notProc:d.st!=='Processing',hasF:!!d.f,noF:!d.f,nf:d.f?String(d.f[0]):'',nns:d.f?String(d.f[1]):'',nc:d.f?String(d.f[2]):'',
+      bond:d.bond,bondFg:d.bond==='slashed'?RED:d.bond==='locked'?'#0B4A57':'#2A2723',left:d.left,date:d.date,bg:'transparent',
+      onClick:()=>{if(d.id==='nmc'){if(s.secs!=null||s.tick>=DONE)this.goReview({doc:'nmc',op:'origyn',sel:'cap',exp:'cap',page:4,panel:null,view:'review'});else{this.acc=0;this.setState({screen:'pipeline',tick:0,pipeMode:'live'});}}else if(d.id==='ss27')this.goReview({doc:'ss27',op:'origyn',sel:'fibre',exp:'fibre',page:2,panel:null,view:'review'});else this.setState({docNote:true});}}));
+    const deliv=all.filter(d=>d.f);
+    return {dDocs:s.screen==='documents',docs,docsEmpty:all.length===0,docsNoRes:all.length>0&&list.length===0,docsHas:list.length>0,docNote:s.docNote,closeDocNote:()=>this.setState({docNote:false}),
+      docTot:{n:String(all.length),fields:String(deliv.reduce((a,d)=>a+d.f[0]+d.f[1],0)),sr:String(all.filter(d=>d.st==='Delivered').reduce((a,d)=>a+d.f[1],0)),usdc:bal},
+      docQ:s.docQ,docTpl:s.docTpl,docSup:s.docSup,docSt:s.docSt,onDocQ:e=>this.setState({docQ:e.target.value}),onDocTpl:e=>this.setState({docTpl:e.target.value}),onDocSup:e=>this.setState({docSup:e.target.value}),onDocSt:e=>this.setState({docSt:e.target.value}),
+      clearDocFilters:()=>this.setState({docQ:'',docTpl:'all',docSup:'all',docSt:'all'})};
+  }
+  vals68(s,W,secs){const prev=CUR;CUR='nmc';try{return this.vals68b(s,W,secs);}finally{CUR=prev;}}
+  vals68b(s,W,secs){
     const ch=s.chal||DEFAULT_CHAL;
-    const f0=fieldsFor(ch.op).find(x=>x.id===ch.fieldId)||fieldsFor('baseline')[3];
+    const f0=fieldsFor(ch.op).find(x=>x.id===ch.fieldId)||fieldsFor('baseline').find(x=>x.id==='cap');
     const cl=LINES[ch.claimLine]||LINES.p4r1;
     const pg=PAGES[cl.page-1];
     const items=[{doc:'NMC-800 Cell Datasheet rev C.pdf',brand:'Voltaris',supplier:'Hunan Cellworks',field:f0.name,op:ch.op==='baseline'?'Baseline':'Origyn Pipeline',filed:'2 min ago',left:fmt(secs),page:cl.page,title:pg.title,
-      lines:pg.lines,delLine:f0.line,claimLine:cl.id,delivered:disp(f0),claim:ch.claimVal,delQ:LINES[f0.line].text,claimQ:cl.text,rule:'Quantity: same unit after conversion, same qualifier, no tolerance.'},...ARB_X];
-    const decOf=i=>s.arbDec[i]||(i===0&&s.chal&&s.chal.status!=='filed'?s.chal.status:null);
+      lines:pg.lines,delLine:f0.line,claimLine:cl.id,delivered:disp(f0),claim:ch.claimVal,delQ:LINES[f0.line].text,claimQ:cl.text,rule:'Quantity: same unit after conversion, same qualifier, no tolerance.'},...ARB_X,...(s.chals||[]).map(c=>{const fx=fieldsFor(c.op).find(x=>x.id===c.fieldId);const lx=LINES[c.claimLine];const px=PAGES[lx.page-1];return {doc:'NMC-800 Cell Datasheet rev C.pdf',brand:'Voltaris',supplier:'Hunan Cellworks',field:fx.name,op:c.op==='baseline'?'Baseline':'Origyn Pipeline',filed:'just now',left:fmt(secs),page:lx.page,title:px.title,lines:px.lines,delLine:fx.line,claimLine:lx.id,delivered:fx.ns?'Not stated':disp(fx),claim:c.claimVal,delQ:LINES[fx.line].text,claimQ:lx.text,rule:'Same value, unit and qualifier as the Document states. No tolerance.'};})];
+    const decOf=i=>s.arbDec[i]||(i===0&&s.chal&&s.chal.status!=='filed'?s.chal.status:null)||(i>=3&&s.chals&&s.chals[i-3]&&s.chals[i-3].status!=='filed'?s.chals[i-3].status:null);
     const queue=items.map((it,i)=>{const d=decOf(i);return {doc:it.doc,brand:it.brand,field:it.field,op:it.op,filed:it.filed,left:it.left,bg:s.arbSel===i?'#E4DED0':'transparent',dec:d?(d==='upheld'?'Upheld':'Rejected'):'Open',decFg:d==='upheld'?RED:d?'#5E594F':INK,onClick:()=>this.setState({arbSel:i,arbPhase:decOf(i)==='upheld'?3:0,arbNote:''})};});
     const i=Math.min(s.arbSel,items.length-1),it=items[i],dec=decOf(i),ph=s.arbPhase;
     const upDone=dec==='upheld'&&(ph===3||ph===0);
     const lines=it.lines.map(l=>{const isD=l.id===it.delLine,isC=l.id===it.claimLine;let bg='transparent',ol='none',tag='',tagBg=INK;
-      if(isD&&isC){bg='#ECE5D3';ol='2px solid '+INK;tag='Delivered + challenger quote';}
-      else if(isD){ol='2px solid '+RED;tag='Delivered · '+it.op;tagBg=RED;}
-      else if(isC){bg='#ECE5D3';ol='2px solid '+INK;tag='Challenger';}
+      if(isD&&isC){ol='2px solid '+INK;tag='Delivered + challenger quote';}
+      else if(isD){ol='2px solid '+(dec==='upheld'?RED:INK);tag='Delivered · '+it.op;tagBg=dec==='upheld'?RED:INK;}
+      else if(isC){bg=dec==='upheld'?'#ECE5D3':'transparent';ol=dec==='rejected'?'2px dashed #8E877A':'2px solid '+INK;tag='Challenger';tagBg=dec==='rejected'?'#5E594F':INK;}
       return {t:l.t||'',c0:l.c?l.c[0]:'',c1:l.c?l.c[1]:'',c2:l.c?l.c[2]:'',isH:l.kind==='h',isP:l.kind==='p',isTh:l.kind==='th',isRow:l.kind==='row',bg,ol,tag,tagBg,hasTag:!!tag};});
-    const nU=[0,1,2].filter(k=>decOf(k)==='upheld').length,nR=[0,1,2].filter(k=>decOf(k)==='rejected').length;
+    const idx=items.map((_,k)=>k);const nU=idx.filter(k=>decOf(k)==='upheld').length,nR=idx.filter(k=>decOf(k)==='rejected').length;
+    const txS=shortOf((dec==='rejected'?'reject':'slash')+(i===0?ch.fieldId+ch.op:i>=3&&s.chals[i-3]?s.chals[i-3].fieldId+s.chals[i-3].op:'x'+i));
     const arb={empty:s.arbEmpty,notEmpty:!s.arbEmpty,queue,rec:{d:12+nU+nR,u:4+nU,r:8+nR},
-      d:{...it,lines,supplierUp:it.supplier.toUpperCase(),open:!dec,isFirst:i===0,
+      d:{...it,lines,tx:txS,txHref:TXH(txS),delBd:dec==='upheld'?RED:INK,delFg:dec==='upheld'?'#5E594F':INK,delTd:dec==='upheld'?'line-through':'none',claimBg:dec==='upheld'?'#ECE5D3':'#FFFDF9',claimFg:dec==='rejected'?'#5E594F':INK,claimTd:dec==='rejected'?'line-through':'none',supplierUp:it.supplier.toUpperCase(),open:!dec,isFirst:i===0,
         bondAmt:upDone?'45.00':'50.00',bondState:upDone?'slashed':dec==='rejected'?'locked':'locked',bondBd:upDone?RED:'#0B4A57',
         tokY:ph>=2&&dec==='upheld'?'150px':'0px',tokOp:dec==='upheld'&&(ph===1||ph===2)?1:0,recv:upDone?'+5.00 USDC':'0.00 USDC',
         showResult:!!dec&&(dec==='rejected'||upDone),resBd:dec==='upheld'?RED:INK,
@@ -1200,14 +1695,18 @@ class Component extends DCLogic {
         resText:dec==='upheld'?'The corrected value '+it.claim+' replaces '+it.delivered+' in the Document. The rest of the Bond stays locked until the Challenge Window closes.':'No Slash. The Bond stays locked until the Challenge Window closes, then settles automatically.',
         onUphold:()=>this.decide(i,'upheld'),onReject:()=>this.decide(i,'rejected')}};
     // leaderboard
-    const ups=2+((s.chal&&s.chal.status==='upheld')?1:0);
-    const vals=[50,50,45,45,40,40,40,ups===3?35:40];
+    const ups=2+[s.chal,...(s.chals||[])].filter(c=>c&&c.op==='baseline'&&c.status==='upheld').length;
+    const vals=[50,50,45,45,40,40,40,40-5*(ups-2)];
     const X=k=>50+k*100,Y=v=>40+(50-v)*8;
     let ptsB=[],slashes=[];vals.forEach((v,k)=>{if(k>0&&v!==vals[k-1]){ptsB.push(X(k)+','+Y(vals[k-1]));slashes.push({x:(X(k)/8)+'%',y:Y(v)+'px'});}ptsB.push(X(k)+','+Y(v));});
     ptsB.push('800,'+Y(vals[7]));
-    const cells=(a)=>a.map(([v,h,fg])=>({v,h,fg:fg||INK}));
-    const lbRows=[{name:'Origyn Pipeline',sieves:'5 Sieves',cells:cells([['8','a3f9…c21e'],['184','a3f9…c21e'],['0','—'],['0.00','—','#0B4A57'],['100.00','7c02…e91b','#0B4A57'],['97.8 %','test run']])},
-      {name:'Baseline',sieves:'1 Sieve',cells:cells([['8','5be0…11fa'],['184','5be0…11fa'],[String(ups),'b81e…44d0',RED],[(ups*5).toFixed(2),'b81e…44d0','#0B4A57'],[(100-(ups-2)*5).toFixed(2),'c93d…7a20','#0B4A57'],['84.2 %','test run']])}];
+    const cells=(a,nm)=>a.map(([v,h,fg],k)=>{const zero=/^0(\.00)?$/.test(v)||h==='—'||h==='test run';const sh=shortOf(nm+'#'+k);return {v,fg:fg||INK,link:!zero,plain:zero,h:sh,href:TXH(sh),note:h==='test run'?'test run · 8 Documents':''};});
+    const R=(rank,name,sieves,c)=>({rank:String(rank),name,sieves,cells:cells(c,name)});
+    const lbRows=[R(1,'Origyn Pipeline','5 Sieves · GA7Q…C21E',[['8','a3f9…c21e'],['184','a3f9…c21e'],['0','—'],['0.00','—','#0B4A57'],['100.00','7c02…e91b','#0B4A57'],['97.8 %','test run']]),
+      R(2,'Kestrel Data','3 steps · GDK2…5W7P',[['8','e2c4…09ab'],['184','e2c4…09ab'],['1','71fd…3c20',RED],['5.00','71fd…3c20','#0B4A57'],['95.00','a0b9…6d11','#0B4A57'],['91.3 %','test run']]),
+      R(3,'Baseline','1 Sieve · GBL3…91FA',[['8','5be0…11fa'],['184','5be0…11fa'],[String(ups),'b81e…44d0',RED],[(ups*5).toFixed(2),'b81e…44d0','#0B4A57'],[(100-(ups-2)*5).toFixed(2),'c93d…7a20','#0B4A57'],['84.2 %','test run']]),
+      R(4,'Merrow Labs','Black box · GCM9…E04D',[['8','4f8e…aa02'],['184','4f8e…aa02'],['4','9c1b…e7f5',RED],['20.00','9c1b…e7f5','#0B4A57'],['80.00','d3a7…1b9e','#0B4A57'],['79.9 %','test run']])];
+    s.joined.filter(j=>j.role==='operator').forEach(j=>lbRows.push(R('new','Your agent · '+j.agent,'Trace pending · GNEW…7Q2K',[['0','—'],['0','—'],['0','—'],['0.00','—','#0B4A57'],['0.00','—','#0B4A57'],['—','not tested']])));
     const one=s.lbMode==='one';
     const lb={loading:s.lbMode==='loading',ready:s.lbMode!=='loading',one,two:!one,rows:one?lbRows.slice(0,1):lbRows,ptsO:'0,40 800,40',ptsB:ptsB.join(' '),bOp:one?0:1,slashes:one?[]:slashes,
       docs:['LFP-280 v1','SS26 denim','NMC-622 B','SS27 jersey','LFP-280 v2','Pouch 60Ah','SS27 knit','NMC-800 C']};
@@ -1220,10 +1719,15 @@ class Component extends DCLogic {
     if(to)jobs=[J('LFP-280 Cell Spec v2','Faithfulness check','Pi','timeout','05:00','timed out · back on board'),J('LFP-280 Cell Spec v2','Faithfulness check','—','open','—'),...jobs.slice(0,8)];
     if(none)jobs=[J('Tech sheet SS27 shirting','Original','—','open','—'),J('Tech sheet SS27 shirting','One-pass (Baseline)','—','open','—'),J('LFP-280 Cell Spec v2','Faithfulness check','—','open','—'),...jobs.slice(0,6)];
     const cmd='claude mcp add origyn-jobs -- npx -y @origyn/job-board-mcp --board wss://jobs.origyn.dev --key $ORIGYN_WORKER_KEY';
-    const jb={nWorkers:workers.length,noWorkers:none,workers,jobs,sieves:ST.map((x,k)=>({n:'0'+(k+1),name:x.n,notFirst:k>0})),cmd,copyLbl:s.cmdCopied?'Copied':'Copy command',
+    const isBl=this.meId()==='baseline';
+    let wk=[...workers,...s.joined.filter(j=>j.role==='worker').map(j=>({name:j.agent+' · you',job:'waiting for next_job',done:0}))],jl=jobs;
+    if(isBl){wk=workers.filter(w=>w.name==='OpenCode').map(w=>({...w,job:'One-pass (Baseline) · Tech sheet SS27 shirting',done:8}));jl=[J('Tech sheet SS27 shirting','One-pass (Baseline)',none?'—':'OpenCode',none?'open':'taken','00:17'),...jobs.filter(j=>j.sieve.includes('Baseline'))];}
+    wk=wk.map(w=>({...w,bw:s.jbSel===w.name?'2px':'1px',tip:'Current Job: '+w.job,hint:s.jbSel===w.name?'Its Jobs are highlighted below':'Click to show its Jobs',onClick:()=>this.setState({jbSel:s.jbSel===w.name?null:w.name})}));
+    jl=jl.map(j=>s.jbSel&&j.worker===s.jbSel?{...j,bg:'#ECE5D3'}:j);
+    const jb={opLine:isBl?'Baseline · GBL3…91FA':'Origyn · GA7Q…C21E',nWorkers:wk.length,noWorkers:wk.length===0,workers:wk,jobs:jl,sieves:ST.map((x,k)=>({n:'0'+(k+1),name:x.n,notFirst:k>0})),cmd,copyLbl:s.cmdCopied?'Copied':'Copy command',
       copy:()=>{try{navigator.clipboard.writeText(cmd);}catch(e){}this.setState({cmdCopied:true});}};
     return {arb,lb,jb,arbNote:s.arbNote,onArbNote:e=>this.setState({arbNote:e.target.value}),
-      backToDoc:()=>this.goReview({op:ch.op,sel:ch.fieldId,exp:ch.fieldId,page:f0.page,panel:null})};
+      backToDoc:()=>this.goReview({doc:'nmc',op:ch.op,sel:ch.fieldId,exp:ch.fieldId,page:f0.page,panel:null})};
   }
 }
 </script>
