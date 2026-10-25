@@ -65,7 +65,8 @@ export function ReviewView({ d, config, offset, template, file }: {
   const select = (name: string, expand = false) => {
     setSel(name);
     if (expand) setExp(name);
-    const p = pageOf(fields.find((f) => f.name === name)!);
+    const f = fields.find((x) => x.name === name);
+    const p = f && pageOf(f);
     if (p) setPage(p);
   };
   // A Field picked on the Document, or by keys, scrolls its row (or its Not stated card and quotes) into view;
@@ -150,8 +151,8 @@ export function ReviewView({ d, config, offset, template, file }: {
 
   return (
     <div className="om-desktop-only" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative" }}>
-      <div style={{ flex: "none", padding: "12px 24px", borderBottom: `1px solid ${INK}`, display: "flex", alignItems: "center", gap: 20, background: "var(--surface)" }}>
-        <div style={{ minWidth: 0, flex: "0 1 260px" }}>
+      <div style={{ flex: "none", padding: "12px 24px", borderBottom: `1px solid ${INK}`, display: "flex", flexWrap: "wrap", alignItems: "center", gap: "10px 20px", background: "var(--surface)" }}>
+        <div style={{ minWidth: 160, flex: "0 1 260px" }}>
           <div style={{ font: "600 15px/1.25 var(--sans)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{d.name.replace(/\.pdf$/i, "")}</div>
           <div style={{ marginTop: 3, font: "400 13px/1.2 var(--sans)", color: "#3D3A34" }}>{d.supplier || "—"} · {template?.label ?? d.template} passport</div>
         </div>
@@ -159,7 +160,7 @@ export function ReviewView({ d, config, offset, template, file }: {
         {e && <MoneyChip tone="fee" label="Fee" amount={e.fee} state={settled ? "paid" : "held"} />}
         {e && config && <Countdown closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} note={windowLabel(config)} />}
         {e && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }} data-testid="output-hash">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, whiteSpace: "nowrap" }} data-testid="output-hash">
             <SectionLabel size={10.5}>Output hash</SectionLabel>
             {/* Each Operator's own: in Compare one line per Operator. */}
             {(isCompare ? d.views : [view]).filter((v) => v.escrow).map((v) => (
@@ -186,7 +187,8 @@ export function ReviewView({ d, config, offset, template, file }: {
             boxes={boxes(isCompare ? d.views[0]!.fields : fields, sel)}
             pick={picking ? { onPick: (p) => setPanel({ ...panel!, pick: p }) } : undefined} />
         </div>
-        <div style={{ minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+        {/* clip, not hidden: a hidden box can still be scrolled (by focus or scrollIntoView), shifting the Challenge panel sideways. */}
+        <div style={{ minHeight: 0, display: "flex", flexDirection: "column", position: "relative", overflow: "clip" }}>
           <div role="tablist" aria-label="View" style={{ flex: "none", display: "flex", borderBottom: "1px solid var(--rule)", padding: "0 20px", gap: 2, background: "var(--surface)" }}>
             {VIEWS.map((k) => (
               <button key={k} role="tab" aria-selected={k === viewTab} onClick={() => { setViewTab(k); setPanel(undefined); if (k !== "Review" && isCompare) setTab(d.views[0]!.pipeline); }}
@@ -319,7 +321,7 @@ export function NotStatedCard({ field, selected, onSelect, onQuote, onRequest, o
     <div onClick={onSelect} data-field={field.name} style={{ margin: "6px 20px 14px", border: "1px solid var(--amber-bd)", background: "var(--amber-card)", cursor: "pointer", outline: selected ? `2px solid ${AMBER}` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--hatch)", borderBottom: "1px solid var(--amber-bd)" }}>
         <span style={{ font: "600 15px/1.2 var(--sans)", color: INK }}>{field.label}</span>
-        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 9px 0 5px", border: `1px solid ${AMBER}`, background: "var(--amber-bg)", color: AMBER, font: "600 11.5px/1 var(--sans)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+        <span style={{ marginLeft: "auto", flex: "none", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, height: 26, padding: "0 9px 0 5px", border: `1px solid ${AMBER}`, background: "var(--amber-bg)", color: AMBER, font: "600 11.5px/1 var(--sans)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
           <span aria-hidden style={{ width: 16, height: 16, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", background: AMBER, color: "var(--amber-bg)", font: "700 10px/1 var(--mono)" }}>–</span>{onRequest ? "Not stated" : "Brand to provide"}
         </span>
       </div>

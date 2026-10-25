@@ -122,7 +122,7 @@ export function Countdown({ closesAt, msLeft, paused, windowMs, serverOffsetMs, 
     return () => clearInterval(t);
   }, [settled]);
   const left = settled ? 0 : paused && msLeft !== undefined ? msLeft : Math.max(0, closesAt - (now + serverOffsetMs));
-  const text = <span style={{ font: `500 ${bare ? 20 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{clock(left)}</span>;
+  const text = <span style={{ font: `500 ${bare ? 17 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{clock(left)}</span>;
   const why = !settled && paused && <span style={{ font: "500 11.5px/1.2 var(--sans)", color: "#3D3A34", whiteSpace: "nowrap" }}>{PAUSED[paused]}</span>;
   if (bare) return <>{text}{why && <> {why}</>}</>;
   return (

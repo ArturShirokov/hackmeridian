@@ -80,7 +80,7 @@ export function DocumentViewer({ pdfUrl, page, onPage, boxes, onBoxClick, pick, 
       )}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 14, padding: "10px 20px", borderBottom: "1px solid var(--rule)", font: "400 13px/1.3 var(--sans)", color: "#2A2723" }}>
-          <span style={{ font: "500 13px/1 var(--mono)" }}>p. {page} of {pages || "…"}</span>
+          <span style={{ font: "500 13px/1 var(--mono)", whiteSpace: "nowrap", flex: "none" }}>p. {page} of {pages || "…"}</span>
           {caption && <span style={{ minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{caption}</span>}
         </div>
         {pick && (

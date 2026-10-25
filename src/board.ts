@@ -676,7 +676,7 @@ export class JobBoard {
       for (const [a, b] of spans) if (b > end) (paused += b - Math.max(a, end)), (end = b);
     }
     const closesAt = e.startedAt + this.challengeWindowMs + paused;
-    const msLeft = Math.max(0, closesAt - now);
+    const msLeft = e.status === "settled" ? 0 : Math.max(0, closesAt - now);
     const held = this.demoWindow && msLeft > 0 && this.challenges.undecided(e.documentId, e.pipeline);
     return { closesAt, msLeft, ...(held && { paused: "challenge open" as const }) };
   }

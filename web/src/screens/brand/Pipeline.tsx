@@ -103,11 +103,11 @@ function PipelineDesktop({ d, offset, windowMs }: { d: ApiDocument; offset: numb
             <span style={{ color: "#6B4400" }}>{counts.notStated} <span style={{ font: "500 15px/1 var(--sans)" }}>Not stated</span></span>
           </div>
         ) : (
-          <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 22, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
+          <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 18, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
             <span style={{ font: "600 20px/1 var(--sans)" }}>Delivered.</span>
-            {e && <span style={{ font: "500 20px/1 var(--mono)", color: "var(--money)" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
+            {e && <span style={{ font: "500 17px/1 var(--mono)", color: "var(--money)", whiteSpace: "nowrap" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
             {e && windowMs !== undefined && (
-              <span style={{ font: "500 20px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline" }}>
+              <span style={{ font: "500 17px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline", whiteSpace: "nowrap" }}>
                 Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
               </span>
             )}
