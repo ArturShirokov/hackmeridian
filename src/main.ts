@@ -18,6 +18,9 @@ const host = process.env.HOST ?? "127.0.0.1";
 const baseUrl = process.env.BASE_URL ?? `http://${host}:${port}`;
 
 const challengeWindowMs = Number(process.env.CHALLENGE_WINDOW_MIN ?? 5) * 60_000;
+// The demo window (starts when the Brand opens the Document, pauses while a Challenge is undecided): on for any window
+// shorter than the live 48 h, unless DEMO_WINDOW=0.
+const demoWindow = (process.env.DEMO_WINDOW ?? (challengeWindowMs < 48 * 3_600_000 ? "1" : "0")) !== "0";
 const { CHALLENGE_DEPOSIT: challengeDeposit = "1", ARBITER_FEE: arbiterFee = "0.1" } = process.env;
 const cache = process.env.DEMO_REPLAY;
 const testdata = (path: string) => new URL(`../testdata/${path}`, import.meta.url);
@@ -27,7 +30,7 @@ if (cache) {
   const run = await demoBoard(
     JSON.parse(readFileSync(cache, "utf8")),
     async (file) => new Uint8Array(readFileSync(testdata(`documents/${file}`))),
-    { now: Date.now, challengeWindowMs, baseUrl },
+    { now: Date.now, challengeWindowMs, demoWindow, baseUrl },
   );
   board = run.board;
   // The leaderboard's "Accuracy · test set": the replayed deliveries scored against the hand-checked values.
@@ -40,7 +43,7 @@ if (cache) {
   );
 } else {
   const storage = process.env.STORAGE === "icp" ? await icpStorageFromEnv() : new InMemoryStorage();
-  board = new JobBoard({ storage, ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, challengeDeposit, arbiterFee });
+  board = new JobBoard({ storage, ledger: ledgerFromEnv(), baseUrl, pipelines: [ours, baseline], challengeWindowMs, demoWindow, challengeDeposit, arbiterFee });
   // The Job Board's own state is in memory. With STORAGE=icp, Documents come back from ICP on the first poll after
   // a restart; with memory Storage, SEED_DOCUMENTS=<testdata PDF>,... uploads those on start so Workers find Jobs
   // waiting. The Template comes from the file name (battery-… or textile-…).

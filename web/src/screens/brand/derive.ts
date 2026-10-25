@@ -105,6 +105,10 @@ export function suggestions(docs: { supplier: string }[], typed: string) {
 
 export const windowLength = (ms: number) => (ms >= 3600_000 ? `${Math.round(ms / 3600_000)} h` : `${Math.round(ms / 60_000)} min`);
 
+/** "3 min demo · 48 h live" with the demo window, else the window's length. */
+export const windowLabel = (c: { challengeWindowMs: number; demoWindow?: boolean }) =>
+  c.demoWindow ? `${windowLength(c.challengeWindowMs)} demo · 48 h live` : windowLength(c.challengeWindowMs);
+
 export type ListStatus = "Processing" | "Delivered" | "Settled";
 
 /** A Documents list row. Final and Not stated are the lead (first) Pipeline's; Challenged counts every Pipeline. */
@@ -113,12 +117,15 @@ export function docRow(d: ApiDocumentSummary) {
   const status: ListStatus = ps.some((p) => p.status === "processing") ? "Processing" : ps.every((p) => p.status === "settled") ? "Settled" : "Delivered";
   const bonds = ps.map((p) => p.bond);
   const bond = (["locked", "slashed", "released"] as const).find((b) => bonds.includes(b));
-  const open = ps.filter((p) => p.closesAt !== undefined && p.status !== "settled").map((p) => p.closesAt!);
+  const open = ps.filter((p) => p.closesAt !== undefined && p.status !== "settled");
+  const last = open.reduce<(typeof open)[number] | undefined>((a, p) => (!a || p.closesAt! > a.closesAt! ? p : a), undefined);
   const lead = ps[0]?.counts;
   return {
     status,
     bond,
-    closesAt: open.length ? Math.max(...open) : undefined,
+    closesAt: last?.closesAt,
+    /** The window's state when it is not running: show msLeft held. */
+    ...(last?.paused && { paused: last.paused, msLeft: last.msLeft }),
     counts: { final: lead?.final ?? 0, notStated: lead?.notStated ?? 0, challenged: ps.reduce((n, p) => n + p.counts.challenged, 0) },
     href: status === "Processing" ? `/documents/${d.id}/pipeline` : `/documents/${d.id}`,
   };

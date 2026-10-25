@@ -2,6 +2,9 @@
 import { useEffect, useState, type CSSProperties, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { clock, shortHash, splitMark, usdc } from "../format.ts";
 
+/** At most two lines, then an ellipsis; give the element the full value as its title. */
+export const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" } as const;
+
 export type BadgeStatus = "final" | "converging" | "not stated" | "challenged" | "upheld" | "rejected" | "queued";
 
 const INK = "#141414", PAPER = "#F7F5F0", RED = "#A3221B";
@@ -103,9 +106,14 @@ export function ProofLink({ href, hash, label = "View on Stellar", color }: { hr
   );
 }
 
-/** Time left in the Challenge Window. serverOffsetMs = config.now − Date.now() when config was read. */
-export function Countdown({ closesAt, windowMs, serverOffsetMs, settled, bare }: {
-  closesAt: number; windowMs: number; serverOffsetMs: number; settled: boolean; bare?: boolean;
+const PAUSED = { "until opened": "starts when the Document is opened", "challenge open": "paused while a Challenge is open" } as const;
+
+/**
+ * Time left in the Challenge Window. serverOffsetMs = config.now − Date.now() when config was read.
+ * While `paused`, it holds msLeft. note: "3 min demo · 48 h live".
+ */
+export function Countdown({ closesAt, msLeft, paused, windowMs, serverOffsetMs, settled, bare, note }: {
+  closesAt: number; msLeft?: number; paused?: keyof typeof PAUSED; windowMs: number; serverOffsetMs: number; settled: boolean; bare?: boolean; note?: string;
 }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -113,9 +121,10 @@ export function Countdown({ closesAt, windowMs, serverOffsetMs, settled, bare }:
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, [settled]);
-  const left = settled ? 0 : Math.max(0, closesAt - (now + serverOffsetMs));
-  const text = <span style={{ font: `500 ${bare ? 20 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{clock(left)}</span>;
-  if (bare) return text;
+  const left = settled ? 0 : paused && msLeft !== undefined ? msLeft : Math.max(0, closesAt - (now + serverOffsetMs));
+  const text = <span style={{ font: `500 ${bare ? 17 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{clock(left)}</span>;
+  const why = !settled && paused && <span style={{ font: "500 11.5px/1.2 var(--sans)", color: "#3D3A34", whiteSpace: "nowrap" }}>{PAUSED[paused]}</span>;
+  if (bare) return <>{text}{why && <> {why}</>}</>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 150 }}>
       <SectionLabel size={10.5}>Challenge Window</SectionLabel>
@@ -123,6 +132,8 @@ export function Countdown({ closesAt, windowMs, serverOffsetMs, settled, bare }:
       <div style={{ height: 2, background: "var(--track)" }}>
         <div style={{ height: 2, background: INK, width: `${windowMs ? (left / windowMs) * 100 : 0}%` }} />
       </div>
+      {why}
+      {note && <span style={{ font: "500 11.5px/1 var(--mono)", color: "#3D3A34", whiteSpace: "nowrap" }}>{note}</span>}
     </div>
   );
 }

@@ -57,6 +57,22 @@ test("with no Workers the Job Board says Jobs wait", async () => {
   expect(await screen.findByText(/No Workers connected/)).toBeTruthy();
 });
 
+test("Leaderboard numbers open their Stellar proof; a zero has no link", async () => {
+  const account = "https://stellar.expert/explorer/testnet/account/GOPS";
+  const settle = "https://stellar.expert/explorer/testnet/tx/918d8b13";
+  const row = { operator: "Baseline", label: "Baseline", sieves: 1, documents: 2, fieldsDelivered: 37, challengesUpheld: 1, totalSlashed: "5", bondsLocked: "0", link: account,
+    series: [{ documentId: "a", short: "Cellworks", balance: "10" }, { documentId: "b", short: "Hunan", balance: "5", settlementLink: settle }] };
+  serve({ "/api/leaderboard": [row] });
+  render(<Leaderboard />);
+  await screen.findByText("37");
+  const href = (name: string) => screen.getByRole("link", { name }).getAttribute("href");
+  expect(href("Documents delivered: 2")).toBe(account);
+  expect(href("Challenges upheld: 1")).toBe(settle);
+  expect(href("Total Slashed: 5.00 USDC")).toBe(settle);
+  expect(screen.queryByRole("link", { name: /Bonds locked/ })).toBeNull();
+  expect(screen.queryByRole("link", { name: /Fields delivered/ })).toBeNull();
+});
+
 test("the Leaderboard shows every column, a Slash on the chart and the one-Operator note", async () => {
   const row = { operator: "Baseline", label: "Baseline", sieves: 1, documents: 2, fieldsDelivered: 37, challengesUpheld: 1, totalSlashed: "5", bondsLocked: "10",
     accuracy: { correct: 30, fields: 40 }, series: [{ documentId: "a", short: "Cellworks", balance: "10" }, { documentId: "b", short: "Hunan", balance: "5" }] };

@@ -2,9 +2,9 @@
 import { useRef, useState, type DragEvent } from "react";
 import { api, usePoll, type ApiFailure } from "../../api.ts";
 import { navigate } from "../../router.tsx";
-import { shortHash, usdc } from "../../format.ts";
+import { usdc } from "../../format.ts";
 import { useServerClock } from "../../screens.tsx";
-import { suggestions, windowLength } from "./derive.ts";
+import { suggestions, windowLabel } from "./derive.ts";
 
 const INK = "#141414", RED = "#A3221B";
 type Phase = "idle" | "wrong" | "failed" | "uploading" | "stored";
@@ -19,7 +19,6 @@ export function BrandUpload() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [pct, setPct] = useState(0);
   const [failure, setFailure] = useState("");
-  const [stored, setStored] = useState<{ link?: string }>();
   const [tpl, setTpl] = useState("battery");
   const [supplier, setSupplier] = useState("");
   const [focus, setFocus] = useState(false);
@@ -40,8 +39,6 @@ export function BrandUpload() {
     let at = 0;
     try {
       const { id } = await api.upload(file!, tpl, supplier.trim(), (p) => setPct((at = Math.round(p * 100))));
-      const d = await api.document(id).catch(() => undefined);
-      setStored({ link: d?.storageLink });
       setPhase("stored");
       setTimeout(() => navigate(`/documents/${id}/pipeline`), 1100);
     } catch (e) {
@@ -77,7 +74,6 @@ export function BrandUpload() {
                 </div>
                 <div style={{ display: "flex", gap: 12, marginTop: 6 }}>
                   <button className="om-btn primary md" onClick={() => input.current?.click()}>Choose a Document</button>
-                  <button className="om-btn ghost md" style={{ fontWeight: 500 }} onClick={() => choose(new File([], "Tech sheet SS27 shirting.docx"))}>Try a .docx</button>
                 </div>
               </>
             )}
@@ -117,12 +113,9 @@ export function BrandUpload() {
               <>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, font: "600 22px/1.2 var(--sans)" }}>
                   <span style={{ width: 22, height: 22, borderRadius: "50%", background: INK, color: "var(--paper)", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 12px/1 var(--mono)" }}>✓</span>
-                  {stored?.link ? "Stored on ICP" : "Stored"}
+                  Stored
                 </div>
                 <div style={{ font: "500 14px/1.3 var(--mono)" }}>{file?.name}</div>
-                {stored?.link && (
-                  <a href={stored.link} target="_blank" rel="noopener" style={{ font: "500 12px/1 var(--mono)" }}>View on ICP ↗ {shortHash(stored.link.split("/").filter(Boolean).at(-1) ?? "")}</a>
-                )}
               </>
             )}
           </div>
@@ -185,7 +178,7 @@ export function BrandUpload() {
           </div>
           {terms && config && (
             <div style={{ padding: "16px 20px", borderTop: "1px solid var(--rule)", background: "var(--band)", font: "500 15px/1.6 var(--mono)", color: INK }}>
-              Fee <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.fee)} USDC</span> · backed by a <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.bond)} USDC</span> Bond · Challenge Window {windowLength(config.challengeWindowMs)}
+              Fee <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.fee)} USDC</span> · backed by a <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.bond)} USDC</span> Bond · Challenge Window {windowLabel(config)}
             </div>
           )}
           <div style={{ padding: 20 }}>

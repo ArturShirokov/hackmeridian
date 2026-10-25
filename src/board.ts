@@ -161,7 +161,9 @@ export interface OperatorTerms {
   fee: string;
 }
 
-const outputHash = (fields: FieldResult[]) => createHash("sha256").update(JSON.stringify(fields)).digest("hex");
+/** sha256 of what one Pipeline delivered for one Document, so every Operator's escrow records its own hash, even for equal values. */
+const outputHash = (documentId: string, pipeline: string, fields: FieldResult[]) =>
+  createHash("sha256").update(JSON.stringify({ documentId, pipeline, fields })).digest("hex");
 
 /** One escrow per (Document, Pipeline). */
 const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([documentId, pipeline]);
@@ -169,10 +171,10 @@ const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([docu
 interface Escrow extends EscrowRequest {
   pipeline: string;
   escrowId: string;
-  /** Delivery, when the Challenge Window opened. */
+  /** Delivery. */
   openedAt: number;
-  /** When the Challenge Window closes, in ms since the epoch. */
-  closesAt: number;
+  /** When the Challenge Window started running: at delivery, or (demo window) when the Brand first opened the Document. */
+  startedAt?: number;
   status: "open" | "settling" | "settled";
   /** Paid to the Brand at settlement, one per upheld Challenge. */
   slashes?: string[];
@@ -224,6 +226,7 @@ export class JobBoard {
   private jobTimeoutMs: number;
   private operators: Record<string, OperatorTerms>;
   private challengeWindowMs: number;
+  private demoWindow: boolean;
   private challengeDeposit: string;
   private arbiterFee: string;
   /** Keyed by escrowKey(documentId, pipeline). */
@@ -245,6 +248,8 @@ export class JobBoard {
     /** Bond and Fee by Pipeline name. A Pipeline not listed is run by an Operator of the same name for 10 + 1 USDC. */
     operators?: Record<string, OperatorTerms>;
     challengeWindowMs?: number;
+    /** Demo: the Challenge Window starts when the Brand opens the Document and pauses while a Challenge is undecided. */
+    demoWindow?: boolean;
     /** What a challenger locks to file a Challenge, USDC. Default 1. */
     challengeDeposit?: string;
     /** What the Arbiter earns per decision, out of the Slash when upheld (at most the Slash), USDC. Default 0.1. */
@@ -257,6 +262,7 @@ export class JobBoard {
     this.jobTimeoutMs = opts.jobTimeoutMs ?? 10 * 60_000;
     this.operators = opts.operators ?? {};
     this.challengeWindowMs = opts.challengeWindowMs ?? 5 * 60_000;
+    this.demoWindow = opts.demoWindow ?? false;
     this.challengeDeposit = addUsdc(opts.challengeDeposit ?? "1");
     this.arbiterFee = addUsdc(opts.arbiterFee ?? "0.1");
     this.storage = opts.storage;
@@ -456,7 +462,7 @@ export class JobBoard {
       documentId: doc.meta.id,
       ...terms,
       brand: doc.meta.uploader,
-      outputHash: outputHash(fields),
+      outputHash: outputHash(doc.meta.id, pipeline, fields),
     };
     const { escrowId, link } = await this.ledger.openEscrow(req);
     this.escrows.set(escrowKey(doc.meta.id, pipeline), {
@@ -465,7 +471,7 @@ export class JobBoard {
       escrowId,
       ...(link && { link }),
       openedAt: this.now(),
-      closesAt: this.now() + this.challengeWindowMs,
+      ...(!this.demoWindow && { startedAt: this.now() }),
       status: "open",
     });
   }
@@ -561,7 +567,7 @@ export class JobBoard {
     if (problems.length) return { ok: false, error: problems.join("\n") };
     const fields = converge(d.template, [parsed.data.fields], d.text);
     try {
-      const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(fields));
+      const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(documentId, operator, fields));
       Object.assign(c, { step: "delivery", xdr, fields, ...(spans && { trace: spans.data }) });
       return { ok: true, xdr };
     } catch (e) {
@@ -623,10 +629,10 @@ export class JobBoard {
     d.delivered.set(operator, fields);
     const { bond, fee } = this.terms(operator);
     this.escrows.set(escrowKey(documentId, operator), {
-      documentId, operator, brand: d.meta.uploader, bond, fee, outputHash: outputHash(fields), pipeline: operator, escrowId: c.escrowId,
+      documentId, operator, brand: d.meta.uploader, bond, fee, outputHash: outputHash(documentId, operator, fields), pipeline: operator, escrowId: c.escrowId,
       ...(c.link && { link: c.link }),
       openedAt: this.now(),
-      closesAt: this.now() + this.challengeWindowMs,
+      ...(!this.demoWindow && { startedAt: this.now() }),
       status: "open",
     });
     return { ok: true, done: `delivered: the Challenge Window is open for ${Math.round(this.challengeWindowMs / 60_000)} min, then the escrow settles` };
@@ -635,7 +641,7 @@ export class JobBoard {
   /** Settle every escrow whose Challenge Window has closed (only those of Documents `only` picks). main.ts calls this every 5 s. */
   async tick(only: (documentId: string) => boolean = () => true): Promise<void> {
     for (const e of this.escrows.values()) {
-      if (e.status !== "open" || this.now() < e.closesAt || !only(e.documentId)) continue;
+      if (e.status !== "open" || this.window(e).msLeft > 0 || !only(e.documentId)) continue;
       const { documentId, pipeline } = e;
       if (this.challenges.undecided(documentId, pipeline)) continue; // wait for the Arbiter
       const s = slashes(e.bond, this.challenges.upheld(documentId, pipeline).length);
@@ -655,13 +661,42 @@ export class JobBoard {
     }
   }
 
+  /**
+   * Where an escrow's Challenge Window stands. It runs from startedAt; with the demo window it waits until the Brand
+   * opens the Document and pauses while a Challenge on it is undecided. closesAt only moves while paused.
+   */
+  private window(e: Escrow): { closesAt: number; msLeft: number; paused?: "until opened" | "challenge open" } {
+    const now = this.now();
+    if (e.startedAt === undefined) return { closesAt: now + this.challengeWindowMs, msLeft: this.challengeWindowMs, paused: "until opened" };
+    let paused = 0;
+    if (this.demoWindow) {
+      // Total time with at least one Challenge undecided since the window started (union of [filed, decided]).
+      let end = e.startedAt;
+      const spans = this.challenges.of(e.documentId, e.pipeline).map((c) => [Math.max(c.filedAt, e.startedAt!), c.decidedAt ?? now] as const).sort((a, b) => a[0] - b[0]);
+      for (const [a, b] of spans) if (b > end) (paused += b - Math.max(a, end)), (end = b);
+    }
+    const closesAt = e.startedAt + this.challengeWindowMs + paused;
+    const msLeft = e.status === "settled" ? 0 : Math.max(0, closesAt - now);
+    const held = this.demoWindow && msLeft > 0 && this.challenges.undecided(e.documentId, e.pipeline);
+    return { closesAt, msLeft, ...(held && { paused: "challenge open" as const }) };
+  }
+
+  /** The Brand opened the Document: with the demo window, its delivered escrows' Challenge Windows start now (once). */
+  open(documentId: string): boolean {
+    const d = this.docs.get(documentId);
+    if (!d) return false;
+    if (this.withheld(d)) return true;
+    for (const e of this.escrows.values()) if (e.documentId === documentId && e.startedAt === undefined) e.startedAt = this.now();
+    return true;
+  }
+
   /** The open escrow a Challenge can be filed against, or why not. */
   private challengeable(documentId: string, pipeline: string) {
     const d = this.docs.get(documentId);
     const e = this.escrows.get(escrowKey(documentId, pipeline));
     const delivered = d?.delivered.get(pipeline);
     if (!d || !e || !delivered) return { ok: false as const, reason: "not found" as const, error: "no delivered Document with that id" };
-    if (e.status !== "open" || this.now() >= e.closesAt)
+    if (e.status !== "open" || this.window(e).msLeft <= 0)
       return { ok: false as const, reason: "closed" as const, error: "the Challenge Window has closed" };
     // The values are not shown yet, and the Arbiter's view would show them.
     if (this.withheld(d)) return { ok: false as const, reason: "closed" as const, error: "another Pipeline is still extracting this Document" };
@@ -682,6 +717,9 @@ export class JobBoard {
     const deposit = this.challengeDeposit;
     const r = this.challenges.check({ documentId, pipeline, template: t.d.template, text: t.d.text, delivered: t.delivered }, rest, { challenger, deposit });
     if (!r.ok) return { ...r, reason: "invalid" as const };
+    // One Challenge per Field (per Operator): a second never replaces or resets the first.
+    if (this.challenges.of(documentId, pipeline).some((c) => c.field === r.challenge.field))
+      return { ok: false as const, reason: "challenged" as const, error: `Field "${r.challenge.field}" is already Challenged; it takes one Challenge` };
     // Filed first, so settlement waits for it (and returns its Deposit) even if the Window closes while it locks.
     this.challenges.add(r.challenge);
     try {
@@ -757,9 +795,10 @@ export class JobBoard {
   }
 
   private escrowView(e: Escrow): ApiEscrow {
+    const w = this.window(e);
     const upheld = this.challenges.upheld(e.documentId, e.pipeline).length;
     const status: DocStatus =
-      e.status === "settled" ? "settled" : this.now() >= e.closesAt && this.challenges.undecided(e.documentId, e.pipeline) ? "awaiting arbiter" : "delivered";
+      e.status === "settled" ? "settled" : w.msLeft <= 0 && this.challenges.undecided(e.documentId, e.pipeline) ? "awaiting arbiter" : "delivered";
     return {
       operator: e.operator,
       bond: e.bond,
@@ -768,7 +807,7 @@ export class JobBoard {
       outputHash: e.outputHash,
       status,
       openedAt: e.openedAt,
-      closesAt: e.closesAt,
+      ...w,
       upheld,
       ...(e.slashes && { slashes: e.slashes }),
       ...(e.link && { link: e.link }),
@@ -788,7 +827,7 @@ export class JobBoard {
         const settled = e?.status === "settled";
         const brandShare = settled && e.slashes ? settlement(e, e.slashes, [], this.arbiterFee).escrow.filter((x) => x.to === "brand") : [];
         const bond = e && (settled ? (e.slashes ? "slashed" : "released") : "locked") as "slashed" | "released" | "locked";
-        return [p.name, { status, ...(e && { closesAt: e.closesAt }), counts, ...(bond && { bond }), ...(brandShare.length && { received: addUsdc(...brandShare.map((x) => x.amount)) }) }];
+        return [p.name, { status, ...(e && this.window(e)), counts, ...(bond && { bond }), ...(brandShare.length && { received: addUsdc(...brandShare.map((x) => x.amount)) }) }];
       }),
     );
     const { id, name, supplier, template, uploadedAt } = d.meta;
@@ -942,6 +981,7 @@ export class JobBoard {
       now: this.now(),
       baseUrl: this.baseUrl,
       challengeWindowMs: this.challengeWindowMs,
+      ...(this.demoWindow && { demoWindow: true }),
       challengeDeposit: this.challengeDeposit,
       arbiterFee: this.arbiterFee,
       brand: this.brand,
@@ -974,7 +1014,7 @@ export class JobBoard {
       filedAt: c.filedAt,
       ...(c.decidedAt !== undefined && { decidedAt: c.decidedAt }),
       ...(c.note && { note: c.note }),
-      closesAt: e.closesAt,
+      ...this.window(e),
       delivered:
         was.status === "final"
           ? { display: formatValue(was), evidence: this.quote(d, was.page, was.quote, was) }
@@ -1077,6 +1117,8 @@ export class JobBoard {
             documentId: d.meta.id,
             short: d.meta.supplier || d.meta.name.replace(/\.pdf$/i, "").slice(0, 12),
             balance: this.escrowView(e).bondLeft,
+            ...(e.link && { link: e.link }),
+            ...(e.settlementLink && { settlementLink: e.settlementLink }),
           })),
         };
       }),
@@ -1104,7 +1146,7 @@ export class JobBoard {
         fee: e.fee,
         outputHash: e.outputHash,
         status: e.status === "settled" ? ("settled" as const) : ("open" as const),
-        msLeft: Math.max(0, e.closesAt - this.now()),
+        msLeft: this.window(e).msLeft,
         ...(e.slashes && { slashes: e.slashes }),
         ...(e.link && { link: e.link }),
         ...(e.settlementLink && { settlementLink: e.settlementLink }),
