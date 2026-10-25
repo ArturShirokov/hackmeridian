@@ -5,9 +5,20 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
 import type { Pipeline } from "../src/pipelines.js";
 import { InMemoryStorage } from "../src/storage.js";
-import { FakeLedger } from "../src/ledger.js";
+import { FakeLedger, type OperatorRecord } from "../src/ledger.js";
 import { buildMcpServer } from "../src/mcp.js";
 import { webApp } from "../src/web.js";
+
+type PipelineView = {
+  fields: {
+    name: string;
+    status: "converging" | "final" | "disagreeing" | "not stated";
+    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean;
+    quotes?: { page: number; quote: string }[];
+    supplierRequest?: string;
+  }[];
+  escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[] };
+};
 
 export function startBoard(
   opts: {
@@ -52,20 +63,18 @@ export function startBoard(
       if (res.status !== 303) throw new Error(`upload failed: ${res.status} ${await res.text()}`);
       return res.headers.get("location")!.split("/").pop()!;
     },
+    /** Top-level fields and escrow are the first Pipeline's; `pipelines` has every Pipeline's, by name. */
     async document(id: string) {
       const res = await web.request(`/api/documents/${id}`);
       return (await res.json()) as {
         id: string;
         template: string;
-        fields: {
-          name: string;
-          status: "converging" | "final" | "disagreeing" | "not stated";
-          value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean;
-          quotes?: { page: number; quote: string }[];
-          supplierRequest?: string;
-        }[];
-        escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[] };
-      };
+        pipelines: Record<string, PipelineView>;
+      } & PipelineView;
+    },
+    async leaderboard() {
+      const res = await web.request("/api/leaderboard");
+      return (await res.json()) as ({ operator: string } & OperatorRecord)[];
     },
     async page(path: string) {
       const res = await web.request(path);
