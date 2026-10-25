@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ours } from "../src/pipelines.js";
+import { baseline, ours } from "../src/pipelines.js";
 import { checkedMarkdown, extraction, makePdf, startBoard } from "./seam.js";
 
 const sheet = () => makePdf([["Cell C-32", "Capacity: 3200 mAh (nominal)", "Chemistry: LiFePO4"], ["Nominal voltage 3.2 V"]]);
@@ -90,4 +90,21 @@ test("a Worker that did one extraction Sieve on a Document is never offered a se
   const docB = await brand.upload(await sheet());
   expect((await w1.nextJob())!.documentId).toBe(docB);
   expect((await (await worker("w2")).nextJob())!.documentId).toBe(docA);
+});
+
+test("a Worker that did an extraction Sieve on a Document in one Pipeline is never offered one on it in another", async () => {
+  const { worker, brand } = startBoard({ pipelines: [ours, baseline] });
+  const docId = await brand.upload(await sheet());
+  const [w1, w2] = [await worker("w1"), await worker("w2")];
+  const ourFirst = (await w1.nextJob())!;
+  await w1.submitJob(ourFirst.id, extraction(ourFirst));
+  await checkedMarkdown(w1); // w1 may still do our Markdown and faithfulness Sieves
+  expect(await w1.nextJob()).toBeNull(); // neither the Baseline's extraction nor our second one
+
+  const theBaselines = (await w2.nextJob())!;
+  expect(theBaselines).toMatchObject({ documentId: docId, sieve: "extract", view: "original" });
+  await w2.submitJob(theBaselines.id, extraction(theBaselines));
+  expect(await w2.nextJob()).toBeNull(); // our second extraction needs a third Worker
+
+  expect(await (await worker("w3")).nextJob()).toMatchObject({ documentId: docId, sieve: "extract", view: "markdown" });
 });

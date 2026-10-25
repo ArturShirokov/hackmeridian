@@ -228,11 +228,9 @@ export class JobBoard {
     return this.jobs.findLast((j) => j.pipeline === pipeline && j.job.documentId === documentId && j.markdown !== undefined)?.markdown;
   }
 
-  /** Sieves stay independent: a Worker does at most one extraction Sieve per Document and Pipeline. */
+  /** Sieves stay independent: a Worker does at most one extraction Sieve per Document, across every Pipeline. */
   private didExtraction(worker: string, j: JobState): boolean {
-    return this.jobs.some(
-      (o) => o !== j && o.takenBy === worker && o.pipeline === j.pipeline && o.job.documentId === j.job.documentId && extracts(o.job.sieve),
-    );
+    return this.jobs.some((o) => o !== j && o.takenBy === worker && o.job.documentId === j.job.documentId && extracts(o.job.sieve));
   }
 
   /** The next open Job for this Worker, or null when there is nothing yet. */

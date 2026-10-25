@@ -107,8 +107,9 @@ Then give the session this prompt:
 > You are Worker `<your-id>`. Call `next_job` with worker `<your-id>`. If there is no Job, wait 10 seconds and
 > try again. Otherwise do the Job as its instructions say and hand it in with `submit_job`. Repeat.
 
-Use a different id for every session. The Job Board uses it to keep Sieves independent: our Pipeline needs at least
-three Workers, one per extraction Sieve.
+Use a different id for every session. The Job Board uses it to keep Sieves independent: a Worker does at most one
+extraction Sieve (or tie-break) per Document, across both Pipelines. A live run with our Pipeline and the Baseline
+needs at least four distinct Workers: two for our extraction Sieves, one for our tie-break, one for the Baseline.
 
 ## Testnet transactions
 
@@ -138,7 +139,7 @@ npx tsx scripts/accuracy.ts      # its own Job Board (fake Ledger, in-memory Sto
 ```
 
 It uploads every test Document under both Operators and serves MCP at `http://127.0.0.1:3000/mcp`. Connect at least
-three Workers as in [Connect a Worker](#connect-a-worker). The script prints the report when every Document is
+four distinct Workers as in [Connect a Worker](#connect-a-worker). The script prints the report when every Document is
 delivered by both Pipelines; Ctrl+C reports on what is delivered so far. Every Job taken and every accepted
 submission is written as it happens to `testdata/runs/<timestamp>.json`, which is also a demo replay cache.
 

@@ -13,16 +13,16 @@ test("two Operators on one Document: two escrows, values side by side, and a lea
   const board = startBoard({ pipelines: [ours, baseline], operators, challengeWindowMs: 60_000 });
   const { brand, arbiter, worker, ledger } = board;
   const docId = await brand.upload(await sheet());
-  const [w1, w2] = [await worker("w1"), await worker("w2")];
+  const [w1, w2, w3] = [await worker("w1"), await worker("w2"), await worker("w3")];
 
-  // w1 takes our first Sieve, w2 the Baseline's single Sieve (which gets capacity wrong), w1 our Markdown, then w2 our second extraction.
+  // w1 takes our first Sieve, w2 the Baseline's single Sieve (which gets capacity wrong), w1 our Markdown, then w3 our second extraction.
   const j1 = (await w1.nextJob())!;
   await w1.submitJob(j1.id, extraction(j1, { rated_capacity_ah: capacity }));
   const jb = (await w2.nextJob())!;
   await w2.submitJob(jb.id, extraction(jb, { rated_capacity_ah: { ...capacity, value: 22 } }));
   await checkedMarkdown(w1);
-  const j2 = (await w2.nextJob())!;
-  expect(await w2.submitJob(j2.id, extraction(j2, { rated_capacity_ah: capacity }))).toMatchObject({ ok: true });
+  const j2 = (await w3.nextJob())!;
+  expect(await w3.submitJob(j2.id, extraction(j2, { rated_capacity_ah: capacity }))).toMatchObject({ ok: true });
 
   expect(ledger.calls.filter((c) => c.call === "openEscrow").map((c) => c.call === "openEscrow" && c.req)).toMatchObject([
     { documentId: docId, operator: "one-pass", bond: "10", fee: "1" },
