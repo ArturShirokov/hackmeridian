@@ -1,0 +1,142 @@
+[
+  {
+    "file": "battery-p01-panasonic-ncr18650b-datasheet.pdf",
+    "template": "battery",
+    "url": "https://e2e.ti.com/cfs-file/__key/communityserver-discussions-components-files/196/Panasonic-NCR18650B-datasheet.pdf",
+    "publisher": "Panasonic (SANYO Energy (U.S.A.) Corporation); copy hosted on the TI E2E forum",
+    "kind": "cell datasheet",
+    "sha256": "6d0ad29af7b99f1f4a692233c71b7057ac7644c857e335077d8b6b7fc8bd6a03",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p02-victron-lfp-smart-datasheet.pdf",
+    "template": "battery",
+    "url": "https://www.victronenergy.de/upload/documents/Datasheet-12,8-Volt-lithium-iron-phosphate-batteries-Smart-EN.pdf",
+    "publisher": "Victron Energy B.V.",
+    "kind": "battery datasheet, 8-model table",
+    "sha256": "ed3d5f6cf017ace16bd070e404e9400da14355f9056674673c980e3e26b2beec",
+    "pages": 2,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p03-pylontech-us5000-datasheet.pdf",
+    "template": "battery",
+    "url": "https://fvcomponentes.com/wp-content/uploads/2024/01/Pylontech-US5000-48KWh-48V.pdf",
+    "publisher": "Pylontech; copy hosted by distributor FV Componentes",
+    "kind": "storage module datasheet",
+    "sha256": "01fd53dc53c6915508c0bc5b8a2c4eb861290d4f469d4880b308d25faa6b9e97",
+    "pages": 2,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p04-celxpert-sram-25401-un383-summary.pdf",
+    "template": "battery",
+    "url": "https://www.sram.com/globalassets/document-hierarchy/customer-guidelines-and-regulations/regulatory-compliance/batteries/25401/mn25401_un38.3-test-summary.pdf",
+    "publisher": "SRAM (Celxpert Energy Corporation, manufacturer)",
+    "kind": "UN 38.3 test summary",
+    "sha256": "a39b174a328cd60fab16ea388a0b117c7e238fb319b811cb0cc579b1dde80f2f",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p05-changhong-unilite-il850r-un383-summary.pdf",
+    "template": "battery",
+    "url": "https://docs.rs-online.com/8bd9/A700000014681385.pdf",
+    "publisher": "RS Components (Unilite Limited; ChangHong Grand-Pro Tech, cell maker)",
+    "kind": "UN 38.3 test summary",
+    "sha256": "506d2365a4d9e0f2cd0fe91532f623f9cf990ab5809ccf8aadcb6a9732655f0b",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p06-strident-lt12-35-un383-summary.pdf",
+    "template": "battery",
+    "url": "https://docs.rs-online.com/daf5/A700000015012268.pdf",
+    "publisher": "RS Components (Strident Innovations)",
+    "kind": "UN 38.3 test summary",
+    "sha256": "3453da9ab3470f8a995e999365142814b2672708682aa9ea2dfdb3284e8b1904",
+    "pages": 2,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p07-mts-pedelec-akku-sds.pdf",
+    "template": "battery",
+    "url": "https://service.fischer-bike.com/fileadmin/all_user/downloads/betriebsanleitungen/Pedelec_Akku_0001_06-09-2022_EN.pdf",
+    "publisher": "FISCHER bike (MTS MarkenTechnikService, SDS supplier)",
+    "kind": "safety data sheet (REACH Annex II)",
+    "sha256": "743fe7a211d59c7f7e726cf8177d10e4f9a934f84e4101ded74dece8b15231c4",
+    "pages": 19,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "battery-p08-motorola-impres-eu-doc.pdf",
+    "template": "battery",
+    "url": "https://aem-cloud-prod-cdn.motorolasolutions.com/content/dam/msi/docs/emea_compliance/battery/DOC-24101804921-A.pdf",
+    "publisher": "Motorola Solutions",
+    "kind": "EU declaration of conformity (Regulation (EU) 2023/1542), 8 languages",
+    "sha256": "7c719d8aab995500d19de2c4937cab3fd561c2bf218b2829daa0d15a4f66965c",
+    "pages": 8,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p01-xm-unitec-200-fabric-sheet.pdf",
+    "template": "textile",
+    "url": "https://storage.mtender.gov.md/get/6d404a2c-d8bd-4495-83ad-228465c62b9f-1602510950701",
+    "publisher": "XM Textiles Europe; tender attachment on the Moldovan public procurement portal (MTender)",
+    "kind": "fabric technical data sheet",
+    "sha256": "e297960a15d24ea15bccd77c406ea35cee31674f585389a3b6d02a79639bc125",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p02-xm-eco-210-fabric-sheet.pdf",
+    "template": "textile",
+    "url": "https://storage.mtender.gov.md/get/d5cb4537-ede7-48e6-888e-1e526dd59e49-1650701410320",
+    "publisher": "XM Textiles Europe; tender attachment on the Moldovan public procurement portal (MTender)",
+    "kind": "fabric technical data sheet",
+    "sha256": "c757a1609dc86dee3adf74eb62cbdea881d863450e950119efeedaafe120c000",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p03-stanleystella-sttw172-tee-sheet.pdf",
+    "template": "textile",
+    "url": "https://merch-size.events.ccc.de/datasheets/stanleystella_sttw172.pdf",
+    "publisher": "Stanley/Stella; copy hosted by the Chaos Computer Club merch site",
+    "kind": "garment product sheet",
+    "sha256": "cd403bda80a31c8dd8b32debd5d6d81f888424fd548d6a326d0a0a78d4b0ec24",
+    "pages": 3,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p04-novatex-orso-fabric-sheet.pdf",
+    "template": "textile",
+    "url": "https://cdn.shopify.com/s/files/1/0382/9635/4954/files/Fichas_tecnicas_Novatex_Orso.pdf",
+    "publisher": "Novatex (Formatex)",
+    "kind": "upholstery fabric data sheet",
+    "sha256": "0bf7346be8de04563a12db4de81bbaf16d385d44eca6e7219a6faf318707020a",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p05-kleinhempel-greentex-infinite-sheet.pdf",
+    "template": "textile",
+    "url": "https://kleinhempel.de/media/pages/service/98bfe44b5b-1725459579/datasheet_greentex-infinite-sep-2024.pdf",
+    "publisher": "Kleinhempel GmbH",
+    "kind": "technical textile data sheet (German/English)",
+    "sha256": "b7717fdfc2647d67ff1be21f391eb3c75ed24d6dd0c58e6ec328dd6fddb3a444",
+    "pages": 1,
+    "retrieved": "2026-10-25"
+  },
+  {
+    "file": "textile-p06-pacifictextiles-grs-scope-certificate.pdf",
+    "template": "textile",
+    "url": "https://www.pacific-textiles.com/images/certs/GRS.pdf",
+    "publisher": "Pacific Textiles Ltd. (Control Union Certifications, issuer)",
+    "kind": "GRS 4.0 scope certificate",
+    "sha256": "8ff99d661c39642f140a1a0bc84b00a39b3aa701088cb65ede8f23d36d60ff72",
+    "pages": 4,
+    "retrieved": "2026-10-25"
+  }
+]

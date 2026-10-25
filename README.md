@@ -199,11 +199,13 @@ each with a one-line prompt printing `{"ok":true}`:
 | Worker | Command |
 |---|---|
 | claude/sonnet | `claude -p "<prompt>" --model sonnet --output-format json --allowedTools Read --no-session-persistence` (the text is in `.result`) |
-| opencode/kimi-k3 | `opencode run --model opencode-go/kimi-k3 "<prompt>"` (the banner goes to stderr) |
-| opencode/deepseek-v4-pro | `opencode run --model opencode-go/deepseek-v4-pro "<prompt>"` |
+| opencode/kimi-k3 | `OPENCODE_PERMISSION='{"*":"deny","read":"allow","glob":"allow","grep":"allow","list":"allow"}' opencode run --format json --dir <job folder> --model opencode-go/kimi-k3 "<prompt>"` (the answer is the last `text` event; `--dir` is needed because OpenCode takes its folder from the inherited `PWD`) |
+| opencode/deepseek-v4-pro | the same, with `--model opencode-go/deepseek-v4-pro` |
 | pi/qwen3.8-max | `pi -p --model opencode-go/qwen3.8-max --no-session --tools read "<prompt>"` |
 
-Claude Code gets only the Read tool and never bypasses permissions. The model names come from `opencode models` and
+Every harness is read-only, because the Document is untrusted input: Claude Code gets only the Read tool, Pi only
+`read`, and OpenCode a permission config that denies every tool except reading files (without it, `opencode run`
+lets the model run shell commands; Kimi did, to decompress the PDF). Nothing bypasses permissions. The model names come from `opencode models` and
 `pi --list-models`; the OpenCode Go provider is the one logged in here (`opencode auth list`). Stdin is closed, so
 `claude -p` does not wait on it. When a Worker gives up, its last stdout and stderr are in
 `$TMPDIR/shift-<id>-last-output.txt`.
@@ -211,7 +213,10 @@ Claude Code gets only the Read tool and never bypasses permissions. The model na
 Smoke run on 25 Oct 2026, battery-02 on a local Job Board (both Pipelines): claude/sonnet took the Baseline's One-pass
 extraction (19 s) and our Markdown (12 s), pi/qwen3.8-max our Original extraction (67 s), all accepted first try.
 opencode/kimi-k3 printed nothing on stdout for the Faithfulness check, twice in a row on two takes (88 s and 297 s),
-so the Job went back on the board each time. Killing and restarting the Job Board mid-shift: all four Workers came
+so the Job went back on the board each time. Diagnosed the same day on one real Faithfulness Job: with
+`--format json` the events showed Kimi reading job.json, then running shell commands to decode the PDF before
+answering. Read-only, it reads the PDF directly and answered `{"pass": true}` in 24 s; the runner now takes the last
+text event, so a run that ends without an answer is caught as no result. Killing and restarting the Job Board mid-shift: all four Workers came
 back under their ids within 2 s of the restart.
 
 ### Demo runbook: four Workers live

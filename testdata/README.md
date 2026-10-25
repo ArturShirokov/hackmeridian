@@ -11,6 +11,7 @@ Made-up Documents with their expected Field values, for the accuracy report and 
 - `fields.json`: per Template, each Field's source number, type, canonical unit, high-stake flag, Author and section. Written from `src/templates.ts` (the official lists in `docs/templates/official-templates.md`); keep the two in step.
 - `runs/*.json`: recorded runs for replay. `runs/scripted-demo.json` is **scripted** (`scripts/scripted-run.ts`, expected values plus the Baseline's planted 16 %), not a live run.
 - `generate/`: `generate.mjs` writes the PDFs; `check.mjs` checks an expected-values file; the `*.test.mjs` files run the checks.
+- `public/`: real, publicly available PDFs (fetched, not committed) with agent-drafted expected values. See `public/README.md`.
 
 ## Expected-values format
 
