@@ -10,7 +10,13 @@ import { buildMcpServer } from "../src/mcp.js";
 import { webApp } from "../src/web.js";
 
 type PipelineView = {
-  fields: { name: string; status: "converging" | "final" | "disagreeing"; value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean }[];
+  fields: {
+    name: string;
+    status: "converging" | "final" | "disagreeing" | "not stated";
+    value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean;
+    quotes?: { page: number; quote: string }[];
+    supplierRequest?: string;
+  }[];
   escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[] };
 };
 

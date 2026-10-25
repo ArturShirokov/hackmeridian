@@ -1,5 +1,6 @@
 // Pipeline configuration as data: each Pipeline is an ordered list of Sieves.
-export type SieveKind = "extract";
+/** A tie-break is an extraction Sieve offered only for the Fields the earlier two left disagreeing. */
+export type SieveKind = "extract" | "tiebreak";
 export type View = "original";
 
 export interface Sieve {
@@ -32,5 +33,6 @@ export const ours: Pipeline = {
   sieves: [
     { kind: "extract", view: "original", instructions: extractFromOriginal },
     { kind: "extract", view: "original", instructions: extractFromOriginal }, // #9 switches this to the checked Markdown
+    { kind: "tiebreak", view: "original", instructions: extractFromOriginal },
   ],
 };

@@ -69,7 +69,12 @@ export function webApp(board: JobBoard): Hono {
     if (!d) return c.notFound();
     const views = Object.entries(d.pipelines);
     const cell = (f: (typeof d.fields)[number]) =>
-      "notStated" in f
+      "supplierRequest" in f
+        ? html`<td>${f.status}</td><td>Not stated. Competing quotes:
+            <ul>${f.quotes.map((q) => html`<li>page ${q.page}: <q>${q.quote}</q></li>`)}</ul>
+            Supplier Request:<br><textarea readonly rows="5" cols="50">${f.supplierRequest}</textarea>
+            <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button></td>`
+        : "notStated" in f
         ? html`<td>${f.status}</td><td class="muted">Not stated</td>`
         : "value" in f
           ? html`<td>${f.status}</td><td>${show(f.value)} ${f.unit ?? ""} ${f.qualifier ?? ""}${"corrected" in f ? html` <span class="muted">(corrected by Challenge)</span>` : ""}
