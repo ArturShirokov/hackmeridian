@@ -49,6 +49,28 @@ test("with the fake Ledger's default, no explorer link is shown", async () => {
   expect((await board.brand.page(`/documents/${docId}`)).text).not.toContain("explorer");
 });
 
+test("each Operator has its own output hash, even for the same values", async () => {
+  const board = startBoard({ pipelines: [{ name: "a", sieves: [{ kind: "extract", label: "A", view: "original", instructions: "" }] }, { name: "b", sieves: [{ kind: "extract", label: "B", view: "original", instructions: "" }] }] });
+  const docId = await board.brand.upload(await sheet());
+  for (const name of ["w1", "w2"]) {
+    const w = await board.worker(name);
+    const job = (await w.nextJob())!;
+    expect(await w.submitJob(job.id, extraction(job, { rated_capacity_ah: capacity }))).toMatchObject({ ok: true });
+  }
+  const doc = await board.brand.document(docId);
+  expect(doc.differs).toEqual([]);
+  expect(doc.view("a").escrow!.outputHash).not.toBe(doc.view("b").escrow!.outputHash);
+});
+
+test("the Leaderboard row links each settlement on Stellar, per Document", async () => {
+  const board = startBoard({ explorer: "https://explorer.test", challengeWindowMs: 60_000 });
+  await deliver(board);
+  board.clock.advance(60_000);
+  await board.tick();
+  const [row] = await board.brand.leaderboard();
+  expect(row!.series).toMatchObject([{ link: "https://explorer.test/escrow-1", settlementLink: "https://explorer.test/escrow-1/settle" }]);
+});
+
 test("different delivered values give a different output hash", async () => {
   const a = startBoard();
   const b = startBoard();

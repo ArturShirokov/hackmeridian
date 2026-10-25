@@ -255,8 +255,8 @@ export interface ApiLeaderRow {
   /** Scored against the hand-checked test set; only in DEMO_REPLAY mode. */
   accuracy?: { correct: number; fields: number };
   link?: string;
-  /** Bond left per delivered Document, in upload order. */
-  series: { documentId: string; short: string; balance: Usdc }[];
+  /** Bond left per delivered Document, in upload order, with its escrow and settlement on Stellar when the Ledger has them. */
+  series: { documentId: string; short: string; balance: Usdc; link?: string; settlementLink?: string }[];
 }
 
 export type JobStatus = "open" | "taken" | "done" | "timed out";

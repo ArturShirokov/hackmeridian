@@ -81,6 +81,10 @@ export class TrustlessWorkLedger implements Ledger, OutsideLedger {
   // change the escrow), the Operator signs its Bond and, at delivery, the milestone's "Completed" with the output hash.
   // Settlement then needs only the Brand and the Arbiter.
 
+  operatorLink(id: string) {
+    return explorer("account", this.operatorAddress(id));
+  }
+
   usdcBalance(address: string) {
     return horizonUsdc(address, this.o.horizonUrl, this.fetch);
   }

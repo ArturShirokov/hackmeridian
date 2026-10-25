@@ -162,10 +162,15 @@ export function ReviewView({ d, config, offset, template, file }: {
         {e && <MoneyChip tone="fee" label="Fee" amount={e.fee} state={settled ? "paid" : "held"} />}
         {e && config && <Countdown closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} note={windowLabel(config)} />}
         {e && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }} data-testid="output-hash">
             <SectionLabel size={10.5}>Output hash</SectionLabel>
-            <span style={{ font: "500 13px/1 var(--mono)", whiteSpace: "nowrap" }}>sha256 {shortHash(e.outputHash)}</span>
-            <ProofLink href={e.link} hash={e.outputHash} />
+            {/* Each Operator's own: in Compare one line per Operator. */}
+            {(isCompare ? d.views : [view]).filter((v) => v.escrow).map((v) => (
+              <span key={v.pipeline} style={{ display: "flex", gap: 8, alignItems: "baseline", whiteSpace: "nowrap" }}>
+                <span style={{ font: "500 13px/1 var(--mono)" }}>{isCompare && `${v.label} `}{shortHash(v.escrow!.outputHash)}</span>
+                <ProofLink href={v.escrow!.link} hash="" />
+              </span>
+            ))}
           </div>
         )}
         {!e && <span style={{ font: "500 13px/1.3 var(--mono)", color: "#3D3A34" }}>{view.label} is still working on this Document.</span>}

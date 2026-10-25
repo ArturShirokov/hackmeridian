@@ -140,6 +140,11 @@ export class StellarPaymentsLedger implements Ledger {
     }
   }
 
+  operatorLink(id: string) {
+    const k = this.o.operators[id];
+    return k && explorer("account", k.publicKey());
+  }
+
   private operator = (id: string) => keyFor(this.o.operators, "Operator", id);
   private brand = (id: string) => keyFor(this.o.brands, "Brand", id);
 

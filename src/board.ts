@@ -161,7 +161,9 @@ export interface OperatorTerms {
   fee: string;
 }
 
-const outputHash = (fields: FieldResult[]) => createHash("sha256").update(JSON.stringify(fields)).digest("hex");
+/** sha256 of what one Pipeline delivered for one Document, so every Operator's escrow records its own hash, even for equal values. */
+const outputHash = (documentId: string, pipeline: string, fields: FieldResult[]) =>
+  createHash("sha256").update(JSON.stringify({ documentId, pipeline, fields })).digest("hex");
 
 /** One escrow per (Document, Pipeline). */
 const escrowKey = (documentId: string, pipeline: string) => JSON.stringify([documentId, pipeline]);
@@ -460,7 +462,7 @@ export class JobBoard {
       documentId: doc.meta.id,
       ...terms,
       brand: doc.meta.uploader,
-      outputHash: outputHash(fields),
+      outputHash: outputHash(doc.meta.id, pipeline, fields),
     };
     const { escrowId, link } = await this.ledger.openEscrow(req);
     this.escrows.set(escrowKey(doc.meta.id, pipeline), {
@@ -565,7 +567,7 @@ export class JobBoard {
     if (problems.length) return { ok: false, error: problems.join("\n") };
     const fields = converge(d.template, [parsed.data.fields], d.text);
     try {
-      const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(fields));
+      const { xdr } = await this.ledger.prepareDelivery!(c.escrowId, outputHash(documentId, operator, fields));
       Object.assign(c, { step: "delivery", xdr, fields, ...(spans && { trace: spans.data }) });
       return { ok: true, xdr };
     } catch (e) {
@@ -627,7 +629,7 @@ export class JobBoard {
     d.delivered.set(operator, fields);
     const { bond, fee } = this.terms(operator);
     this.escrows.set(escrowKey(documentId, operator), {
-      documentId, operator, brand: d.meta.uploader, bond, fee, outputHash: outputHash(fields), pipeline: operator, escrowId: c.escrowId,
+      documentId, operator, brand: d.meta.uploader, bond, fee, outputHash: outputHash(documentId, operator, fields), pipeline: operator, escrowId: c.escrowId,
       ...(c.link && { link: c.link }),
       openedAt: this.now(),
       ...(!this.demoWindow && { startedAt: this.now() }),
@@ -1112,6 +1114,8 @@ export class JobBoard {
             documentId: d.meta.id,
             short: d.meta.supplier || d.meta.name.replace(/\.pdf$/i, "").slice(0, 12),
             balance: this.escrowView(e).bondLeft,
+            ...(e.link && { link: e.link }),
+            ...(e.settlementLink && { settlementLink: e.settlementLink }),
           })),
         };
       }),
