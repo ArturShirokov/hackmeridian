@@ -7,7 +7,7 @@ Paste this whole file into Claude Design as one prompt.
 Build **one interactive prototype of the whole app**, not separate designs. All screens below live in one project and link to each other the way the real app would: sidebar items switch screens, "Upload" leads to the live Pipeline, a Field's "Challenge" opens the Challenge form, the Arbiter's "Uphold" plays the Slash, and so on. Someone should be able to click through the whole demo story (01 → 02 → 03 → 04 → 05 → 06 → 07 → 08) without leaving the prototype.
 
 - **Desktop first, 1440 × 900.** This is a work tool used at a desk, and the demo runs on a projector. Add a Mobile switch (390 × 844) only for screens 03 and 04, as a read-only "check my Document on the go" view.
-- **A Brand / Arbiter / Operator switch** in the corner, so a viewer can jump between the three sides.
+- **A "Sign in as" list** of seeded users (Inês at Voltaris, the Arbiter, the Origyn Operator, the Baseline Operator), so a viewer can jump between the three sides. There is no role switch.
 - **One design system for every screen.** Build the shared components once (Field row, status badge, Sieve track, money chip, Stellar proof link, Document viewer, Worker chip) and reuse them.
 - **Extra states** (empty, loading, error) listed under each screen go in a small "States" menu on that screen, not as separate pages.
 - **Projector-safe.** Judges see this on a big screen from 5 metres away: the key numbers (Bond, Slash, accuracy) must read at a glance, and nothing important may be in light grey on white.
