@@ -21,11 +21,16 @@ export interface WorkerConfig {
 }
 
 // The shift. Edit the models here. Names checked on 25 Oct 2026 with `opencode models` and `pi --list-models`.
+// Four, because a Worker does at most one extraction per Document and a Document can need four: our Original and
+// Markdown extractions, the tie-break and the Baseline.
 export const defaultWorkers: WorkerConfig[] = [
   { harness: "claude", model: "sonnet" }, // claude-sonnet: Claude Code's alias for the latest Sonnet
-  { harness: "opencode", model: "opencode-go/kimi-k3" },
-  { harness: "opencode", model: "opencode-go/deepseek-v4-pro" },
+  { harness: "claude", model: "sonnet" },
   { harness: "pi", model: "opencode-go/qwen3.8-max" },
+  { harness: "pi", model: "opencode-go/qwen3.8-max" },
+  // 60-Field extractions ran past the 9-min run limit on 25 Oct; fine for Markdown/faithfulness.
+  // { harness: "opencode", model: "opencode-go/kimi-k3" },
+  // { harness: "opencode", model: "opencode-go/deepseek-v4-pro" },
 ];
 
 /** Headless command per harness. Verified on this Mac: claude 2.1.310, opencode 1.19.4, pi 0.84.4. */
