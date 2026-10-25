@@ -1,5 +1,5 @@
 // The one test seam: a Job Board with fake adapters, driven through its MCP tools (as Workers)
-// and its web API (as the Brand), all in process.
+// and its web API (as the Brand and the Arbiter), all in process.
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { JobBoard, type Job, type OperatorTerms } from "../src/board.js";
@@ -57,20 +57,53 @@ export function startBoard(
       return (await res.json()) as {
         id: string;
         template: string;
-        fields: { name: string; status: "converging" | "final" | "disagreeing"; value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean }[];
-        escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number };
+        fields: { name: string; status: "converging" | "final" | "disagreeing"; value?: unknown; unit?: string; qualifier?: string; page?: number; quote?: string; notStated?: boolean; corrected?: boolean }[];
+        escrow?: { operator: string; bond: string; fee: string; outputHash: string; status: "open" | "settled"; msLeft: number; slashes?: string[] };
       };
     },
     async page(path: string) {
       const res = await web.request(path);
       return { status: res.status, text: await res.text() };
     },
+    async challenge(docId: string, body: object) {
+      const res = await web.request(`/api/documents/${docId}/challenges`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return { status: res.status, body: (await res.json()) as { id?: string; error?: string } };
+    },
+  };
+
+  const arbiter = {
+    async challenges() {
+      const res = await web.request("/api/challenges");
+      return (await res.json()) as {
+        id: string;
+        documentId: string;
+        field: string;
+        disputed: Record<string, unknown>;
+        page: number;
+        quote: string;
+        value: unknown;
+        unit?: string;
+      }[];
+    },
+    page: () => brand.page("/arbiter"),
+    async decide(id: string, decision: "upheld" | "rejected") {
+      const res = await web.request(`/api/challenges/${id}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ decision }),
+      });
+      return { status: res.status };
+    },
   };
 
   /** Run what main.ts runs every 5 s: settle escrows whose Challenge Window has closed. */
   const tick = () => board.tick();
 
-  return { web, worker, brand, ledger, clock, tick };
+  return { web, worker, brand, arbiter, ledger, clock, tick };
 }
 
 /** A fixture PDF: one array of text lines per page. */
