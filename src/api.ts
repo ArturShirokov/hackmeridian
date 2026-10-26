@@ -255,6 +255,10 @@ export interface ApiLeaderRow {
   challengesUpheld: number;
   totalSlashed: Usdc;
   bondsLocked: Usdc;
+  /** Delivered Documents whose Bond is still locked (not settled). */
+  documentsLocked: number;
+  /** Fees paid to this Operator at settlement. */
+  feesEarned: Usdc;
   /** Scored against the hand-checked test set; only in DEMO_REPLAY mode. */
   accuracy?: { correct: number; fields: number };
   link?: string;

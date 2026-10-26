@@ -1,5 +1,6 @@
 // The app shell: Landing and the public Leaderboard when signed out, "Sign in as" a seeded user, the sidebar and routes of
 // that user's role, and the ?demo story dock.
+import { MyBonds } from "./screens/ops/common.tsx";
 import { useEffect, useState } from "react";
 import { api, usePoll, type ApiUser, type Role } from "./api.ts";
 import { ConnectAgent } from "./components/ConnectAgent.tsx";
@@ -163,6 +164,7 @@ function Sidebar({ user, active, onSwitch, onSignOut }: { user: ApiUser; active:
         <span style={{ font: "600 14px/1.3 var(--sans)" }}>{user.name}</span>
         <span style={{ font: "400 13px/1.3 var(--sans)", color: "#3D3A34" }}>{user.sub}</span>
         {role === "brand" && <Balance org={user.org} />}
+        {role === "operator" && user.operator && <MyBonds pipeline={user.operator} />}
         <button onClick={onSwitch}
           style={{ marginTop: 12, height: 28, border: "1px solid var(--ink)", background: "transparent", color: "var(--ink)", font: "600 12px/1 var(--sans)", cursor: "pointer" }}>
           Switch user

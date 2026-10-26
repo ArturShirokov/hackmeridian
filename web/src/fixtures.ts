@@ -166,11 +166,11 @@ const arbiter: ApiArbiter = { open: [challenge], decided: [], record: { decided:
 
 const leaderboard: ApiLeaderRow[] = [
   {
-    operator: "Origyn", label: "Origyn", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50",
+    operator: "Origyn", label: "Origyn", sieves: 5, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50", documentsLocked: 1, feesEarned: "0",
     accuracy: { correct: 146, fields: 150 }, link: "https://stellar.expert/explorer/testnet/contract/CAMNN6FN5RUHJJRIGWXYS7LHLJ4QBKWA3MNHWMZD4WK7MC5MRP5WEXXQ", series: [{ documentId: "doc-1", short: "Voltaris pack", balance: "50" }],
   },
   {
-    operator: "Baseline", label: "Baseline", sieves: 1, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50",
+    operator: "Baseline", label: "Baseline", sieves: 1, documents: 1, fieldsDelivered: 25, challengesUpheld: 0, totalSlashed: "0", bondsLocked: "50", documentsLocked: 1, feesEarned: "0",
     accuracy: { correct: 127, fields: 150 }, link: "https://stellar.expert/explorer/testnet/contract/CAMNN6FN5RUHJJRIGWXYS7LHLJ4QBKWA3MNHWMZD4WK7MC5MRP5WEXXQ", series: [{ documentId: "doc-1", short: "Voltaris pack", balance: "50" }],
   },
 ];

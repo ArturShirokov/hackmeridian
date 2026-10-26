@@ -23,7 +23,8 @@ export interface ViewerBox {
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
 /** Box look per kind, from the prototype's viewer lines. A notStated box with a tag is the selected one. */
 const BOX: Record<ViewerBox["kind"], { bg: string; ol: string; tagBg: string }> = {
-  selected: { bg: "#ECE5D3", ol: `2px solid ${INK}`, tagBg: INK },
+  // Thin and see-through, so the quoted words underneath stay readable.
+  selected: { bg: "rgba(236,229,211,.55)", ol: `1.5px solid ${INK}`, tagBg: INK },
   quoted: { bg: "transparent", ol: "1px dashed #8E877A", tagBg: INK },
   notStated: { bg: "var(--hatch)", ol: "1px solid #B9862A", tagBg: AMBER },
   challenged: { bg: "transparent", ol: `2px solid ${RED}`, tagBg: RED },
@@ -200,6 +201,9 @@ export function lineOf(span: HTMLElement): string {
   return spans.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left).map((s) => s.textContent ?? "").join(" ").replace(/\s+/g, " ").trim();
 }
 
+/** A tag's height: less room than this above a box puts the tag beside it. */
+const TAG_H = 18;
+
 function Box({ box, w, h, picking, onClick }: { box: ViewerBox; w: number; h: number; picking: boolean; onClick(): void }) {
   const s = BOX[box.kind];
   const ol = box.kind === "notStated" && box.tag ? `2px solid ${AMBER}` : s.ol;
@@ -212,8 +216,13 @@ function Box({ box, w, h, picking, onClick }: { box: ViewerBox; w: number; h: nu
             outline: ol, outlineOffset: -1, cursor: picking ? "inherit" : "pointer", pointerEvents: picking ? "none" : "auto",
           }}>
           <div className="om-motion" style={{ position: "absolute", inset: 0, background: s.bg, mixBlendMode: "multiply", transition: "background .25s" }} />
+          {/* The tag sits outside the box, above it (beside it at the top of the page), never over the quoted words. */}
           {box.tag && i === 0 && (
-            <span style={{ position: "absolute", right: 8, top: -9, background: s.tagBg, color: "#FFFFFF", font: "600 10px/1 var(--sans)", letterSpacing: ".06em", textTransform: "uppercase", padding: "3px 6px", whiteSpace: "nowrap" }}>
+            <span data-tag title={box.tag} style={{
+              position: "absolute", zIndex: 2, pointerEvents: "none", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis",
+              ...(r.y * h - PAD_Y < TAG_H ? { left: "calc(100% + 4px)", top: 0 } : { right: 0, bottom: "calc(100% + 2px)" }),
+              background: s.tagBg, color: "#FFFFFF", font: "600 10px/1 var(--sans)", letterSpacing: ".06em", textTransform: "uppercase", padding: "3px 6px", whiteSpace: "nowrap",
+            }}>
               {box.tag}
             </span>
           )}

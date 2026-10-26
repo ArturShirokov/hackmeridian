@@ -9,6 +9,7 @@ import { ProofLink } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, tail, th, useNow } from "./common.tsx";
 import { ago, evidenceBoxes } from "./logic.ts";
+import { arbiterCopy, possessive } from "../../money.ts";
 
 const INK = "#141414", RED = "#A3221B";
 type Decision = "upheld" | "rejected";
@@ -121,6 +122,7 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
 
   const upheld = status === "upheld", landed = upheld && phase === 3;
   const settled = escrow?.status === "settled";
+  const copy = arbiterCopy(c);
   const fileUrl = doc?.fileUrl ?? `/documents/${c.documentId}/file`;
   return (
     <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(0,5fr) minmax(0,4fr) minmax(320px,3fr)" }}>
@@ -129,10 +131,10 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
       </div>
 
       <div style={{ minHeight: 0, overflow: "auto", padding: "22px 26px", display: "flex", flexDirection: "column", gap: 20, borderRight: "1px solid var(--rule)" }}>
-        <div style={{ font: "600 18px/1.2 var(--sans)" }}>{c.fieldLabel} <span style={{ fontWeight: 400, color: "#2A2723" }}>· {c.brand}</span></div>
+        <div data-testid="challenge-title" style={{ font: "600 18px/1.3 var(--sans)" }}>{copy.title}</div>
         {/* Neutral until the decision: no colour hints at a side. Then the losing value turns red. */}
-        <ValueBox title={`Delivered · ${c.operatorLabel}`} value={c.delivered.display} quote={c.delivered.evidence} onPage={setPage} {...tone(status, "rejected")} />
-        <ValueBox title={`Challenged · ${c.brand}`} value={c.claim.display} quote={c.claim.evidence} onPage={setPage} {...tone(status, "upheld")} />
+        <ValueBox title={copy.delivered} value={c.delivered.display} quote={c.delivered.evidence} onPage={setPage} {...tone(status, "rejected")} />
+        <ValueBox title={copy.claim} value={c.claim.display} quote={c.claim.evidence} onPage={setPage} {...tone(status, "upheld")} />
         <div style={{ borderTop: `1px solid ${INK}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 6 }}>
           <span style={{ ...label, fontSize: 11 }}>Template rule for this Field</span>
           <span style={{ font: "500 15px/1.5 var(--mono)" }}>{c.rule}</span>
@@ -143,7 +145,7 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
         <span style={{ font: "600 18px/1 var(--sans)" }}>Decision</span>
         <div style={{ position: "relative", flex: "none", height: 270, border: "1px solid var(--rule)", padding: 14, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div style={{ border: `1px solid ${landed ? RED : "var(--money)"}`, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 5, color: "var(--money)", background: "var(--surface)" }}>
-            <span style={label}>Bond · {c.operatorLabel}</span>
+            <span style={label}>{possessive(c.operatorLabel)} Bond</span>
             <span style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
               <b style={{ font: "600 26px/1 var(--mono)" }}>{usdc(bond)}</b>
               <span style={{ font: "500 12px/1 var(--mono)" }}>USDC · {settled ? "released" : landed || (escrow?.upheld ?? 0) > 0 ? "slashed" : "locked"}</span>
@@ -165,9 +167,14 @@ function Evidence({ c, status, onDecided }: { c: ApiChallenge; status: ApiChalle
           <>
             <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (optional)" rows={3} aria-label="Note"
               style={{ resize: "none", border: "1px solid #8E877A", background: "#FFFFFF", padding: "10px 12px", font: "400 14px/1.45 var(--sans)", color: INK, outline: "none" }} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <button className="om-decide uphold" disabled={busy} onClick={() => decide("upheld")}>Uphold</button>
-              <button className="om-decide reject" disabled={busy} onClick={() => decide("rejected")}>Reject</button>
+            {/* Neutral: the same ink under both, so nothing hints which side is right before the decision. */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
+              {([["upheld", "uphold", "Uphold", copy.uphold], ["rejected", "reject", "Reject", copy.reject]] as const).map(([d, cls, name, what]) => (
+                <span key={d} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <button className={`om-decide ${cls}`} disabled={busy} onClick={() => decide(d)} aria-describedby={`why-${d}`}>{name}</button>
+                  <span id={`why-${d}`} style={{ font: "400 13px/1.4 var(--sans)", color: INK }}>{what}</span>
+                </span>
+              ))}
             </div>
             {err && <span role="alert" style={{ font: "500 14px/1.4 var(--sans)", color: RED }}>{err}</span>}
           </>

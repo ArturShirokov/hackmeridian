@@ -2,15 +2,17 @@
 import { useEffect, useState } from "react";
 import type { ApiDocument } from "../../api.ts";
 import { Link } from "../../router.tsx";
-import { clock, usdc } from "../../format.ts";
+import { clock } from "../../format.ts";
 import { FieldRow } from "../../components/FieldRow.tsx";
 import { SieveTrack } from "../../components/SieveTrack.tsx";
 import { Countdown, ProofLink, Spinner, StatusBadge, TieBreakTag } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, templateLabel, useDocument } from "./common.tsx";
-import { pipelineRows, pipelineState, windowLabel, withShown } from "./derive.ts";
+import { pipelineRows, pipelineState, withShown } from "./derive.ts";
+import { DocumentViewer } from "../../components/DocumentViewer.tsx";
+import { bondLine, possessive } from "../../money.ts";
 
-const cols = "260px minmax(0,1fr) 170px 70px 110px";
+const cols = "minmax(0,1.5fr) minmax(0,1fr) 140px 44px 90px";
 
 /** Upload to the last delivery (or now): "00:32", hours only when needed. */
 function useElapsed(d: ApiDocument, offset: number) {
@@ -32,13 +34,14 @@ export function BrandPipeline({ id }: { id: string }) {
   if (!d) return <Loading error={error} />;
   return (
     <>
-      <PipelineDesktop d={d} offset={offset} windowMs={config?.challengeWindowMs} note={config && windowLabel(config)} />
+      <PipelineDesktop d={d} offset={offset} windowMs={config?.challengeWindowMs} brand={config?.brand.name ?? "the Brand"} />
       <MobileView d={d} view={d.views[0]!} live config={config} offset={offset} />
     </>
   );
 }
 
-function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset: number; windowMs?: number; note?: string }) {
+function PipelineDesktop({ d, offset, windowMs, brand }: { d: ApiDocument; offset: number; windowMs?: number; brand: string }) {
+  const [page, setPage] = useState(1);
   const ours = d.views[0]!;
   const state = pipelineState(d);
   const { rows, counts } = pipelineRows(ours);
@@ -63,6 +66,12 @@ function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset
           <span style={{ font: "500 22px/1 var(--mono)" }}>{elapsed}</span>
         </div>
       </div>
+      {/* The original PDF beside the Sieves, so the Brand sees the Document before its Fields arrive (values stay withheld). */}
+      <div style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "minmax(340px,1fr) minmax(0,2fr)" }}>
+      <div data-testid="pipeline-pdf" style={{ minHeight: 0, minWidth: 0, display: "flex", overflow: "clip", contain: "paint", borderRight: "1px solid var(--ink)" }}>
+        <DocumentViewer pdfUrl={d.fileUrl} page={page} onPage={setPage} boxes={[]} onBoxClick={noop} thumbnails={false} caption={state.delivered ? "The original Document" : "The original Document · Fields arrive when every Operator has delivered"} />
+      </div>
+      <div style={{ minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }}>
       <div style={{ flex: "none", maxHeight: "56%", overflow: "auto", padding: "14px 32px 16px", borderBottom: "1px solid var(--rule)", background: "var(--band)", display: "flex", flexDirection: "column", gap: 12 }}>
         {state.banner && (
           <div role="status" style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", border: `1px solid ${state.banner.kind === "rerun" ? "#A3221B" : "#8E877A"}`, background: "var(--surface)", font: "500 14px/1.3 var(--sans)", color: state.banner.kind === "rerun" ? "#A3221B" : "var(--ink)" }}>
@@ -93,6 +102,8 @@ function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset
               </Link>
             : <FieldRow key={field.name} dense field={withShown(field)} selected={false} expanded={false} tieBreak={field.tieBreak} canChallenge={false} onSelect={noop} onToggle={noop} onChallenge={noop} />)}
       </div>
+      </div>
+      </div>
       <div style={{ flex: "none", borderTop: "1px solid var(--ink)", padding: "0 32px", height: 76, display: "flex", alignItems: "center", gap: 28, background: "var(--surface)" }}>
         {!state.delivered ? (
           <div style={{ display: "flex", alignItems: "baseline", gap: 28, font: "500 22px/1 var(--mono)" }}>
@@ -105,11 +116,10 @@ function PipelineDesktop({ d, offset, windowMs, note }: { d: ApiDocument; offset
         ) : (
           <div className="om-motion" style={{ display: "flex", alignItems: "center", gap: 18, animation: "om-in .4s ease-out", flex: 1, minWidth: 0 }}>
             <span style={{ font: "600 20px/1 var(--sans)", whiteSpace: "nowrap" }}>Delivered in {elapsed}.</span>
-            {e && <span style={{ font: "500 17px/1 var(--mono)", color: "var(--money)", whiteSpace: "nowrap" }}>Bond {usdc(e.bond)} USDC {e.status === "settled" ? "released" : "locked"}.</span>}
+            {e && <span style={{ font: "500 15px/1 var(--mono)", color: "var(--money)", whiteSpace: "nowrap" }}>{possessive(ours.label)} guarantee: {bondLine(ours.label, e, brand).text}</span>}
             {e && windowMs !== undefined && (
               <span style={{ font: "500 17px/1 var(--mono)", display: "flex", gap: 10, alignItems: "baseline", whiteSpace: "nowrap" }}>
-                Challenge Window <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
-                {note && e.status !== "settled" && <span style={{ font: "500 12px/1.25 var(--sans)", color: "#2A2723", whiteSpace: "normal", maxWidth: 110, alignSelf: "center" }}>{note}</span>}
+                Challenge window · <Countdown bare closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={windowMs} serverOffsetMs={offset} settled={e.status === "settled"} />
               </span>
             )}
             {e && <ProofLink href={e.link} hash={e.outputHash} />}

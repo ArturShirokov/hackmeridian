@@ -6,10 +6,11 @@ import { shortHash, splitMark, usdc } from "../../format.ts";
 import { FieldNo, FieldRow, FieldTags, pageOf } from "../../components/FieldRow.tsx";
 import { DocumentViewer } from "../../components/DocumentViewer.tsx";
 import { spanTree } from "../../components/SieveTrack.tsx";
-import { clamp2, Countdown, Modal, MoneyChip, ProofLink, SectionLabel, SidePanel, StatusBadge } from "../../components/ui.tsx";
+import { clamp2, Countdown, Modal, ProofLink, SectionLabel, SidePanel, StatusBadge } from "../../components/ui.tsx";
 import { useServerClock } from "../../screens.tsx";
 import { Loading, MobileView, useDocument } from "./common.tsx";
-import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, shown, windowLabel, withShown } from "./derive.ts";
+import { boxes, compare, parseClaim, pipelineState, reviewGroups, settledText, shown, withShown } from "./derive.ts";
+import { bondLine, challengeConsequence, feeLine, howMoneyWorks, possessive } from "../../money.ts";
 import { JsonView, MarkdownView, SourceMarkdown, TraceView, VIEWS, type View } from "./views.tsx";
 
 const INK = "#141414", RED = "#A3221B", AMBER = "#6B4400";
@@ -132,13 +133,17 @@ export function ReviewView({ d, config, offset, template, file }: {
   const panelOpen = windowOpen(panelView, offset);
   const picking = !!panel && !panel.filed && panelOpen;
 
-  const bond = (v: ApiPipelineView) => {
+  /** Per Operator, in plain words: what the Brand pays it, and the Bond it locked as its guarantee. */
+  const money = (v: ApiPipelineView) => {
     const x = v.escrow!;
-    const slashed = Number(x.bond) - Number(x.bondLeft);
+    const b = bondLine(v.label, x, brand);
     return (
-      <MoneyChip key={v.pipeline} tone="bond" label={`Bond · ${v.label}`} amount={x.bondLeft}
-        state={x.status === "settled" ? "released" : x.upheld ? "slashed" : "locked"}
-        split={x.upheld ? `${usdc(String(slashed))} USDC slashed to ${brand}` : undefined} />
+      <div key={v.pipeline} data-testid="operator-money" style={{ display: "flex", flexDirection: "column", gap: 5, border: `1px solid ${x.upheld ? RED : "var(--money)"}`, padding: "7px 11px", color: "var(--money)", background: "var(--surface)", font: "500 13px/1.25 var(--mono)", whiteSpace: "nowrap" }}>
+        <span>{feeLine(v.label, x.fee, x.status === "settled")}</span>
+        <span><b style={{ fontWeight: 600 }}>{b.head}:</b> {b.text}</span>
+        {b.note && <span style={{ font: "500 11.5px/1 var(--mono)", color: RED }}>{b.note}</span>}
+        <ProofLink href={x.link} hash="" />
+      </div>
     );
   };
   const upheldNote = (v: ApiPipelineView): ReactNode => {
@@ -158,9 +163,8 @@ export function ReviewView({ d, config, offset, template, file }: {
           <div title={d.name} style={{ font: "600 15px/1.25 var(--sans)", overflowWrap: "anywhere" }}>{d.name.replace(/\.pdf$/i, "")}</div>
           <div style={{ marginTop: 3, font: "400 13px/1.2 var(--sans)", color: "#3D3A34" }}>{d.supplier || "—"} · {template?.label ?? d.template} passport</div>
         </div>
-        {(isCompare ? d.views : [view]).filter((v) => v.escrow).map(bond)}
-        {e && <MoneyChip tone="fee" label="Fee" amount={e.fee} state={settled ? "paid" : "held"} />}
-        {e && config && <Countdown closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} note={windowLabel(config)} />}
+        {(isCompare ? d.views : [view]).filter((v) => v.escrow).map(money)}
+        {e && config && <Countdown closesAt={e.closesAt} msLeft={e.msLeft} paused={e.paused} windowMs={config.challengeWindowMs} serverOffsetMs={offset} settled={settled} />}
         {e && (
           <div style={{ display: "flex", flexDirection: "column", gap: 6, whiteSpace: "nowrap" }} data-testid="output-hash">
             <SectionLabel size={10.5}>Output hash</SectionLabel>
@@ -176,6 +180,14 @@ export function ReviewView({ d, config, offset, template, file }: {
         {!e && <span style={{ font: "500 13px/1.3 var(--mono)", color: "#3D3A34" }}>{view.label} is still working on this Document.</span>}
         <button className="om-btn primary md" style={{ marginLeft: "auto" }} disabled={!e} onClick={() => setModal({ kind: "export" })}>Export to passport</button>
       </div>
+      {config && (
+        <details data-testid="how-money" style={{ flex: "none", padding: "8px 24px", borderBottom: "1px solid var(--rule)", background: "var(--band)", font: "400 14px/1.5 var(--sans)" }}>
+          <summary style={{ cursor: "pointer", font: "600 13px/1.4 var(--sans)" }}>How the money works</summary>
+          <div style={{ margin: "6px 0 4px", display: "flex", flexDirection: "column", gap: 2, maxWidth: 980 }}>
+            {howMoneyWorks(config).map((t) => <p key={t} style={{ margin: 0 }}>{t}</p>)}
+          </div>
+        </details>
+      )}
       {e && settled && (
         <div style={{ flex: "none", display: "flex", alignItems: "center", gap: 18, padding: "12px 24px", borderBottom: "1px solid var(--settled-ink)", background: "var(--settled-bg)", color: "var(--settled-ink)", font: "600 15px/1.3 var(--sans)" }}>
           <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--settled-ink)", color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", font: "700 11px/1 var(--mono)" }}>✓</span>
@@ -259,11 +271,11 @@ export function ReviewView({ d, config, offset, template, file }: {
               </>
             )}
           </div>
-          <SidePanel open={!!panel} onClose={() => setPanel(undefined)} title="Challenge a Field">
+          <SidePanel open={!!panel} onClose={() => setPanel(undefined)} title={panelView ? `Challenge ${possessive(panelView.label)} answer` : "Challenge a Field"}>
             {panel && panelView && panelField && ("evidence" in panelField || "quotes" in panelField) && (
               <ChallengePanel key={`${panel.pipeline}/${panel.field}`} operator={panelView.label} field={panelField}
                 templateField={template?.fields.find((f) => f.name === panel.field)} closed={panelView.escrow?.status === "settled" ? "settled" : panelOpen ? undefined : "closed"}
-                slash={panelView.escrow ? usdc(String(Number(panelView.escrow.bond) / 10)) : undefined} deposit={config?.challengeDeposit} pick={panel.pick} onClearPick={() => setPanel({ ...panel, pick: undefined })}
+                consequence={panelView.escrow && config ? challengeConsequence({ operator: panelView.label, brand, bond: panelView.escrow.bond, arbiterFee: config.arbiterFee, deposit: config.challengeDeposit }) : undefined} pick={panel.pick} onClearPick={() => setPanel({ ...panel, pick: undefined })}
                 file={(b) => file({ pipeline: panel.pipeline, field: panel.field, ...b }).then(() => setPanel((p) => p && { ...p, filed: true }))} onClose={() => setPanel(undefined)} />
             )}
           </SidePanel>
@@ -392,24 +404,27 @@ function SupplierRequest({ text, onClose }: { text: string; onClose(): void }) {
 }
 
 /** The Challenge form: value, the quote picked on the Document viewer, and the server's answer inline. */
-export function ChallengePanel({ operator, field, templateField, closed, slash, deposit, pick, onClearPick, file, onClose }: {
-  operator: string; field: Final | NotStated; templateField?: TemplateField; closed?: "settled" | "closed"; slash?: string; deposit?: string;
+export function ChallengePanel({ operator, field, templateField, closed, consequence, pick, onClearPick, file, onClose }: {
+  operator: string; field: Final | NotStated; templateField?: TemplateField; closed?: "settled" | "closed";
+  /** challengeConsequence(): what Uphold and Reject do, in live numbers. */
+  consequence?: string;
   pick?: { page: number; quote: string }; onClearPick(): void;
   file(b: Omit<ChallengeBody, "pipeline" | "field">): Promise<unknown>; onClose(): void;
 }) {
+  const final = "evidence" in field ? field : undefined;
   const [value, setValue] = useState("");
-  const [qualifier, setQualifier] = useState("");
+  // Preselected: the qualifier the Operator delivered, else the Template's first.
+  const [qualifier, setQualifier] = useState(() => (final?.qualifier && templateField?.qualifiers?.includes(final.qualifier as never) ? final.qualifier : templateField?.qualifiers?.[0]) ?? "");
   const [err, setErr] = useState<string>();
   const [busy, setBusy] = useState(false);
   const [filed, setFiled] = useState<{ value: string; page: number }>();
-  const final = "evidence" in field ? field : undefined;
-  const q = final && splitMark(final.evidence.quote, final.evidence.mark);
   const tf = templateField ?? (final ? { type: typeof final.value === "number" ? "quantity" : typeof final.value === "object" ? "composition" : "text", unit: final.unit, label: field.label } : { type: "text", label: field.label });
 
   const submit = async () => {
     if (!pick) return setErr("Pick the line on the Document that states the value first.");
-    const claim = parseClaim(value, tf);
-    if ("error" in claim) return setErr(claim.error);
+    const parsed = parseClaim(value, tf);
+    if ("error" in parsed) return setErr(parsed.error);
+    const { converted: _, ...claim } = parsed;
     setBusy(true);
     try {
       await file({ page: pick.page, quote: pick.quote, ...claim, ...(qualifier && { qualifier }) });
@@ -426,27 +441,25 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
     }
   };
 
+  const typed = parseClaim(value, tf);
+  const step = { font: "600 15px/1.3 var(--sans)" } as const;
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 22 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <SectionLabel>{operator} delivered</SectionLabel>
-          <span style={{ font: "600 17px/1.2 var(--sans)" }}>{field.label}</span>
-          <span style={{ font: "500 26px/1.1 var(--mono)", overflowWrap: "anywhere", color: final ? INK : AMBER }}>{shown(field)}</span>
-          {final && q ? (
-            <div style={{ background: "var(--band)", padding: "10px 12px", font: "400 14px/1.5 var(--doc)", display: "grid", gridTemplateColumns: "40px minmax(0,1fr)", gap: 8 }}>
-              <span style={{ font: "500 12px/1.6 var(--mono)" }}>p. {final.evidence.page}</span>
-              <span>“{q.pre}{q.m && <mark style={{ background: "var(--mark)", fontWeight: 700, padding: "0 2px" }}>{q.m}</mark>}{q.post}”</span>
-            </div>
-          ) : (
-            <span style={{ font: "400 14px/1.5 var(--sans)", color: "#2A2723" }}>If the Document does state it, pick the line that says so and give the value.</span>
-          )}
+      <div style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
+        {!filed && !closed && (
+          <p data-testid="challenge-intro" style={{ margin: 0, font: "400 15px/1.55 var(--sans)" }}>
+            You're about to challenge {possessive(operator)} answer for <b style={{ fontWeight: 600 }}>{field.label}</b>. That means you disagree with what {operator} delivered.
+            Click the line on the Document that shows the right value, type that value, and your Challenge goes to the Arbiter, who decides from the Document alone.
+          </p>
+        )}
+        <div data-testid="operator-said" style={{ font: "400 14px/1.4 var(--sans)", color: "#2A2723" }}>
+          {operator} said: <b style={{ font: "600 15px/1.2 var(--mono)", color: final ? INK : AMBER, overflowWrap: "anywhere" }}>{shown(field)}</b>
         </div>
         {filed ? (
           <div className="om-motion" style={{ border: `1.5px solid ${RED}`, padding: 16, display: "flex", flexDirection: "column", gap: 10, animation: "om-in .3s ease-out" }}>
             <span style={{ font: "600 17px/1.2 var(--sans)", color: RED }}>Challenge filed</span>
             <span style={{ font: "400 15px/1.5 var(--sans)" }}>
-              The Arbiter compares the Document with both values. The Field is marked Challenged until the decision. Your challenged value: <b style={{ font: "600 15px var(--mono)" }}>{filed.value}</b>, p. {filed.page}.
+              It is with the Arbiter now. Your value: <b style={{ font: "600 15px var(--mono)" }}>{filed.value}</b>, p. {filed.page}.
             </span>
             <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
               <button className="om-btn primary" style={{ height: 42, padding: "0 16px" }} onClick={onClose}>Back to Document</button>
@@ -454,55 +467,50 @@ export function ChallengePanel({ operator, field, templateField, closed, slash, 
           </div>
         ) : closed ? (
           <div style={{ border: `1px solid ${INK}`, padding: 16, font: "400 15px/1.5 var(--sans)" }}>
-            <b style={{ fontWeight: 600 }}>The Challenge Window has closed.</b>{" "}
-            {closed === "settled"
-              ? "This Document has settled, so its Fields can no longer be Challenged. The Bond has been released."
-              : "Its Fields can no longer be Challenged. The Bond settles once the Arbiter has decided the open Challenges."}
+            <b style={{ fontWeight: 600 }}>The Challenge window has closed.</b>{" "}
+            {closed === "settled" ? "This Document has settled." : "It settles once the Arbiter has decided the open Challenges."}
           </div>
         ) : (
           <>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <span style={{ font: "600 17px/1.2 var(--sans)" }}>What does the Document say?</span>
-              <label htmlFor="cv" style={{ font: "500 13px/1 var(--sans)", color: "#2A2723" }}>Value</label>
-              <input id="cv" value={value} onChange={(e) => setValue(e.target.value)} placeholder={final ? `e.g. ${shown({ ...final, qualifier: undefined })}` : `e.g. the value on the page${tf.unit ? `, in ${tf.unit}` : ""}`}
-                style={{ height: 48, padding: "0 14px", border: `1px solid ${INK}`, background: "#FFFFFF", font: "500 18px/1 var(--mono)", color: INK, outline: "none" }} />
-              {templateField?.qualifiers && (
-                <>
-                  <label htmlFor="cq" style={{ font: "500 13px/1 var(--sans)", color: "#2A2723" }}>Qualifier</label>
-                  <select id="cq" value={qualifier} onChange={(e) => setQualifier(e.target.value)}
-                    style={{ height: 44, padding: "0 10px", border: `1px solid ${INK}`, background: "#FFFFFF", font: "500 15px/1 var(--mono)", color: INK, borderRadius: 0 }}>
-                    <option value="">none</option>
-                    {templateField.qualifiers.map((x) => <option key={x} value={x}>{x}</option>)}
-                  </select>
-                </>
-              )}
-              <span style={{ font: "500 13px/1 var(--sans)", color: "#2A2723", marginTop: 4 }}>Page and quote</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <span style={step}>1. Click the line on the Document</span>
               {pick ? (
                 <div className="om-motion" style={{ border: `1.5px dashed ${INK}`, padding: "10px 12px", display: "grid", gridTemplateColumns: "40px minmax(0,1fr) auto", gap: 8, alignItems: "start", font: "400 14px/1.5 var(--doc)", animation: "om-in .2s ease-out" }}>
                   <span style={{ font: "500 12px/1.6 var(--mono)" }}>p. {pick.page}</span><span>“{pick.quote}”</span>
                   <button onClick={onClearPick} style={{ border: 0, background: "transparent", font: "500 12px/1.5 var(--sans)", textDecoration: "underline", cursor: "pointer" }}>Change</button>
                 </div>
               ) : (
-                <div style={{ border: "1.5px dashed #8E877A", padding: 14, font: "400 14px/1.45 var(--sans)", color: "#2A2723", display: "flex", gap: 10 }}>
-                  <span style={{ font: "600 14px/1.45 var(--mono)" }}>←</span>Click the region on the Document that states the value. The quote fills in automatically.
+                <div style={{ border: "1.5px dashed #8E877A", padding: 12, font: "400 14px/1.45 var(--sans)", color: "#2A2723", display: "flex", gap: 10 }}>
+                  <span style={{ font: "600 14px/1.45 var(--mono)" }}>←</span>Click the region on the Document that states the value. The page and quote fill in.
                 </div>
               )}
-              {err && <div role="alert" style={{ border: `1.5px solid ${RED}`, padding: "10px 12px", font: "500 14px/1.45 var(--sans)", color: RED }}>{err}</div>}
             </div>
-            <p style={{ margin: 0, font: "400 15px/1.55 var(--sans)", color: "#2A2723" }}>
-              The Arbiter compares the Document with both values. If you're right, {slash && <span style={{ fontFamily: "var(--mono)", color: "var(--money)", fontWeight: 600 }}>{slash} USDC</span>} of the Bond is paid to you, and the corrected value replaces the old one.
-            </p>
-            {deposit && (
-              <p style={{ margin: 0, font: "400 14px/1.45 var(--sans)", color: "#2A2723" }}>
-                Filing locks a Challenge Deposit of <b style={{ fontFamily: "var(--mono)" }}>{usdc(deposit)} USDC</b>.
-                It comes back if the Arbiter upholds the Challenge, and pays the Arbiter if it is rejected.
-              </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <label htmlFor="cv" style={step}>2. What the Document says (the correct value)</label>
+              <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <input id="cv" value={value} onChange={(e) => setValue(e.target.value)} placeholder="as printed on the page"
+                  style={{ flex: 1, minWidth: 0, height: 48, padding: "0 14px", border: `1px solid ${INK}`, background: "#FFFFFF", font: "500 18px/1 var(--mono)", color: INK, outline: "none" }} />
+                {tf.unit && <span style={{ font: "500 15px/1 var(--mono)", whiteSpace: "nowrap" }}>in {tf.unit}</span>}
+              </span>
+              {"converted" in typed && typed.converted && <span data-testid="converted" style={{ font: "500 13px/1.3 var(--mono)", color: "#2A2723" }}>{typed.converted}</span>}
+            </div>
+            {templateField?.qualifiers && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <label htmlFor="cq" style={step}>3. Qualifier</label>
+                <select id="cq" value={qualifier} onChange={(e) => setQualifier(e.target.value)}
+                  style={{ height: 44, padding: "0 10px", border: `1px solid ${INK}`, background: "#FFFFFF", font: "500 15px/1 var(--mono)", color: INK, borderRadius: 0 }}>
+                  <option value="">none</option>
+                  {templateField.qualifiers.map((x) => <option key={x} value={x}>{x}</option>)}
+                </select>
+              </div>
             )}
+            {err && <div role="alert" style={{ border: `1.5px solid ${RED}`, padding: "10px 12px", font: "500 14px/1.45 var(--sans)", color: RED }}>{err}</div>}
           </>
         )}
       </div>
       {!filed && !closed && (
-        <div style={{ flex: "none", padding: "16px 22px", borderTop: `1px solid ${INK}` }}>
+        <div style={{ flex: "none", padding: "12px 22px 16px", borderTop: `1px solid ${INK}`, display: "flex", flexDirection: "column", gap: 10 }}>
+          {consequence && <span data-testid="consequence" style={{ font: "400 12.5px/1.45 var(--sans)", color: "#2A2723" }}>{consequence}</span>}
           <button className="om-btn danger" disabled={busy} onClick={submit} style={{ width: "100%", height: 54, fontSize: 17 }}>File Challenge</button>
         </div>
       )}

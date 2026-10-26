@@ -55,6 +55,16 @@ test("a typed Challenge value splits into number and unit, falling back to the T
   expect(parseClaim("  ", cap)).toEqual({ error: "Enter the value the Document states." });
 });
 
+test("a value typed in the unit as printed converts to the Template's unit, and says so", () => {
+  const r = { type: "quantity", unit: "ohm", label: "R" } as const;
+  expect(parseClaim("35 mOhm", r)).toEqual({ value: 0.035, unit: "ohm", converted: "35 mOhm = 0.035 ohm" });
+  expect(parseClaim("35 mΩ", r)).toEqual({ value: 0.035, unit: "ohm", converted: "35 mΩ = 0.035 ohm" });
+  expect(parseClaim("2.5 kWh", { type: "quantity", unit: "Wh", label: "E" })).toEqual({ value: 2500, unit: "Wh", converted: "2.5 kWh = 2500 Wh" });
+  expect(parseClaim("35 Ω", r)).toEqual({ value: 35, unit: "ohm" });
+  // A unit it does not know goes to the server as typed.
+  expect(parseClaim("3 C", { type: "quantity", unit: "A/Ah", label: "Rate" })).toEqual({ value: 3, unit: "C" });
+});
+
 test("a typed composition reads either way round", () => {
   const comp = { type: "composition", unit: "%", label: "Fibre composition" } as const;
   expect(parseClaim("55 % linen · 45 % organic cotton", comp)).toEqual({ value: { linen: 55, "organic cotton": 45 }, unit: "%" });
@@ -66,7 +76,7 @@ test("a text Field takes the words as typed", () => {
   expect(parseClaim(" Komorniki, Poland ", { type: "text", label: "Place" })).toEqual({ value: "Komorniki, Poland" });
 });
 
-import { settledText, suggestions, windowLabel, windowLength } from "../src/screens/brand/derive.ts";
+import { settledText, suggestions, windowLength } from "../src/screens/brand/derive.ts";
 
 test("Supplier suggestions come from past uploads, with a count, filtered by what is typed", () => {
   const docs = [{ supplier: "Hunan Cellworks" }, { supplier: "Hunan Cellworks" }, { supplier: "Fiação do Ave" }, { supplier: "" }];
@@ -78,8 +88,6 @@ test("Supplier suggestions come from past uploads, with a count, filtered by wha
 test("the Challenge Window reads in hours, or minutes when short", () => {
   expect(windowLength(48 * 3600_000)).toBe("48 h");
   expect(windowLength(3 * 60_000)).toBe("3 min");
-  expect(windowLabel({ challengeWindowMs: 3 * 60_000, demoWindow: true })).toBe("3 min demo · 48 h live");
-  expect(windowLabel({ challengeWindowMs: 48 * 3600_000 })).toBe("48 h");
 });
 
 test("the settled banner names the Slash when one was upheld", () => {

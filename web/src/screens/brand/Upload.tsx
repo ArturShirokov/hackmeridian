@@ -4,7 +4,8 @@ import { api, usePoll, type ApiFailure } from "../../api.ts";
 import { navigate } from "../../router.tsx";
 import { usdc } from "../../format.ts";
 import { useServerClock } from "../../screens.tsx";
-import { suggestions, windowLabel } from "./derive.ts";
+import { suggestions, windowLength } from "./derive.ts";
+import { feeLine, possessive } from "../../money.ts";
 
 const INK = "#141414", RED = "#A3221B";
 type Phase = "idle" | "wrong" | "failed" | "uploading" | "stored";
@@ -50,7 +51,6 @@ export function BrandUpload() {
   const onDrop = (e: DragEvent) => { e.preventDefault(); setDrag(false); choose(e.dataTransfer.files?.[0]); };
 
   const t = templates?.find((x) => x.name === tpl);
-  const terms = config?.operators[0];
   const sugg = suggestions(docs ?? [], supplier);
   const zoneBd = drag ? INK : phase === "wrong" || phase === "failed" ? RED : "#8E877A";
   const ext = file?.name.match(/\.[^.]+$/)?.[0]?.toLowerCase() ?? "file of another type";
@@ -176,9 +176,15 @@ export function BrandUpload() {
               </div>
             ))}
           </div>
-          {terms && config && (
-            <div style={{ padding: "16px 20px", borderTop: "1px solid var(--rule)", background: "var(--band)", font: "500 15px/1.6 var(--mono)", color: INK }}>
-              Fee <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.fee)} USDC</span> · backed by a <span style={{ color: "var(--money)", fontWeight: 600 }}>{usdc(terms.bond)} USDC</span> Bond · Challenge Window {windowLabel(config)}
+          {config && (
+            <div data-testid="terms" style={{ padding: "16px 20px", borderTop: "1px solid var(--rule)", background: "var(--band)", font: "500 14px/1.5 var(--mono)", color: INK, display: "flex", flexDirection: "column", gap: 10 }}>
+              {config.operators.map((o) => (
+                <div key={o.pipeline} style={{ display: "flex", flexDirection: "column", color: "var(--money)" }}>
+                  <span>{feeLine(o.label, o.fee)}</span>
+                  <span>{possessive(o.label)} guarantee: {usdc(o.bond)} USDC Bond · locked on delivery</span>
+                </div>
+              ))}
+              <span>Challenge window · {windowLength(config.challengeWindowMs)}{config.demoWindow ? ", starts when you open the Document" : ""}</span>
             </div>
           )}
           <div style={{ padding: 20 }}>
