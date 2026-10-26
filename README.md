@@ -65,7 +65,7 @@ few minutes before, then upload: they pick the Document up within a second.
 Pipelines). Pipeline results, Challenges and the leaderboard are in memory and start again on a restart; escrows
 already on Stellar stay there.
 
-**Deploy:** `./deploy/deploy.sh` from a laptop with `ssh hetzner` access. It pulls `spec-1-integration` on the VPS,
+**Deploy:** `./deploy/deploy.sh` from a laptop with `ssh hetzner` access. It pulls `main` on the VPS,
 runs `npm ci` and the build on a private Node 24, reloads the PM2 app `doc2dpp` (port 3400) and checks
 `/api/health`. The first run also creates `/etc/doc2dpp/env` (mode 600) from the local `.env`, the nginx site and
 its certificate. Files: [`deploy/`](deploy/).

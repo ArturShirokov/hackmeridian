@@ -4,7 +4,7 @@
 # It only ever touches /opt/doc2dpp, /etc/doc2dpp, the doc2dpp nginx site and the doc2dpp PM2 app.
 set -euo pipefail
 HOST=${DEPLOY_HOST:-hetzner}
-BRANCH=${1:-spec-1-integration}
+BRANCH=${1:-main}
 DOMAIN=doc2dpp.wisecraft.dev
 NODE_VERSION=v24.10.0
 cd "$(dirname "$0")/.."
