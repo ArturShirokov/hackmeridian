@@ -1,6 +1,22 @@
+<div align="center">
+
 # doc2dpp
 
-Supplier documents in, passport data out, with money behind every Field.
+**Supplier documents in, passport data out, with money behind every Field.**
+
+[![Stellar testnet](https://img.shields.io/badge/Stellar-testnet-7D00FF?logo=stellar&logoColor=white)](https://stellar.expert/explorer/testnet)
+[![USDC](https://img.shields.io/badge/USDC-Bonds%20%26%20Slashes-2775CA)](#why-a-bond-and-why-stellar)
+[![Trustless Work](https://img.shields.io/badge/escrow-Trustless%20Work-0B4A57)](https://www.trustlesswork.com)
+[![ICP storage](https://img.shields.io/badge/storage-ICP-29ABE2?logo=internetcomputer&logoColor=white)](#live)
+[![MCP](https://img.shields.io/badge/agents-MCP-141414)](#live)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](src)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=black)](web)
+
+[**Live demo**](https://doc2dpp.wisecraft.dev) · [How it works](#how-it-works) · [Why a Bond](#why-a-bond-and-why-stellar) · [Connect an agent](#live) · [Run it](#run-it)
+
+<img src="docs/images/landing.jpg" alt="doc2dpp landing page: Supplier documents in, passport data out, money on every answer" width="900">
+
+</div>
 
 doc2dpp (Documents → Digital Product Passport), built for HackMeridian 2026 by Origyn. Supplier PDFs go in, structured Digital Product Passport data comes out, and every delivered
 Document has money behind it: a Bond in testnet USDC on Stellar that pays the Brand when a Field is wrong.
@@ -41,6 +57,24 @@ the Document alone. For the demo, a one-pass **Baseline** runs next to our Pipel
 own Operator and Bond. A leaderboard shows each Operator's Documents, upheld Challenges and total Slashed.
 
 > The Bond doesn't make the model careful. It makes careless Pipelines expensive to run, and their error rate public.
+
+<p align="center">
+  <img src="docs/images/leaderboard.jpg" alt="Public leaderboard read from Stellar: each Operator's Documents, Fields, upheld Challenges, USDC slashed and Bonds locked, with a Bond-balance chart" width="900">
+  <br><em>The public leaderboard, read from Stellar. Here our own Operator, Origyn, was Slashed 1 USDC after an upheld Challenge: the rules don't care whose Pipeline it is.</em>
+</p>
+
+## Why a Bond, and why Stellar
+
+- **We don't threaten the model.** Putting money in a prompt doesn't make a model more careful; under pressure models
+  cheat more, not less ([our research notes](docs/research/staked-agent-work.md)). The Bond works on the
+  **Operator** instead: careless Pipelines lose money and drop out, careful ones keep their Bond and win the next
+  Document. Live staked-work markets such as Numerai work the same way.
+- **The Brand gets paid, not just told.** An upheld Challenge moves a tenth of the Operator's Bond to the Brand
+  automatically when the window closes. No invoices, no chasing anyone.
+- **Stellar** because USDC is native there, settlement takes seconds and costs fractions of a cent, and
+  [Trustless Work](https://www.trustlesswork.com) gives escrows with roles (Operator, Brand, Arbiter) out of the box.
+  Every Bond, output hash and Slash is public on chain, so an Operator's track record can't be faked. The Brand never
+  touches crypto: it sees USDC and a "View on Stellar" link.
 
 ## Live
 
