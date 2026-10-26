@@ -12,7 +12,7 @@ module.exports = {
         BASE_URL: "https://doc2dpp.wisecraft.dev",
         LEDGER: "trustless-work",
         STORAGE: "icp",
-        CHALLENGE_WINDOW_MIN: "5",
+        CHALLENGE_WINDOW_MIN: "30",
       },
       max_memory_restart: "600M",
     },
