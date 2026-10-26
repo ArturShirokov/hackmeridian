@@ -2,7 +2,7 @@
 import { api, usePoll } from "../../api.ts";
 import { workerName } from "../../components/ConnectAgent.tsx";
 import { PageHeader } from "../../screens.tsx";
-import { Loading } from "./common.tsx";
+import { BondsCard, Loading } from "./common.tsx";
 import { lastWorkers, sieveRead } from "./logic.ts";
 
 const INK = "#141414";
@@ -12,6 +12,7 @@ export function Pipelines() {
   const { data: config, error } = usePoll(api.config, 60_000);
   const { data: jobs } = usePoll(() => api.jobs(), 5000);
   const { data: workers } = usePoll(api.workers, 5000);
+  const { data: board } = usePoll(api.leaderboard, 5000);
   const last = lastWorkers(jobs ?? []);
   const worker = (id?: string) => {
     const w = workers?.find((x) => x.name === id);
@@ -53,6 +54,7 @@ export function Pipelines() {
                   ? "★ High-stake Fields need Original and Markdown extraction to agree, never a majority. When they differ the Field is Not stated; Tie-break never makes them Final."
                   : o.sieves.length === 1 ? "No cross-check and no Tie-break. Run next to ours to show what the extra Sieves buy." : null}
               </p>
+              {(() => { const row = board?.find((r) => r.operator === o.operator); return row && <div style={{ margin: "0 20px 18px", paddingTop: 12, borderTop: "1px solid var(--rule)" }}><BondsCard row={row} /></div>; })()}
             </section>
           ))}
         </div>

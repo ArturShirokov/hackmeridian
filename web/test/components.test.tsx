@@ -31,19 +31,19 @@ test("Countdown counts down from the server's clock", () => {
   vi.useFakeTimers({ now: 1_000_000 });
   // The server is 10 s ahead, so 70 s on the server's clock is 60 s left.
   render(<Countdown closesAt={1_070_000} windowMs={180_000} serverOffsetMs={10_000} settled={false} />);
-  expect(screen.getByText("00:01:00")).toBeTruthy();
+  expect(screen.getByText("01:00 left")).toBeTruthy();
   act(() => void vi.advanceTimersByTime(5_000));
-  expect(screen.getByText("00:00:55")).toBeTruthy();
+  expect(screen.getByText("00:55 left")).toBeTruthy();
   vi.useRealTimers();
 });
 
-test("a paused Countdown holds its time and says why, with the demo label", () => {
+test("a paused Countdown holds its time and says why", () => {
   vi.useFakeTimers({ now: 1_000_000 });
-  render(<Countdown closesAt={1_070_000} msLeft={120_000} paused="challenge open" windowMs={180_000} serverOffsetMs={0} settled={false} note="3 min demo · 48 h live" />);
+  render(<Countdown closesAt={1_070_000} msLeft={120_000} paused="challenge open" windowMs={180_000} serverOffsetMs={0} settled={false} />);
   act(() => void vi.advanceTimersByTime(5_000));
-  expect(screen.getByText("00:02:00")).toBeTruthy();
-  expect(screen.getByText(/paused while a Challenge is open/i)).toBeTruthy();
-  expect(screen.getByText("3 min demo · 48 h live")).toBeTruthy();
+  expect(screen.getByText("02:00 left")).toBeTruthy();
+  expect(screen.getByText("paused · waiting for the Arbiter")).toBeTruthy();
+  expect(screen.queryByText(/48 h live/)).toBeNull();
   vi.useRealTimers();
 });
 

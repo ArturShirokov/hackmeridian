@@ -1202,6 +1202,8 @@ export class JobBoard {
           ...(await this.ledger.operatorRecord(operator)),
           fieldsDelivered: mine.reduce((n, { d, p }) => n + d.delivered.get(p.name)!.filter((v) => v.status !== "disagreeing").length, 0),
           bondsLocked: addUsdc(...mine.filter(({ e }) => e.status !== "settled").map(({ e }) => e.bond)),
+          documentsLocked: mine.filter(({ e }) => e.status !== "settled").length,
+          feesEarned: addUsdc(...mine.filter(({ e }) => e.status === "settled").map(({ e }) => e.fee)),
           ...(link && { link }),
           series: mine.map(({ d, e }) => ({
             documentId: d.meta.id,

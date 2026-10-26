@@ -96,7 +96,7 @@ test("delivery records the output hash, opens the Challenge Window, and shows it
   expect((await board.brand.documents())[0]!.pipelines[op.address]).toMatchObject({ status: "delivered" });
 
   const row = (await board.brand.leaderboard()).find((r) => r.operator === op.address);
-  expect(row).toMatchObject({ documents: 1, fieldsDelivered: 60, bondsLocked: "10", challengesUpheld: 0 });
+  expect(row).toMatchObject({ documents: 1, fieldsDelivered: 60, bondsLocked: "10", documentsLocked: 1, feesEarned: "0", challengesUpheld: 0 });
 });
 
 test("the Challenge Window closing clean pays Bond and Fee to the outside Operator's own address", async () => {

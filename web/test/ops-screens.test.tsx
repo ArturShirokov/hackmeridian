@@ -68,8 +68,8 @@ test("Leaderboard numbers open their Stellar proof; a zero has no link", async (
   await screen.findByText("37");
   const href = (name: string) => screen.getByRole("link", { name }).getAttribute("href");
   expect(href("Documents delivered: 2")).toBe(account);
-  expect(href("Challenges upheld: 1")).toBe(settle);
-  expect(href("Total Slashed: 5.00 USDC")).toBe(settle);
+  expect(href("Times slashed: 1")).toBe(settle);
+  expect(href("USDC slashed to Brands: 5.00 USDC")).toBe(settle);
   expect(screen.queryByRole("link", { name: /Bonds locked/ })).toBeNull();
   expect(screen.queryByRole("link", { name: /Fields delivered/ })).toBeNull();
 });
@@ -86,6 +86,27 @@ test("the Leaderboard shows every column, a Slash on the chart and the one-Opera
   expect(screen.getByText(/Only one Operator so far/)).toBeTruthy();
   expect(screen.getByText("−5.00")).toBeTruthy();
   expect(screen.getByText("Hunan")).toBeTruthy();
+});
+
+test("the Arbiter desk says who challenges whom, labels both values and what each decision does", async () => {
+  const { respond } = await import("../src/fixtures.ts");
+  serve({ "/api/challenges": respond("/api/challenges"), "/api/documents/doc-1": respond("/api/documents/doc-1") });
+  render(<Arbiter />);
+  expect((await screen.findByTestId("challenge-title")).textContent).toBe("Voltaris challenges Baseline's answer for Rated capacity");
+  expect(screen.getByText("Baseline said")).toBeTruthy();
+  expect(screen.getByText("Voltaris says (page 1)")).toBeTruthy();
+  expect(screen.getByText("Voltaris is right: 5.00 USDC of Baseline's Bond goes to Voltaris")).toBeTruthy();
+  expect(screen.getByText("Baseline is right: the Deposit pays you")).toBeTruthy();
+});
+
+test("Pipelines show each Operator's Bonds", async () => {
+  const row = { operator: "Origyn", label: "Origyn", sieves: 2, documents: 3, fieldsDelivered: 9, challengesUpheld: 1, totalSlashed: "1", bondsLocked: "20", documentsLocked: 2, feesEarned: "1", series: [] };
+  serve({ "/api/workers": [], "/api/jobs": [], "/api/leaderboard": [row] });
+  render(<Pipelines />);
+  const card = await screen.findByTestId("operator-bonds");
+  expect(card.textContent).toContain("Origyn's Bonds");
+  expect(card.textContent).toContain("Documents with a Bond locked2");
+  expect(card.textContent).toContain("Fees earned1.00 USDC");
 });
 
 test("the Operator sidebar lights Pipelines on /pipelines", async () => {

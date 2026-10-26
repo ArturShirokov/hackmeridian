@@ -66,7 +66,20 @@ export function reviewGroups(fields: ApiField[]) {
   return { notStated, supplier, brand, rows, sections, order: [...supplier, ...brand, ...sections.flatMap((s) => s.fields)].map((f) => f.name) };
 }
 
-type Claim = { value: number | string | Record<string, number>; unit?: string } | { error: string };
+type Claim = { value: number | string | Record<string, number>; unit?: string; converted?: string } | { error: string };
+
+const PREFIX: Record<string, number> = { m: 1e-3, k: 1e3, M: 1e6 };
+const spell = (u: string) => u.replace(/Ω/g, "ohm").replace(/\s+/g, "");
+
+/** A number typed in the unit as printed ("35 mOhm"), in the Template's unit ("ohm"); undefined for a unit it does not know. */
+function inUnit(n: number, typed: string, unit: string): Claim | undefined {
+  const t = spell(typed), u = spell(unit);
+  if (!t || t.toLowerCase() === u.toLowerCase()) return { value: n, unit };
+  const p = PREFIX[t[0]!];
+  if (!p || t.slice(1).toLowerCase() !== u.toLowerCase()) return undefined;
+  const value = Number((n * p).toPrecision(12));
+  return { value, unit, converted: `${n} ${typed} = ${value} ${unit}` };
+}
 
 /** The Challenge form's typed value as the API wants it: "80.0 Ah" → 80 + "Ah"; "55 % linen · 45 % cotton" → shares. */
 export function parseClaim(text: string, f: { type: string; unit?: string; label: string }): Claim {
@@ -76,7 +89,8 @@ export function parseClaim(text: string, f: { type: string; unit?: string; label
   if (f.type === "quantity") {
     const m = t.match(/^([-−]?[\d\s  ]*[\d][.,]?\d*)\s*(.*)$/);
     if (!m || Number.isNaN(num(m[1]!.replace("−", "-")))) return { error: `Enter a number for ${f.label}, e.g. 80${f.unit ? ` ${f.unit}` : ""}.` };
-    return { value: num(m[1]!.replace("−", "-")), ...((m[2]!.trim() || f.unit) && { unit: m[2]!.trim() || f.unit }) };
+    const n = num(m[1]!.replace("−", "-")), typed = m[2]!.trim();
+    return (f.unit ? inUnit(n, typed, f.unit) : undefined) ?? { value: n, ...((typed || f.unit) && { unit: typed || f.unit }) };
   }
   if (f.type === "composition") {
     const shares: Record<string, number> = {};
@@ -104,10 +118,6 @@ export function suggestions(docs: { supplier: string }[], typed: string) {
 }
 
 export const windowLength = (ms: number) => (ms >= 3600_000 ? `${Math.round(ms / 3600_000)} h` : `${Math.round(ms / 60_000)} min`);
-
-/** "3 min demo · 48 h live" with the demo window, else the window's length. */
-export const windowLabel = (c: { challengeWindowMs: number; demoWindow?: boolean }) =>
-  c.demoWindow ? `${windowLength(c.challengeWindowMs)} demo · 48 h live` : windowLength(c.challengeWindowMs);
 
 export type ListStatus = "Processing" | "Delivered" | "Settled";
 

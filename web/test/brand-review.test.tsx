@@ -27,7 +27,7 @@ test("a Challenge the server rejects shows its error inline, and the quote must 
   expect(screen.getByRole("alert").textContent).toBe("Pick the line on the Document that states the value first.");
 
   fireEvent.click(screen.getByText("pick a line"));
-  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "220 Ah" } });
+  fireEvent.change(screen.getByLabelText(/What the Document says \(the correct value\)/), { target: { value: "220 Ah" } });
   fireEvent.click(screen.getByText("File Challenge"));
   await waitFor(() => expect(screen.getByRole("alert").textContent).toBe("Quote not found on p. 1. Click the table row or sentence that holds the value."));
   expect(file).toHaveBeenCalledWith(expect.objectContaining({ pipeline: "ours", field: "rated_capacity_ah", page: 1, quote: "Rated capacity 220 Ah", value: 220, unit: "Ah" }));
@@ -39,7 +39,7 @@ test("a filed Challenge confirms with the challenged value and page", async () =
   render(<ReviewView d={doc()} config={config} offset={0} file={file} />);
   fireEvent.click(screen.getAllByText("Challenge")[0]!);
   fireEvent.click(screen.getByText("pick a line"));
-  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "220 Ah" } });
+  fireEvent.change(screen.getByLabelText(/What the Document says \(the correct value\)/), { target: { value: "220 Ah" } });
   fireEvent.click(screen.getByText("File Challenge"));
   await screen.findByText("Challenge filed");
   expect(screen.getByText("220 Ah").tagName).toBe("B");
@@ -175,11 +175,23 @@ test("the Compare tab shows any number of Operators side by side, an outside Ope
   expect(screen.getByText("230 Ah")).toBeTruthy();
 });
 
+test("the money bar says who pays whom and whose Bond is locked; the Challenge panel says what each decision does", () => {
+  render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
+  expect(screen.getByText("You pay Origyn 5.00 USDC · held until the window closes")).toBeTruthy();
+  expect(screen.getByTestId("operator-money").textContent).toContain("Origyn's guarantee: 50.00 USDC Bond · locked");
+  expect(screen.getByText("How the money works")).toBeTruthy();
+  expect(screen.queryByText(/48 h live/)).toBeNull();
+  fireEvent.click(screen.getAllByText("Challenge")[0]!);
+  expect(screen.getByText("Challenge Origyn's answer")).toBeTruthy();
+  expect(screen.getByTestId("consequence").textContent).toBe(
+    "If the Arbiter agrees, 5.00 USDC of Origyn's Bond goes to Voltaris (0.10 USDC pays the Arbiter) and your 1.00 USDC Deposit comes back. If not, your Deposit pays the Arbiter.");
+});
+
 test("arrow keys move between rows and C opens a Challenge on the selected Field", () => {
   render(<ReviewView d={doc()} config={config} offset={0} file={vi.fn()} />);
   fireEvent.keyDown(window, { key: "ArrowDown" });
   fireEvent.keyDown(window, { key: "c" });
-  expect(screen.getByText("Origyn delivered")).toBeTruthy();
+  expect(screen.getByTestId("operator-said").textContent).toContain("Origyn said:");
 });
 
 test("Compare: every differing cell without a Challenge has a Challenge button, which files against that Operator", async () => {
@@ -191,9 +203,9 @@ test("Compare: every differing cell without a Challenge has a Challenge button, 
     "Challenge Origyn: Rated capacity", "Challenge Origyn: Initial internal resistance (pack)", "Challenge Baseline: Initial internal resistance (pack)",
   ]);
   fireEvent.click(screen.getByRole("button", { name: "Challenge Baseline: Initial internal resistance (pack)" }));
-  expect(screen.getByText("Baseline delivered")).toBeTruthy();
+  expect(screen.getByTestId("operator-said").textContent).toContain("Baseline said:");
   fireEvent.click(screen.getByText("pick a line"));
-  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "0.135 ohm" } });
+  fireEvent.change(screen.getByLabelText(/What the Document says \(the correct value\)/), { target: { value: "0.135 ohm" } });
   fireEvent.click(screen.getByText("File Challenge"));
   await screen.findByText("Challenge filed");
   expect(file).toHaveBeenCalledWith(expect.objectContaining({ pipeline: "baseline", field: "initial_internal_resistance_ohm", value: 0.135, unit: "ohm" }));
@@ -204,10 +216,10 @@ test("a Not stated Field can be Challenged: the Document does state it after all
   const tpl = (respond("/api/templates") as { name: string }[]).find((t) => t.name === "battery");
   render(<ReviewView d={doc()} config={config} offset={0} template={tpl as never} file={file} />);
   fireEvent.click(screen.getByRole("button", { name: "Challenge Origyn: Initial internal resistance (pack)" }));
-  expect(screen.getByText("Origyn delivered")).toBeTruthy();
-  expect(screen.getByText(/the Document does state it/i)).toBeTruthy();
+  expect(screen.getByTestId("operator-said").textContent).toContain("Origyn said:");
+  expect(screen.getByTestId("operator-said").textContent).toBe("Origyn said: Not stated");
   fireEvent.click(screen.getByText("pick a line"));
-  fireEvent.change(screen.getByLabelText("Value"), { target: { value: "0.135 ohm" } });
+  fireEvent.change(screen.getByLabelText(/What the Document says \(the correct value\)/), { target: { value: "0.135 ohm" } });
   fireEvent.click(screen.getByText("File Challenge"));
   await screen.findByText("Challenge filed");
   expect(file).toHaveBeenCalledWith(expect.objectContaining({ pipeline: "ours", field: "initial_internal_resistance_ohm", value: 0.135 }));

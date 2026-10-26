@@ -32,7 +32,7 @@ export function Leaderboard() {
       <div style={{ padding: "24px 40px 40px", display: "flex", flexDirection: "column", gap: 36 }}>
         <div style={{ border: `1px solid ${INK}`, background: "var(--surface)" }}>
           <div style={{ display: "grid", gridTemplateColumns: cols, gap: 12, padding: "12px 20px", borderBottom: `1px solid ${INK}`, font: "600 11px/1.3 var(--sans)", letterSpacing: ".06em", textTransform: "uppercase", color: "#2A2723" }}>
-            <span>Operator</span><span>Documents delivered</span><span>Fields delivered</span><span>Challenges upheld</span><span>Total Slashed</span><span>Bonds locked</span><span>Accuracy · test set</span>
+            <span>Operator</span><span>Documents delivered</span><span>Fields delivered</span><span>Times slashed</span><span>USDC slashed to Brands</span><span>Bonds locked</span><span>Accuracy · test set</span>
           </div>
           {!data ? (
             <>
@@ -71,8 +71,8 @@ function Row({ r, rank, bond }: { r: ApiLeaderRow; rank: number; bond?: string }
   const cells: [string, string, string?, string?][] = [
     ["Documents delivered", String(r.documents), undefined, r.documents ? r.link : undefined],
     ["Fields delivered", String(r.fieldsDelivered)],
-    ["Challenges upheld", String(r.challengesUpheld), r.challengesUpheld ? RED : undefined, r.challengesUpheld ? slashed : undefined],
-    ["Total Slashed", usdc(r.totalSlashed), MONEY, Number(r.totalSlashed) ? slashed : undefined],
+    ["Times slashed", String(r.challengesUpheld), r.challengesUpheld ? RED : undefined, r.challengesUpheld ? slashed : undefined],
+    ["USDC slashed to Brands", usdc(r.totalSlashed), MONEY, Number(r.totalSlashed) ? slashed : undefined],
     ["Bonds locked", usdc(r.bondsLocked), MONEY, Number(r.bondsLocked) ? r.link : undefined],
     ["Accuracy", r.accuracy ? `${((r.accuracy.correct / r.accuracy.fields) * 100).toFixed(1)} %` : "—"],
   ];

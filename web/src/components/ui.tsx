@@ -1,6 +1,8 @@
 // Small shared components. Styles copied from the prototype (docs/design/prototype), tokens in tokens.css.
 import { useEffect, useState, type CSSProperties, type ButtonHTMLAttributes, type ReactNode } from "react";
-import { clock, shortHash, splitMark, usdc } from "../format.ts";
+import { shortHash, splitMark, usdc } from "../format.ts";
+import { windowText } from "../money.ts";
+import type { ApiWindow } from "../api.ts";
 
 /** At most two lines, then an ellipsis; give the element the full value as its title. */
 export const clamp2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", overflowWrap: "anywhere" } as const;
@@ -106,14 +108,12 @@ export function ProofLink({ href, hash, label = "View on Stellar", color }: { hr
   );
 }
 
-const PAUSED = { "until opened": "starts when the Document is opened", "challenge open": "paused while a Challenge is open" } as const;
-
 /**
- * Time left in the Challenge Window. serverOffsetMs = config.now − Date.now() when config was read.
- * While `paused`, it holds msLeft. note: "3 min demo · 48 h live".
+ * Time left in the Challenge Window: "29:12 left", with why it is paused under it. serverOffsetMs = config.now − Date.now()
+ * when config was read. While `paused`, it holds msLeft.
  */
-export function Countdown({ closesAt, msLeft, paused, windowMs, serverOffsetMs, settled, bare, note }: {
-  closesAt: number; msLeft?: number; paused?: keyof typeof PAUSED; windowMs: number; serverOffsetMs: number; settled: boolean; bare?: boolean; note?: string;
+export function Countdown({ closesAt, msLeft, paused, windowMs, serverOffsetMs, settled, bare }: {
+  closesAt: number; msLeft?: number; paused?: ApiWindow["paused"]; windowMs: number; serverOffsetMs: number; settled: boolean; bare?: boolean;
 }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -122,18 +122,18 @@ export function Countdown({ closesAt, msLeft, paused, windowMs, serverOffsetMs, 
     return () => clearInterval(t);
   }, [settled]);
   const left = settled ? 0 : paused && msLeft !== undefined ? msLeft : Math.max(0, closesAt - (now + serverOffsetMs));
-  const text = <span style={{ font: `500 ${bare ? 17 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{clock(left)}</span>;
-  const why = !settled && paused && <span style={{ font: "500 11.5px/1.2 var(--sans)", color: "#3D3A34", whiteSpace: "nowrap" }}>{PAUSED[paused]}</span>;
-  if (bare) return <>{text}{why && <> {why}</>}</>;
+  const [main, ...why] = windowText({ msLeft: left, paused, settled }).split(" · ");
+  const text = <span style={{ font: `500 ${bare ? 17 : 21}px/1 var(--mono)`, color: settled ? "#5E594F" : INK }}>{main}</span>;
+  const note = why.length > 0 && <span style={{ font: "500 11.5px/1.2 var(--sans)", color: "#3D3A34", whiteSpace: "nowrap" }}>{why.join(" · ")}</span>;
+  if (bare) return <>{text}{note && <> {note}</>}</>;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 150 }}>
-      <SectionLabel size={10.5}>Challenge Window</SectionLabel>
+      <SectionLabel size={10.5}>Challenge window</SectionLabel>
       {text}
       <div style={{ height: 2, background: "var(--track)" }}>
         <div style={{ height: 2, background: INK, width: `${windowMs ? (left / windowMs) * 100 : 0}%` }} />
       </div>
-      {why}
-      {note && <span style={{ font: "500 11.5px/1 var(--mono)", color: "#3D3A34", whiteSpace: "nowrap" }}>{note}</span>}
+      {note}
     </div>
   );
 }
