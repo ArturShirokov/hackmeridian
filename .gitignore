@@ -4,3 +4,4 @@ node_modules/
 web/dist/
 .outside-operator*.key
 testdata/public/documents/
+.DS_Store

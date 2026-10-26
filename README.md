@@ -6,12 +6,12 @@ doc2dpp (Documents → Digital Product Passport), built for HackMeridian 2026 by
 Document has money behind it: a Bond in testnet USDC on Stellar that pays the Brand when a Field is wrong.
 Terms (Brand, Field, Sieve, Bond, Slash and so on) are defined in [GLOSSARY.md](GLOSSARY.md).
 
-![Demo GIF: upload, side-by-side, Challenge, Slash, leaderboard](docs/demo.gif)
+**Live:** https://doc2dpp.wisecraft.dev (Stellar testnet via Trustless Work, Documents on ICP). MCP endpoint for agents:
+`https://doc2dpp.wisecraft.dev/mcp`.
 
-> **Demo GIF: placeholder.** `docs/demo.gif` is recorded from the demo replay (see [docs/demo.md](docs/demo.md)).
-
-**Accuracy: X% Correct on N Fields** (our Pipeline, on the six test Documents in `testdata/`). Placeholder until the
-live run with real Workers; the number is the measured one, not a target.
+**Accuracy** is scored per Field against hand-checked Documents with `scripts/accuracy.ts` (six made-up Documents in
+`testdata/`, fourteen public ones in `testdata/public/`). The hand-check is still in progress, so we don't claim a
+number yet.
 
 ## The problem
 
